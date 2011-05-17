@@ -1,27 +1,27 @@
 <?php
 
 require '../src/coffeescript.php';
-
 define('ROOT', realpath(dirname(__FILE__)).'/');
 
-$tests = array(
-  'arrays'
-);
+$tests = array('arrays');
+
 ?>
 <html>
 <head>
   <title>CoffeeScript PHP Tests</title>
 </head>
 <body>
+<pre>
 <?php
+
+CoffeeScript\Parser::Trace(fopen('trace.txt', 'w'), '> ');
 
 foreach ($tests as $test)
 {
-  print('<pre>');
   print_r(CoffeeScript\compile(ROOT.$test.'.coffee'));
-  print('</pre>');
 }
 
 ?>
+</pre>
 </body>
 </html>

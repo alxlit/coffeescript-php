@@ -4,120 +4,225 @@ namespace CoffeeScript;
 
 class yyOp extends yyBase
 {
-  /*
-  constructor: (op, first, second, flip ) ->
-    return new In first, second if op is 'in'
-    if op is 'do'
-      call = new Call first, first.params or []
-      call.do = yes
-      return call
-    if op is 'new'
-      return first.newInstance() if first instanceof Call and not first.do
-      first = new Parens first   if first instanceof Code and first.bound or first.do
-    @operator = CONVERSIONS[op] or op
-    @first    = first
-    @second   = second
-    @flip     = !!flip
-    return this
+  static $CONVERSIONS = array(
+    '==' => '===',
+    '!=' => '!==',
+    'of' => 'in'
+  );
 
-  # The map of conversions from CoffeeScript to JavaScript symbols.
-  CONVERSIONS =
-    '==': '==='
-    '!=': '!=='
-    'of': 'in'
+  static $INVERSIONS = array(
+    '!==' => '===',
+    '===' => '!=='
+  );
 
-  # The map of invertible operators.
-  INVERSIONS =
-    '!==': '==='
-    '===': '!=='
+  public $children = array('first', 'second');
 
-  children: ['first', 'second']
+  function __construct($op, $first, $second = NULL, $flip = NULL)
+  {
+    if ($op === 'in')
+    {
+      return new yyIn($first, $second);
+    }
 
-  isSimpleNumber: NO
+    if ($op === 'do')
+    {
+      $call = new yyCall($first, isset($first->params) ? $first->params : array());
+      $call->do = TRUE;
 
-  isUnary: ->
-    not @second
-    
-  isComplex: ->
-    not (@isUnary() and (@operator in ['+', '-'])) or @first.isComplex()
+      return $call;
+    }
 
-  # Am I capable of
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: ->
-    @operator in ['<', '>', '>=', '<=', '===', '!==']
+    if ($op === 'new')
+    {
+      if ($first instanceof yyCall && ! $first->do)
+      {
+        return $first->new_instance();
+      }
 
-  invert: ->
-    if @isChainable() and @first.isChainable()
-      allInvertable = yes
-      curr = this
-      while curr and curr.operator
-        allInvertable and= (curr.operator of INVERSIONS)
-        curr = curr.first
-      return new Parens(this).invert() unless allInvertable
-      curr = this
-      while curr and curr.operator
-        curr.invert = !curr.invert
-        curr.operator = INVERSIONS[curr.operator]
-        curr = curr.first
-      this
-    else if op = INVERSIONS[@operator]
-      @operator = op
-      if @first.unwrap() instanceof Op
-        @first.invert()
-      this
-    else if @second
-      new Parens(this).invert()
-    else if @operator is '!' and (fst = @first.unwrap()) instanceof Op and
-                                  fst.operator in ['!', 'in', 'instanceof']
-      fst
+      if ($first instanceof yyCode && $first->bound || $first->do)
+      {
+        $first = new yyParens($first);
+      }
+    }
+
+    $this->operator = isset(self::$CONVERSIONS[$op]) ? self::$CONVERSIONS[$op] : $op;
+    $this->first = $first;
+    $this->second = $second;
+    $this->flip = (bool) $flip;
+
+    return $this;
+  }
+
+  function compile_chain($options)
+  {
+    $tmp = $this->first->second->cache($options);
+
+    $this->first->second = $tmp[0];
+    $shared = $tmp[1];
+
+    $fst = $this->first->compile($options, LEVEL_OP);
+    $code = "{$fst} ".($this->invert ? '&&' : '||').' '.$shared->compile($options).' '
+      .$this->operator.' '.$this->second->compile($options, LEVEL_OP);
+
+    return "({$code})";
+  }
+
+  function compile_existence($options)
+  {
+    if ($this->first->is_complex())
+    {
+      $ref = new yyLiteral($options['scope']->free_variable('ref'));
+      $fst = new yyParens(new yyAssign($ref, $this->first));
+    }
     else
-      new Op '!', this
+    {
+      $fst = $this->first;
+      $ref = $fst;
+    }
 
-  unfoldSoak: (o) ->
-    @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
+    $tmp = new yyIf(new yyExistence($fst), $ref, array('type' => 'if'));
+    $tmp->add_else($this->second);
 
-  compileNode: (o) ->
-    return @compileUnary     o if @isUnary()
-    return @compileChain     o if @isChainable() and @first.isChainable()
-    return @compileExistence o if @operator is '?'
-    @first.front = @front
-    code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
-           @second.compile(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then code else "(#{code})"
+    return $tmp->compile($options);
+  }
 
-  # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. For example:
-  #
-  #     bin/coffee -e 'console.log 50 < 65 > 10'
-  #     true
-  compileChain: (o) ->
-    [@first.second, shared] = @first.second.cache o
-    fst = @first.compile o, LEVEL_OP
-    code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
-    "(#{code})"
+  function compile_node($options)
+  {
+    if ($this->is_unary())
+    {
+      return $this->compile_unary($options);
+    }
 
-  compileExistence: (o) ->
-    if @first.isComplex()
-      ref = new Literal o.scope.freeVariable 'ref'
-      fst = new Parens new Assign ref, @first
+    if ($this->is_chainable() && $this->first->is_chainable())
+    {
+      return $this->compile_chain($options);
+    }
+
+    if ($this->operator === '?')
+    {
+      return $this->compile_existence($options);
+    }
+
+    $this->first->front = $this->front;
+
+    $code = $this->first->compile($options, LEVEL_OP).' '.$this->operator.' '
+      .$tihs->second->compile($options, LEVEL_OP);
+
+    return $options['level'] <= LEVEL_OP ? $code : "({$code})";
+  }
+
+  function compile_unary($options)
+  {
+    $parts = array($op = $this->operator);
+
+    if (in_array($op, array('new', 'typeof', 'delete')) || in_array($op, array('+', '-')) &&
+      $this->first instanceof yyOp && $this->first->operator === $op)
+    {
+      $parts[] = ' ';
+    }
+
+    if ($op === 'new' && $this->first->is_statement($options))
+    {
+      $this->first = new yyParens($this->first);
+    }
+
+    $parts[] = $this->first->compile($options, LEVEL_OP);
+
+    if ($this->flip)
+    {
+      $parts = array_reverse($parts);
+    }
+
+    return implode('', $parts);
+  }
+
+  function is_chainable()
+  {
+    return in_array($this->operator, array('<', '>', '>=', '<=', '===', '!=='));
+  }
+
+  function is_complex()
+  {
+    return ! ($this->is_unary() && in_array($this->operator, array('+', '-'))) || $this->first->is_complex();
+  }
+
+  function invert()
+  {
+    if ($this->is_chainable() && $this->first->is_chainable())
+    {
+      $all_invertable = TRUE;
+      $curr = $this;
+
+      while ($curr && $curr->operator)
+      {
+        $all_invertable = $all_invertable && isset(self::$INVERSIONS[$curr->operator]);
+        $curr = $curr->first;
+      }
+
+      if ( ! $all_invertable)
+      {
+        $tmp = new yyParens($this);
+        return $tmp->invert();
+      }
+
+      $curr = $this;
+
+      while ($curr && $curr->operator)
+      {
+        $curr->invert = ! $curr->invert;
+        $curr->operator = self::$INVERSIONS[$curr->operator];
+        $curr = $curr->first;
+      }
+
+      return $this;
+    }
+    else if (isset(self::$INVERSIONS[$this->operator]))
+    {
+      $op = self::$INVERSIONS[$this->operator];
+
+      if ($first->unwrap() instanceof yyOp)
+      {
+        $first->invert();
+      }
+
+      return $this;
+    }
+    else if ($this->second)
+    {
+      $tmp = new yyParens($this);
+      return $tmp->invert();
+    }
+    else if ($this->operator === '!' && ($fst = $this->first->unwrap()) instanceof yyOp &&
+      in_array($fst->operator, array('!', 'in', 'instanceof')))
+    {
+      return $fst;
+    }
     else
-      fst = @first
-      ref = fst
-    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
+    {
+      return new yyOp('!', $this);
+    }
+  }
 
-  # Compile a unary **Op**.
-  compileUnary: (o) ->
-    parts = [op = @operator]
-    parts.push ' ' if op in ['new', 'typeof', 'delete'] or
-                      op in ['+', '-'] and @first instanceof Op and @first.operator is op
-    @first = new Parens @first if op is 'new' and @first.isStatement o
-    parts.push @first.compile o, LEVEL_OP
-    parts.reverse() if @flip
-    parts.join ''
+  function is_simple_number()
+  {
+    return FALSE;
+  }
 
-  toString: (idt) ->
-  super idt, @constructor.name + ' ' + @operator
-  */
+  function is_unary()
+  {
+    return ! $this->second;
+  }
+
+  function unfold_soak($options)
+  {
+    return in_array($this->operator, array('++', '--', 'delete')) &&
+      unfold_soak($options, $this, 'first');
+  }
+
+  function to_string($idt = NULL)
+  {
+    return parent::to_string($idt, $this->constructor->name.' '.$this->operator);
+  }
 }
 
 ?>

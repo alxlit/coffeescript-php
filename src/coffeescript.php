@@ -20,7 +20,7 @@ function compile($source, $options = array())
   $lexer  = new Lexer(file_get_contents($source), $options);
   $parser = new Parser();
 
-  Parser::Trace(fopen('/srv/http/coffeescript-php/trace.txt', 'w'), '> ');
+
 
   foreach ($lexer->tokenize() as $token)
   {
