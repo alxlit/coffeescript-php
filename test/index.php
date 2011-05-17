@@ -1,6 +1,6 @@
 <?php
 
-require '../build/coffeescript.php';
+require '../src/coffeescript.php';
 
 define('ROOT', realpath(dirname(__FILE__)).'/');
 

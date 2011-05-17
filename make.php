@@ -5,86 +5,105 @@ define('ROOT', realpath(dirname(__FILE__)).'/');
 // Disable output.
 ini_set('implicit_flush', false);
 
-function build()
-{
-}
-
-function build_tests()
-{
-}
-
 function clean()
 {
 }
 
-// Set options.
-$_SERVER['argv'] = $argv = array('-s', ROOT.'src/grammar.y');
-
-// ParserGenerator is included locally since the PEAR package doesn't seem to
-// work. Also, some minor changes have been made to the source.
-require 'vendor/ParserGenerator/ParserGenerator.php';
-
-// Catch any errors.
-ob_start();
-
-$lemon = new PHP_ParserGenerator;
-$lemon->main();
-
-$reply = ob_get_contents();
-
-ob_end_clean();
-
-if (substr($reply, -1) !== "\n")
+function init()
 {
-  // Sometimes the errors aren't printed with newlines.
-  $reply .= "\n";
-}
+  $arg = array_slice($_SERVER['argv'], 1);
+  $arg = $arg ? $arg[0] : '';
 
-if (($i = strpos($reply, $argv[1])) > -1)
-{
-  $reply = explode("\n", $reply);
-
-  foreach ($reply as $i => $line)
+  if (in_array($arg, array('?', 'help')))
   {
-    // The -q flag doesn't seem to work, but we want only the error messages
-    // to be output to the terminal.
-    if (strpos($line, $argv[1]) === 0)
-    {
-      echo str_replace($argv[1], basename($argv[1]), $line) . "\n";
-    }
+    echo "make.php [all|test]\n";
+    exit(1);
   }
 
-  exit(1);
+  $all = $arg === 'all';
+
+  if ($all || $arg === '')      { make(); }
+  if ($all || $arg === 'test')  { make_test(); }
+
+  clean();
 }
-else
+
+function make()
 {
-  $source = ROOT.'src/grammar.php';
-  $target = ROOT.'build/coffeescript/parser.php';
+  // Included locally because the PEAR package doesn't seem to work. Also, some
+  // minor changes may have been made to the source.
+  require 'vendor/ParserGenerator/ParserGenerator.php';
+
+  $source = 'src/grammar';
+  $target = 'src/coffeescript/parser.php';
+
+  // Lemon takes arguments on the command line.
+  $_SERVER['argv'] = $argv = array('-s', ROOT.$source.'.y');
+
+  echo "Attempting to build \"{$target}\" from \"{$source}.y\".\n";
+  echo "This could take a few minutes...\n";
+
+  ob_start();
+
+  $lemon = new PHP_ParserGenerator;
+  $lemon->main();
+
+  $reply = ob_get_contents();
+
+  ob_end_clean();
+
+  if (substr($reply, -1) !== "\n")
+  {
+    // Sometimes the errors aren't printed with newlines.
+    $reply .= "\n";
+  }
+
+  // Check for errors.
+  if (strpos($reply, $argv[1]) > -1)
+  {
+    $reply = explode("\n", $reply);
+
+    foreach ($reply as $i => $line)
+    {
+      // The -q flag doesn't seem to work, but we want only the error messages
+      // to be output to the terminal.
+      if (strpos($line, $argv[1]) === 0)
+      {
+        echo str_replace($argv[1], basename($argv[1]), $line) . "\n";
+      }
+    }
+
+    exit(1);
+  }
 
   // Build was a success!
-  if ( ! file_exists($target) || @unlink($target))
+  if ( ! file_exists(ROOT.$target) || @unlink(ROOT.$target))
   {
-    $content = file_get_contents($source);
+    $content = file_get_contents(ROOT.$source.'.php');
 
     // Add namespace declaration.
     $content = str_replace('<?php', "<?php\nnamespace CoffeeScript;\nuse \ArrayAccess as ArrayAccess;", $content);
 
     // Write.
-    file_put_contents($target, $content);
+    file_put_contents(ROOT.$target, $content);
 
     // Clean up.
-    unlink($source);
-    unlink(ROOT.'src/grammar.out');
+    unlink(ROOT.$source.'.php');
+    unlink(ROOT.$source.'.out');
 
     exit(0);
   }
   else
   {
     // Bad permissions.
-    echo "Couldn't remove {$dest}. Check your user permissions.\n";
+    echo "Couldn't remove {$target}. Check your permissions.\n";
 
     exit(1);
   }
+}
+
+function make_test()
+{
 }
 
 ?>
