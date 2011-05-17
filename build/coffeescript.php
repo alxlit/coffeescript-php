@@ -9,7 +9,7 @@ require 'coffeescript/parser.php';
  */
 function compile($source, $options = array())
 {
-  $options = (object) array_merge(array(
+  $options = array_merge(array(
     'indent'  => 0,
     'index'   => 0,
     'line'    => 0,
@@ -20,11 +20,11 @@ function compile($source, $options = array())
   $lexer  = new Lexer(file_get_contents($source), $options);
   $parser = new Parser();
 
-  // While not strictly necessary to do it like this, it's in keeping with the
-  // Lemon documentation to do so.
-  while ($lexer->tokenize())
+  Parser::Trace(fopen('/srv/http/coffeescript-php/trace.txt', 'w'), '> ');
+
+  foreach ($lexer->tokenize() as $token)
   {
-    $parser->parse($lexer->tag(), $lexer->value());
+    $parser->parse($token[0], $token[1]);
   }
 
   // Signal end-of-input to the parser.

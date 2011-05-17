@@ -98,8 +98,8 @@ class yyStackEntry
 // code external to the class is included here
 
 // declare_class is output here
-#line 2 "/srv/http/php-coffeescript/src/grammar.y"
- class Parser #line 102 "/srv/http/php-coffeescript/src/grammar.php"
+#line 2 "/srv/http/coffeescript-php/src/grammar.y"
+ class Parser #line 102 "/srv/http/coffeescript-php/src/grammar.php"
 {
 /* First off, code is included which follows the "include_class" declaration
 ** in the input file. */
@@ -2512,10 +2512,8 @@ static public $yy_action = array(
         51 => 51,
         84 => 51,
         115 => 51,
-        152 => 51,
         52 => 52,
         85 => 52,
-        116 => 52,
         53 => 53,
         54 => 54,
         55 => 55,
@@ -2532,7 +2530,6 @@ static public $yy_action = array(
         81 => 81,
         82 => 82,
         86 => 86,
-        117 => 86,
         87 => 87,
         119 => 87,
         88 => 88,
@@ -2562,6 +2559,8 @@ static public $yy_action = array(
         112 => 111,
         113 => 113,
         114 => 114,
+        116 => 116,
+        117 => 117,
         123 => 123,
         124 => 124,
         125 => 125,
@@ -2586,6 +2585,7 @@ static public $yy_action = array(
         145 => 145,
         146 => 146,
         148 => 148,
+        152 => 152,
         153 => 153,
         154 => 154,
         155 => 155,
@@ -2631,345 +2631,354 @@ static public $yy_action = array(
     **   function yy_r0($yymsp){ ... }           // User supplied code
     **  #line <lineno> <thisfile>
     */
-#line 20 "/srv/http/php-coffeescript/src/grammar.y"
+#line 20 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r0(){ $this->_retvalue = new yyBlock;     }
-#line 2638 "/srv/http/php-coffeescript/src/grammar.php"
-#line 21 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2638 "/srv/http/coffeescript-php/src/grammar.php"
+#line 21 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r1(){ $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor;     }
-#line 2641 "/srv/http/php-coffeescript/src/grammar.php"
-#line 22 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2641 "/srv/http/coffeescript-php/src/grammar.php"
+#line 22 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r2(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor;     }
-#line 2644 "/srv/http/php-coffeescript/src/grammar.php"
-#line 24 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2644 "/srv/http/coffeescript-php/src/grammar.php"
+#line 24 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r3(){ $this->_retvalue = yyBlock::wrap($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2647 "/srv/http/php-coffeescript/src/grammar.php"
-#line 25 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2647 "/srv/http/coffeescript-php/src/grammar.php"
+#line 25 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r4(){ $this->_retvalue = $this->yystack[$this->yyidx + -2]->minor->push($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2650 "/srv/http/php-coffeescript/src/grammar.php"
-#line 34 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2650 "/srv/http/coffeescript-php/src/grammar.php"
+#line 34 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r11(){ $this->_retvalue = new yyLiteral($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2653 "/srv/http/php-coffeescript/src/grammar.php"
-#line 59 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r31(){ $val = new yyLiteral($this->yystack[$this->yyidx + 0]->minor); $val->$isUndefined = $this->_retvalue === 'undefined'; $this->_retvalue = $val;     }
-#line 2656 "/srv/http/php-coffeescript/src/grammar.php"
-#line 61 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2653 "/srv/http/coffeescript-php/src/grammar.php"
+#line 59 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r31(){ $val = new yyLiteral($this->yystack[$this->yyidx + 0]->minor); $val->is_undefined($this->_retvalue === 'undefined'); $this->_retvalue = $val;     }
+#line 2656 "/srv/http/coffeescript-php/src/grammar.php"
+#line 61 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r32(){ $this->_retvalue = new yyAssign($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2659 "/srv/http/php-coffeescript/src/grammar.php"
-#line 62 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2659 "/srv/http/coffeescript-php/src/grammar.php"
+#line 62 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r33(){ $this->_retvalue = new yyAssign($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2662 "/srv/http/php-coffeescript/src/grammar.php"
-#line 64 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2662 "/srv/http/coffeescript-php/src/grammar.php"
+#line 64 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r34(){ $this->_retvalue = new yyValue($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2665 "/srv/http/php-coffeescript/src/grammar.php"
-#line 65 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2665 "/srv/http/coffeescript-php/src/grammar.php"
+#line 65 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r35(){ $this->_retvalue = new yyAssign(new yyValue($this->yystack[$this->yyidx + -2]->minor), $this->yystack[$this->yyidx + 0]->minor, 'object');     }
-#line 2668 "/srv/http/php-coffeescript/src/grammar.php"
-#line 66 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2668 "/srv/http/coffeescript-php/src/grammar.php"
+#line 66 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r36(){ $this->_retvalue = new yyAssign(new yyValue($this->yystack[$this->yyidx + -4]->minor), $this->yystack[$this->yyidx + -1]->minor, 'object');     }
-#line 2671 "/srv/http/php-coffeescript/src/grammar.php"
-#line 73 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2671 "/srv/http/coffeescript-php/src/grammar.php"
+#line 73 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r41(){ $this->_retvalue = new yyReturn($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2674 "/srv/http/php-coffeescript/src/grammar.php"
-#line 74 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2674 "/srv/http/coffeescript-php/src/grammar.php"
+#line 74 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r42(){ $this->_retvalue = new yyReturn;     }
-#line 2677 "/srv/http/php-coffeescript/src/grammar.php"
-#line 76 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2677 "/srv/http/coffeescript-php/src/grammar.php"
+#line 76 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r43(){ $this->_retvalue = new yyComment($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2680 "/srv/http/php-coffeescript/src/grammar.php"
-#line 78 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2680 "/srv/http/coffeescript-php/src/grammar.php"
+#line 78 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r44(){ $this->_retvalue = new yyCode($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2683 "/srv/http/php-coffeescript/src/grammar.php"
-#line 79 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2683 "/srv/http/coffeescript-php/src/grammar.php"
+#line 79 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r45(){ $this->_retvalue = new yyCode(array(), $this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2686 "/srv/http/php-coffeescript/src/grammar.php"
-#line 81 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2686 "/srv/http/coffeescript-php/src/grammar.php"
+#line 81 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r46(){ $this->_retvalue = 'func';     }
-#line 2689 "/srv/http/php-coffeescript/src/grammar.php"
-#line 82 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2689 "/srv/http/coffeescript-php/src/grammar.php"
+#line 82 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r47(){ $this->_retvalue = 'boundfunc';     }
-#line 2692 "/srv/http/php-coffeescript/src/grammar.php"
-#line 84 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2692 "/srv/http/coffeescript-php/src/grammar.php"
+#line 84 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r48(){ $this->_retvalue = '';     }
-#line 2695 "/srv/http/php-coffeescript/src/grammar.php"
-#line 87 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2695 "/srv/http/coffeescript-php/src/grammar.php"
+#line 87 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r50(){ $this->_retvalue = array();     }
-#line 2698 "/srv/http/php-coffeescript/src/grammar.php"
-#line 88 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2698 "/srv/http/coffeescript-php/src/grammar.php"
+#line 88 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r51(){ $this->_retvalue = array($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2701 "/srv/http/php-coffeescript/src/grammar.php"
-#line 89 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2701 "/srv/http/coffeescript-php/src/grammar.php"
+#line 89 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r52(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2704 "/srv/http/php-coffeescript/src/grammar.php"
-#line 91 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2704 "/srv/http/coffeescript-php/src/grammar.php"
+#line 91 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r53(){ $this->_retvalue = new yyParam($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2707 "/srv/http/php-coffeescript/src/grammar.php"
-#line 92 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2707 "/srv/http/coffeescript-php/src/grammar.php"
+#line 92 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r54(){ $this->_retvalue = new yyParam($this->yystack[$this->yyidx + -1]->minor, NULL, TRUE);     }
-#line 2710 "/srv/http/php-coffeescript/src/grammar.php"
-#line 93 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2710 "/srv/http/coffeescript-php/src/grammar.php"
+#line 93 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r55(){ $this->_retvalue = new yyParam($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2713 "/srv/http/php-coffeescript/src/grammar.php"
-#line 100 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2713 "/srv/http/coffeescript-php/src/grammar.php"
+#line 100 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r60(){ $this->_retvalue = new yySplat($this->yystack[$this->yyidx + -1]->minor);     }
-#line 2716 "/srv/http/php-coffeescript/src/grammar.php"
-#line 103 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2716 "/srv/http/coffeescript-php/src/grammar.php"
+#line 103 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r62(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor->push($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2719 "/srv/http/php-coffeescript/src/grammar.php"
-#line 104 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2719 "/srv/http/coffeescript-php/src/grammar.php"
+#line 104 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r63(){ $this->_retvalue = new yyValue($this->yystack[$this->yyidx + -1]->minor, array($this->yystack[$this->yyidx + 0]->minor));     }
-#line 2722 "/srv/http/php-coffeescript/src/grammar.php"
-#line 117 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2722 "/srv/http/coffeescript-php/src/grammar.php"
+#line 117 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r73(){ $this->_retvalue = new yyAccess($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2725 "/srv/http/php-coffeescript/src/grammar.php"
-#line 118 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2725 "/srv/http/coffeescript-php/src/grammar.php"
+#line 118 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r74(){ $this->_retvalue = new yyAccess($this->yystack[$this->yyidx + 0]->minor, 'soak');     }
-#line 2728 "/srv/http/php-coffeescript/src/grammar.php"
-#line 119 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2728 "/srv/http/coffeescript-php/src/grammar.php"
+#line 119 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r75(){ $this->_retvalue = new yyAccess($this->yystack[$this->yyidx + 0]->minor, 'proto');     }
-#line 2731 "/srv/http/php-coffeescript/src/grammar.php"
-#line 120 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2731 "/srv/http/coffeescript-php/src/grammar.php"
+#line 120 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r76(){ $this->_retvalue = new yyAccess(new yyLiteral('prototype'));     }
-#line 2734 "/srv/http/php-coffeescript/src/grammar.php"
-#line 122 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2734 "/srv/http/coffeescript-php/src/grammar.php"
+#line 122 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r78(){ $this->_retvalue = new yySlice($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2737 "/srv/http/php-coffeescript/src/grammar.php"
-#line 124 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2737 "/srv/http/coffeescript-php/src/grammar.php"
+#line 124 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r79(){ $this->_retvalue = new yySlice($this->yystack[$this->yyidx + -1]->minor);     }
-#line 2740 "/srv/http/php-coffeescript/src/grammar.php"
-#line 125 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2740 "/srv/http/coffeescript-php/src/grammar.php"
+#line 125 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r80(){ $this->_retvalue = extend($this->yystack[$this->yyidx + 0]->minor, array('soak' => TRUE));     }
-#line 2743 "/srv/http/php-coffeescript/src/grammar.php"
-#line 126 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2743 "/srv/http/coffeescript-php/src/grammar.php"
+#line 126 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r81(){ $this->_retvalue = extend($this->yystack[$this->yyidx + 0]->minor, array('proto' => TRUE));     }
-#line 2746 "/srv/http/php-coffeescript/src/grammar.php"
-#line 128 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2746 "/srv/http/coffeescript-php/src/grammar.php"
+#line 128 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r82(){ $this->_retvalue = new yyObject($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor->generated());     }
-#line 2749 "/srv/http/php-coffeescript/src/grammar.php"
-#line 133 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2749 "/srv/http/coffeescript-php/src/grammar.php"
+#line 133 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r86(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2752 "/srv/http/php-coffeescript/src/grammar.php"
-#line 134 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2752 "/srv/http/coffeescript-php/src/grammar.php"
+#line 134 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r87(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -5]->minor, $this->yystack[$this->yyidx + -2]->minor);     }
-#line 2755 "/srv/http/php-coffeescript/src/grammar.php"
-#line 136 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2755 "/srv/http/coffeescript-php/src/grammar.php"
+#line 136 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r88(){ $this->_retvalue = new yyClass;     }
-#line 2758 "/srv/http/php-coffeescript/src/grammar.php"
-#line 137 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2758 "/srv/http/coffeescript-php/src/grammar.php"
+#line 137 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r89(){ $this->_retvalue = new yyClass(NULL, NULL, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2761 "/srv/http/php-coffeescript/src/grammar.php"
-#line 138 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2761 "/srv/http/coffeescript-php/src/grammar.php"
+#line 138 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r90(){ $this->_retvalue = new yyClass(NULL, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2764 "/srv/http/php-coffeescript/src/grammar.php"
-#line 139 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2764 "/srv/http/coffeescript-php/src/grammar.php"
+#line 139 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r91(){ $this->_retvalue = new yyClass(NULL, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2767 "/srv/http/php-coffeescript/src/grammar.php"
-#line 140 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2767 "/srv/http/coffeescript-php/src/grammar.php"
+#line 140 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r92(){ $this->_retvalue = new yyClass($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2770 "/srv/http/php-coffeescript/src/grammar.php"
-#line 141 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2770 "/srv/http/coffeescript-php/src/grammar.php"
+#line 141 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r93(){ $this->_retvalue = new yyClass($this->yystack[$this->yyidx + -1]->minor, NULL, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2773 "/srv/http/php-coffeescript/src/grammar.php"
-#line 142 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2773 "/srv/http/coffeescript-php/src/grammar.php"
+#line 142 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r94(){ $this->_retvalue = new yyClass($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2776 "/srv/http/php-coffeescript/src/grammar.php"
-#line 143 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2776 "/srv/http/coffeescript-php/src/grammar.php"
+#line 143 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r95(){ $this->_retvalue = new yyClass($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2779 "/srv/http/php-coffeescript/src/grammar.php"
-#line 145 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2779 "/srv/http/coffeescript-php/src/grammar.php"
+#line 145 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r96(){ $this->_retvalue = new yyCall($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2782 "/srv/http/php-coffeescript/src/grammar.php"
-#line 147 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2782 "/srv/http/coffeescript-php/src/grammar.php"
+#line 147 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r98(){ $this->_retvalue = new yyCall('super', array(new yySplat(new yyLiteral('arguments'))));     }
-#line 2785 "/srv/http/php-coffeescript/src/grammar.php"
-#line 148 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2785 "/srv/http/coffeescript-php/src/grammar.php"
+#line 148 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r99(){ $this->_retvalue = new yyCall('super', $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2788 "/srv/http/php-coffeescript/src/grammar.php"
-#line 150 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2788 "/srv/http/coffeescript-php/src/grammar.php"
+#line 150 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r100(){ $this->_retvalue = YY_FALSE;     }
-#line 2791 "/srv/http/php-coffeescript/src/grammar.php"
-#line 151 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2791 "/srv/http/coffeescript-php/src/grammar.php"
+#line 151 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r101(){ $this->_retvalue = YY_TRUE;     }
-#line 2794 "/srv/http/php-coffeescript/src/grammar.php"
-#line 154 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2794 "/srv/http/coffeescript-php/src/grammar.php"
+#line 154 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r103(){ $this->_retvalue = $this->yystack[$this->yyidx + -2]->minor;     }
-#line 2797 "/srv/http/php-coffeescript/src/grammar.php"
-#line 156 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2797 "/srv/http/coffeescript-php/src/grammar.php"
+#line 156 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r104(){ $this->_retvalue = new yyValue(new yyLiteral('this'));     }
-#line 2800 "/srv/http/php-coffeescript/src/grammar.php"
-#line 159 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2800 "/srv/http/coffeescript-php/src/grammar.php"
+#line 159 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r106(){ $this->_retvalue = new yyValue(new yyLiteral('this'), array(new yyAccess($this->yystack[$this->yyidx + 0]->minor)), 'this');     }
-#line 2803 "/srv/http/php-coffeescript/src/grammar.php"
-#line 161 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r107(){ $this->_retvalue = new yyArray(array());     }
-#line 2806 "/srv/http/php-coffeescript/src/grammar.php"
-#line 162 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r108(){ $this->_retvalue = new yyArray($this->yystack[$this->yyidx + -2]->minor);     }
-#line 2809 "/srv/http/php-coffeescript/src/grammar.php"
-#line 164 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2803 "/srv/http/coffeescript-php/src/grammar.php"
+#line 161 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r107(){ $this->_retvalue = new yyArr(array());     }
+#line 2806 "/srv/http/coffeescript-php/src/grammar.php"
+#line 162 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r108(){ $this->_retvalue = new yyArr($this->yystack[$this->yyidx + -2]->minor);     }
+#line 2809 "/srv/http/coffeescript-php/src/grammar.php"
+#line 164 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r109(){ $this->_retvalue = 'inclusive';     }
-#line 2812 "/srv/http/php-coffeescript/src/grammar.php"
-#line 165 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2812 "/srv/http/coffeescript-php/src/grammar.php"
+#line 165 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r110(){ $this->_retvalue = 'exclusive';     }
-#line 2815 "/srv/http/php-coffeescript/src/grammar.php"
-#line 167 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2815 "/srv/http/coffeescript-php/src/grammar.php"
+#line 167 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r111(){ $this->_retvalue = new yyRange($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor);     }
-#line 2818 "/srv/http/php-coffeescript/src/grammar.php"
-#line 170 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2818 "/srv/http/coffeescript-php/src/grammar.php"
+#line 170 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r113(){ $this->_retvalue = new yyRange($this->yystack[$this->yyidx + -2]->minor, NULL, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2821 "/srv/http/php-coffeescript/src/grammar.php"
-#line 171 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2821 "/srv/http/coffeescript-php/src/grammar.php"
+#line 171 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r114(){ $this->_retvalue = new yyRange(NULL, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor);     }
-#line 2824 "/srv/http/php-coffeescript/src/grammar.php"
-#line 183 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r123(){ $this->_retvalue = array_merge(array(), $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2827 "/srv/http/php-coffeescript/src/grammar.php"
-#line 185 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2824 "/srv/http/coffeescript-php/src/grammar.php"
+#line 174 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r116(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -2]->minor, array($this->yystack[$this->yyidx + 0]->minor));     }
+#line 2827 "/srv/http/coffeescript-php/src/grammar.php"
+#line 175 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r117(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -3]->minor, array($this->yystack[$this->yyidx + 0]->minor));     }
+#line 2830 "/srv/http/coffeescript-php/src/grammar.php"
+#line 183 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r123(){ $this->_retvalue = array($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
+#line 2833 "/srv/http/coffeescript-php/src/grammar.php"
+#line 185 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r124(){ $this->_retvalue = new yyTry($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2830 "/srv/http/php-coffeescript/src/grammar.php"
-#line 186 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2836 "/srv/http/coffeescript-php/src/grammar.php"
+#line 186 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r125(){ $this->_retvalue = new yyTry($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor[0], $this->yystack[$this->yyidx + 0]->minor[1]);      }
-#line 2833 "/srv/http/php-coffeescript/src/grammar.php"
-#line 187 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2839 "/srv/http/coffeescript-php/src/grammar.php"
+#line 187 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r126(){ $this->_retvalue = new yyTry($this->yystack[$this->yyidx + -2]->minor, NULL, NULL, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2836 "/srv/http/php-coffeescript/src/grammar.php"
-#line 188 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2842 "/srv/http/coffeescript-php/src/grammar.php"
+#line 188 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r127(){ $this->_retvalue = new yyTry($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -2]->minor[0], $this->yystack[$this->yyidx + -2]->minor[1], $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2839 "/srv/http/php-coffeescript/src/grammar.php"
-#line 190 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2845 "/srv/http/coffeescript-php/src/grammar.php"
+#line 190 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r128(){ $this->_retvalue = array($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2842 "/srv/http/php-coffeescript/src/grammar.php"
-#line 192 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2848 "/srv/http/coffeescript-php/src/grammar.php"
+#line 192 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r129(){ $this->_retvalue = new yyThrow($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2845 "/srv/http/php-coffeescript/src/grammar.php"
-#line 194 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2851 "/srv/http/coffeescript-php/src/grammar.php"
+#line 194 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r130(){ $this->_retvalue = new yyParens($this->yystack[$this->yyidx + -1]->minor);     }
-#line 2848 "/srv/http/php-coffeescript/src/grammar.php"
-#line 195 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2854 "/srv/http/coffeescript-php/src/grammar.php"
+#line 195 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r131(){ $this->_retvalue = new yyParens($this->yystack[$this->yyidx + -2]->minor);     }
-#line 2851 "/srv/http/php-coffeescript/src/grammar.php"
-#line 197 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2857 "/srv/http/coffeescript-php/src/grammar.php"
+#line 197 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r132(){ $this->_retvalue = new yyWhile($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2854 "/srv/http/php-coffeescript/src/grammar.php"
-#line 198 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2860 "/srv/http/coffeescript-php/src/grammar.php"
+#line 198 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r133(){ $this->_retvalue = new yyWhile($this->yystack[$this->yyidx + -2]->minor, array('guard' => $this->yystack[$this->yyidx + 0]->minor));     }
-#line 2857 "/srv/http/php-coffeescript/src/grammar.php"
-#line 199 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2863 "/srv/http/coffeescript-php/src/grammar.php"
+#line 199 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r134(){ $this->_retvalue = new yyWhile($this->yystack[$this->yyidx + 0]->minor, array('invert' => TRUE));     }
-#line 2860 "/srv/http/php-coffeescript/src/grammar.php"
-#line 200 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2866 "/srv/http/coffeescript-php/src/grammar.php"
+#line 200 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r135(){ $this->_retvalue = new yyWhile($this->yystack[$this->yyidx + -2]->minor, array('invert' => TRUE, 'guard' => $this->yystack[$this->yyidx + 0]->minor));     }
-#line 2863 "/srv/http/php-coffeescript/src/grammar.php"
-#line 202 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r136(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor->addBody($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2866 "/srv/http/php-coffeescript/src/grammar.php"
-#line 203 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r137(){ $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor->addBody(yyBlock::wrap(array($this->yystack[$this->yyidx + -1]->minor)));     }
-#line 2869 "/srv/http/php-coffeescript/src/grammar.php"
-#line 207 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r140(){ $this->_retvalue = new yyWhile(new yyLiteral('true')); $this->_retvalue->addBody($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2872 "/srv/http/php-coffeescript/src/grammar.php"
-#line 208 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r141(){ $this->_retvalue = new yyWhile(new yyLiteral('true')); $this->_retvalue->addBody(yyBlock::wrap($this->yystack[$this->yyidx + 0]->minor));     }
-#line 2875 "/srv/http/php-coffeescript/src/grammar.php"
-#line 210 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2869 "/srv/http/coffeescript-php/src/grammar.php"
+#line 202 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r136(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor->add_body($this->yystack[$this->yyidx + 0]->minor);     }
+#line 2872 "/srv/http/coffeescript-php/src/grammar.php"
+#line 203 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r137(){ $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor->add_body(yyBlock::wrap(array($this->yystack[$this->yyidx + -1]->minor)));     }
+#line 2875 "/srv/http/coffeescript-php/src/grammar.php"
+#line 207 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r140(){ $this->_retvalue = new yyWhile(new yyLiteral('true')); $this->_retvalue->add_body($this->yystack[$this->yyidx + 0]->minor);     }
+#line 2878 "/srv/http/coffeescript-php/src/grammar.php"
+#line 208 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r141(){ $this->_retvalue = new yyWhile(new yyLiteral('true')); $this->_retvalue->add_body(yyBlock::wrap($this->yystack[$this->yyidx + 0]->minor));     }
+#line 2881 "/srv/http/coffeescript-php/src/grammar.php"
+#line 210 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r142(){ $this->_retvalue = new yyFor($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2878 "/srv/http/php-coffeescript/src/grammar.php"
-#line 212 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2884 "/srv/http/coffeescript-php/src/grammar.php"
+#line 212 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r144(){ $this->_retvalue = new yyFor($this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2881 "/srv/http/php-coffeescript/src/grammar.php"
-#line 214 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2887 "/srv/http/coffeescript-php/src/grammar.php"
+#line 214 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r145(){ $this->_retvalue = array('source' => new yyValue($this->yystack[$this->yyidx + 0]->minor));     }
-#line 2884 "/srv/http/php-coffeescript/src/grammar.php"
-#line 215 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r146(){ $this->yystack[$this->yyidx + 0]->minor->own = $this->yystack[$this->yyidx + -1]->minor->own; $this->yystack[$this->yyidx + 0]->minor->name = $this->yystack[$this->yyidx + -1]->minor[0]; $this->yystack[$this->yyidx + 0]->minor->index = $this->yystack[$this->yyidx + -1]->minor[1]; $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor;     }
-#line 2887 "/srv/http/php-coffeescript/src/grammar.php"
-#line 218 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r148(){ $this->yystack[$this->yyidx + 0]->minor->own = TRUE; $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor;     }
-#line 2890 "/srv/http/php-coffeescript/src/grammar.php"
-#line 225 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r153(){ $this->_retvalue = array($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2893 "/srv/http/php-coffeescript/src/grammar.php"
-#line 227 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2890 "/srv/http/coffeescript-php/src/grammar.php"
+#line 215 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r146(){ $this->yystack[$this->yyidx + 0]->minor['own'] = $this->yystack[$this->yyidx + -1]->minor['own']; $this->yystack[$this->yyidx + 0]->minor['name'] = $this->yystack[$this->yyidx + -1]->minor[0]; $this->yystack[$this->yyidx + 0]->minor['index'] = $this->yystack[$this->yyidx + -1]->minor[1]; $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor;     }
+#line 2893 "/srv/http/coffeescript-php/src/grammar.php"
+#line 218 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r148(){ $this->yystack[$this->yyidx + 0]->minor['own'] = TRUE; $this->_retvalue = $this->yystack[$this->yyidx + 0]->minor;     }
+#line 2896 "/srv/http/coffeescript-php/src/grammar.php"
+#line 224 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r152(){ $this->_retvalue = array($this->yystack[$this->yyidx + 0]->minor, NULL,  'own' => NULL);     }
+#line 2899 "/srv/http/coffeescript-php/src/grammar.php"
+#line 225 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r153(){ $this->_retvalue = array($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor,     'own' => NULL);     }
+#line 2902 "/srv/http/coffeescript-php/src/grammar.php"
+#line 227 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r154(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2896 "/srv/http/php-coffeescript/src/grammar.php"
-#line 228 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2905 "/srv/http/coffeescript-php/src/grammar.php"
+#line 228 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r155(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + 0]->minor, 'object' => TRUE);     }
-#line 2899 "/srv/http/php-coffeescript/src/grammar.php"
-#line 229 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2908 "/srv/http/coffeescript-php/src/grammar.php"
+#line 229 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r156(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + -2]->minor, 'guard' => $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2902 "/srv/http/php-coffeescript/src/grammar.php"
-#line 230 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2911 "/srv/http/coffeescript-php/src/grammar.php"
+#line 230 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r157(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + -2]->minor, 'guard' => $this->yystack[$this->yyidx + 0]->minor, 'object' => TRUE);     }
-#line 2905 "/srv/http/php-coffeescript/src/grammar.php"
-#line 231 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2914 "/srv/http/coffeescript-php/src/grammar.php"
+#line 231 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r158(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + -2]->minor, 'step' => $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2908 "/srv/http/php-coffeescript/src/grammar.php"
-#line 232 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2917 "/srv/http/coffeescript-php/src/grammar.php"
+#line 232 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r159(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + -4]->minor, 'guard' => $this->yystack[$this->yyidx + -2]->minor, 'step' => $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2911 "/srv/http/php-coffeescript/src/grammar.php"
-#line 233 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2920 "/srv/http/coffeescript-php/src/grammar.php"
+#line 233 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r160(){ $this->_retvalue = array('source' => $this->yystack[$this->yyidx + -4]->minor, 'step' => $this->yystack[$this->yyidx + -2]->minor, 'guard' => $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2914 "/srv/http/php-coffeescript/src/grammar.php"
-#line 235 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2923 "/srv/http/coffeescript-php/src/grammar.php"
+#line 235 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r161(){ $this->_retvalue = new yySwitch($this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2917 "/srv/http/php-coffeescript/src/grammar.php"
-#line 236 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2926 "/srv/http/coffeescript-php/src/grammar.php"
+#line 236 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r162(){ $this->_retvalue = new yySwitch($this->yystack[$this->yyidx + -5]->minor, $this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2920 "/srv/http/php-coffeescript/src/grammar.php"
-#line 237 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2929 "/srv/http/coffeescript-php/src/grammar.php"
+#line 237 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r163(){ $this->_retvalue = new yySwitch(NULL, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2923 "/srv/http/php-coffeescript/src/grammar.php"
-#line 238 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2932 "/srv/http/coffeescript-php/src/grammar.php"
+#line 238 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r164(){ $this->_retvalue = new yySwitch(NULL, $this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2926 "/srv/http/php-coffeescript/src/grammar.php"
-#line 241 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2935 "/srv/http/coffeescript-php/src/grammar.php"
+#line 241 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r166(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2929 "/srv/http/php-coffeescript/src/grammar.php"
-#line 243 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2938 "/srv/http/coffeescript-php/src/grammar.php"
+#line 243 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r167(){ $this->_retvalue = array(array($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor));     }
-#line 2932 "/srv/http/php-coffeescript/src/grammar.php"
-#line 244 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2941 "/srv/http/coffeescript-php/src/grammar.php"
+#line 244 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r168(){ $this->_retvalue = array(array($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + -1]->minor));     }
-#line 2935 "/srv/http/php-coffeescript/src/grammar.php"
-#line 246 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2944 "/srv/http/coffeescript-php/src/grammar.php"
+#line 246 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r169(){ $this->_retvalue = new yyIf($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor, array('type' => $this->yystack[$this->yyidx + -2]->minor));     }
-#line 2938 "/srv/http/php-coffeescript/src/grammar.php"
-#line 247 "/srv/http/php-coffeescript/src/grammar.y"
-    function yy_r170(){ $this->_retvalue = $this->yystack[$this->yyidx + -4]->minor->addElse(new yyIf($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor, array('type' => $this->yystack[$this->yyidx + -2]->minor)));     }
-#line 2941 "/srv/http/php-coffeescript/src/grammar.php"
-#line 250 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2947 "/srv/http/coffeescript-php/src/grammar.php"
+#line 247 "/srv/http/coffeescript-php/src/grammar.y"
+    function yy_r170(){ $this->_retvalue = $this->yystack[$this->yyidx + -4]->minor->add_else(new yyIf($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor, array('type' => $this->yystack[$this->yyidx + -2]->minor)));     }
+#line 2950 "/srv/http/coffeescript-php/src/grammar.php"
+#line 250 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r172(){ $this->_retvalue = $this->yystack[$this->yyidx + -2]->minor->addElse($this->yystack[$this->yyidx + 0]->minor);     }
-#line 2944 "/srv/http/php-coffeescript/src/grammar.php"
-#line 251 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2953 "/srv/http/coffeescript-php/src/grammar.php"
+#line 251 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r173(){ $this->_retvalue = new yyIf($this->yystack[$this->yyidx + 0]->minor, yyBlock::wrap(array($this->yystack[$this->yyidx + -2]->minor)), array('type' => $this->yystack[$this->yyidx + -1]->minor, 'statement' => TRUE));     }
-#line 2947 "/srv/http/php-coffeescript/src/grammar.php"
-#line 254 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2956 "/srv/http/coffeescript-php/src/grammar.php"
+#line 254 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r175(){ $this->_retvalue = new yyOp($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2950 "/srv/http/php-coffeescript/src/grammar.php"
-#line 255 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2959 "/srv/http/coffeescript-php/src/grammar.php"
+#line 255 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r176(){ $this->_retvalue = new yyOp($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor); /* prec: 'UNARY'; */     }
-#line 2953 "/srv/http/php-coffeescript/src/grammar.php"
-#line 259 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2962 "/srv/http/coffeescript-php/src/grammar.php"
+#line 259 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r180(){ $this->_retvalue = new yyOp($this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor, NULL, TRUE);     }
-#line 2956 "/srv/http/php-coffeescript/src/grammar.php"
-#line 261 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2965 "/srv/http/coffeescript-php/src/grammar.php"
+#line 261 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r182(){ $this->_retvalue = new yyExistence($this->yystack[$this->yyidx + -1]->minor);     }
-#line 2959 "/srv/http/php-coffeescript/src/grammar.php"
-#line 262 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2968 "/srv/http/coffeescript-php/src/grammar.php"
+#line 262 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r183(){ $this->_retvalue = new yyOp($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2962 "/srv/http/php-coffeescript/src/grammar.php"
-#line 268 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2971 "/srv/http/coffeescript-php/src/grammar.php"
+#line 268 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r189(){ if ($this->yystack[$this->yyidx + -1]->minor{0} === '!') { $this->_retvalue = new yyOp(substr($this->yystack[$this->yyidx + -1]->minor, 1), $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor); $this->_retvalue->invert(); } else { $this->_retvalue = new yyOp($this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor); }     }
-#line 2965 "/srv/http/php-coffeescript/src/grammar.php"
-#line 269 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2974 "/srv/http/coffeescript-php/src/grammar.php"
+#line 269 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r190(){ $this->_retvalue = new yyAssign($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2968 "/srv/http/php-coffeescript/src/grammar.php"
-#line 270 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2977 "/srv/http/coffeescript-php/src/grammar.php"
+#line 270 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r191(){ $this->_retvalue = new yyAssign($this->yystack[$this->yyidx + -4]->minor, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -3]->minor);     }
-#line 2971 "/srv/http/php-coffeescript/src/grammar.php"
-#line 271 "/srv/http/php-coffeescript/src/grammar.y"
+#line 2980 "/srv/http/coffeescript-php/src/grammar.php"
+#line 271 "/srv/http/coffeescript-php/src/grammar.y"
     function yy_r192(){ $this->_retvalue = new yyExtends($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2974 "/srv/http/php-coffeescript/src/grammar.php"
+#line 2983 "/srv/http/coffeescript-php/src/grammar.php"
 
     /**
      * placeholder for the left hand side in a reduce operation.

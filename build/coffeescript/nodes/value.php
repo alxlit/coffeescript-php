@@ -15,7 +15,11 @@ class yyValue extends yyBase
 
     $this->base = $base;
     $this->properties = is_null($props) ? array() : $props;
-    $this->{$tag} = ! is_null($tag);
+
+    if ( ! is_null($tag))
+    {
+      $this->{$tag} = $tag;
+    }
   }
 
   function assigns($name)

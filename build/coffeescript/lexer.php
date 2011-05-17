@@ -37,6 +37,7 @@ class Lexer
     'when'
   );
 
+  // exports.RESERVED.
   static $COFFEE_RESERVED = array();
 
   static $JS_KEYWORDS = array(
@@ -68,6 +69,7 @@ class Lexer
     'while',
   );
 
+  // RESERVED.
   static $JS_RESERVED = array(
     '__bind',
     '__extends',
@@ -90,23 +92,23 @@ class Lexer
 
   static $JS_FORBIDDEN = array();
 
-  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x007f-\uffff]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
+  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x007f-\xffff]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
   static $CODE              = '/^[-=]>/';
   static $COMMENT           = '/^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/';
-  static $IDENTIFIER        = '/^( [$A-Za-z_\x007f-\xffff][$\w\x007f-\xffff]* )( [^\n\S]* : (?!:) )?/u';
-  static $HEREDOC           = '/^("""|\'\'\') ([\s\S]*?) (?:\n[^\n\S]*)? \1/';
+  static $IDENTIFIER        = '/^([$A-Za-z_\x007f-\xffff][$\w\x007f-\xffff]*)([^\n\S]*:(?!:))?/u';
+  static $HEREDOC           = '/^("""|\'\'\')([\s\S]*?)(?:\n[^\n\S]*)?\1/';
   static $HEREDOC_INDENT    = '/\n+([^\n\S]*)/';
   static $HEREDOC_ILLEGAL   = '/\*\//';
-  static $HEREGEX           = '/^\/{3} ([\s\S]+?) \/{3} ([imgy]{0,4}) (?!\w)/';
+  static $HEREGEX           = '/^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?!\w)/';
   static $HEREGEX_OMIT      = '/\s+(?:#.*)?/g';
   static $JSTOKEN           = '/^`[^\\`]*(?:\\.[^\\`]*)*`/';
-  static $LINE_CONTINUER    = '/^ \s* (?: , | \??\.(?![.\d]) | :: )/';
+  static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NO_NEWLINE        = '/ ^ (?: [-+*&|\/%=<>!.\\][<>=&|]* | and | or | is(?:nt)? | n(?:ot|ew) | delete | typeof | instanceof ) $/';
-  static $NUMBER            = '/^ 0x[\da-f]+ | ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?/i';
-  static $OPERATOR          = '/^(?: [-=]> | [-+*\/%<>&|^!?=]= | >>>=? | ([-+:])\1 | ([&|<>])\2=? | \?\. | \.{2,3} )/';
-  static $REGEX             = '/^\/(?! [\s=] )[^ [ \/ \n \\ ]*(?:(?: \\[\s\S]| \[[^ \] \n \\ ]*(?: \\[\s\S] [^ \] \n \\ ]* )*]) [^ [ \/ \n \\ ]*)*\/ [imgy]{0,4} (?!\w)/';
+  static $NO_NEWLINE        = '/^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/';
+  static $NUMBER            = '/^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
+  static $OPERATOR          = '/^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/';
+  static $REGEX             = '/^\/(?![\s=])[^[\/\n\\]*(?:(?:\\[\s\S]|\[[^\]\n\\]*(?:\\[\s\S][^\]\n\\]*)*])[^[\/\n\\]*)*\/[imgy]{0,4}(?!\w)/';
   static $SIMPLESTR         = '/^\'[^\\\']*(?:\\.[^\\\']*)*\'/';
   static $TRAILING_SPACES   = '/\s+$/';
   static $WHITESPACE        = '/^[^\n\S]+/';
@@ -139,9 +141,9 @@ class Lexer
     $this->indent   = 0;
     $this->indents  = array();
     $this->indebt   = 0;
-    $this->index    = $options->index;
+    $this->index    = $options['index'];
     $this->length   = strlen($this->code);
-    $this->line     = $options->line;
+    $this->line     = $options['line'];
     $this->outdebt  = 0;
     $this->options  = $options;
     $this->tokens   = array();
@@ -219,7 +221,7 @@ class Lexer
       $this->token('TERMINATOR', "\n");
     }
 
-    $this->line += substr_count($comment, '\n');
+    $this->line += substr_count($comment, "\n");
 
     return strlen($comment);
   }
@@ -339,7 +341,8 @@ class Lexer
 
     $forced_identifier = $colon || 
       ( ($prev = last($this->tokens)) && 
-        (in_array($prev[0], t('.', '?.', '::')) || ( ! $prev['spaced'] && $prev[0] == t('&'))) );
+        (in_array($prev[0], t('.', '?.', '::')) || 
+        ( ! (isset($prev['spaced']) && $prev['spaced']) && $prev[0] === t('&'))) );
 
     $tag = 'IDENTIFIER';
 
@@ -354,7 +357,7 @@ class Lexer
       }
       else if ($tag === 'FOR')
       {
-        $this->seen_for = true;
+        $this->seen_for = TRUE;
       }
       else if ($tag === 'UNLESS')
       {
@@ -369,7 +372,7 @@ class Lexer
         if ($tag !== 'INSTANCEOF' && $this->seen_for)
         {
           $tag = 'FOR'.$tag;
-          $this->seen_for = false;
+          $this->seen_for = FALSE;
         }
         else
         {
@@ -393,7 +396,7 @@ class Lexer
         // This is a bit hairy in PHP but should work.
         $id->reserved = true;
       }
-      else if (in_array($id, self::$RESERVED))
+      else if (in_array($id, self::$JS_RESERVED))
       {
         $this->identifier_error($id);
       }
@@ -425,7 +428,11 @@ class Lexer
     }
 
     $this->token($tag, $id);
-    $this->token(':', $colon ? ':' : NULL);
+
+    if ($colon)
+    {
+      $this->token(':', ':');
+    }
 
     return strlen($input);
   }
@@ -436,7 +443,7 @@ class Lexer
   static function init()
   {
     self::$COFFEE_KEYWORDS  = array_merge(self::$COFFEE_KEYWORDS, array_keys(self::$COFFEE_ALIASES));
-    self::$COFFEE_RESERVED  = array_merge(self::$JS_KEYWORDS, self::$COFFEE_KEYWORDS);
+    self::$COFFEE_RESERVED  = array_merge(array_merge(self::$JS_RESERVED, self::$JS_KEYWORDS), self::$COFFEE_KEYWORDS);
     self::$JS_FORBIDDEN     = array_merge(self::$JS_KEYWORDS, self::$JS_RESERVED);
     self::$INDEXABLE        = array_merge(self::$CALLABLE, self::$INDEXABLE);
     self::$NOT_SPACED_REGEX = array_merge(self::$NOT_REGEX, self::$NOT_SPACED_REGEX);
@@ -477,12 +484,12 @@ class Lexer
 
       if (strlen($inner))
       {
-        $lexer = new Lexer;
-
-        $nested = $lexer->tokenize($inner, array(
-          'line'    => $this->line, 
-          'rewrite' => FALSE
+        $lexer = new Lexer($inner, array(
+          'line'    => $this->line,
+          'rewrite' => FALSE,
         ));
+
+        $nested = $lexer->tokenize();
 
         array_pop($nested);
 
@@ -644,12 +651,11 @@ class Lexer
     }
 
     $tag = $value;
-    $prev = last($this->tokens);
+    $prev = &last($this->tokens);
 
     if ($value === '=' && $prev)
     {
-      if ( ! (is_object($prev[1]) && isset($prev[1]->reserved) && $prev[1]->reserved) && 
-        in_array($prev[1], t(self::$JS_FORBIDDEN)))
+      if (is_object($prev[1]) && ! $prev[1]->reserved && in_array($prev[1], t(self::$JS_FORBIDDEN)))
       {
         $this->assignment_error();
       }
@@ -766,7 +772,7 @@ class Lexer
     return strlen($number);
   }
 
-  function outdent_token($move_out, $no_newlines, $close = NULL)
+  function outdent_token($move_out, $no_newlines = FALSE, $close = NULL)
   {
     while ($move_out > 0)
     {
@@ -986,51 +992,41 @@ class Lexer
 
   function token($tag, $value = NULL)
   {
+    $tmp = $tag;
     if ( ! is_numeric($tag))
     {
       $tag = t($tag);
     }
 
     // Push new token.
-    return $this->tokens[] = array($tag, $value, $this->line);
+    return ($this->tokens[] = array($tag, $value, $this->line, $tmp));
   }
 
   function tokenize()
   {
-    if (func_num_args())
+    while ( ($this->chunk = substr($this->code, $this->index)) )
     {
-      list($code, $options) = func_get_args();
-      $this->__construct($code, $options);
-      while ($this->tokenize()) { }
-
-      return $this->tokens;
-    }
-    else
-    {
-      $this->chunk = substr($this->code, $this->index);
-
-      // Possible token types.
       $types = array('identifier', 'comment', 'whitespace', 'line', 'heredoc', 
         'string', 'number', 'regex', 'js', 'literal');
 
       foreach ($types as $type)
       {
-        if ($d = $this->{$type.'_token'}())
+        if ( ($d = $this->{$type.'_token'}()) )
         {
-          return $this->index += $d;
+          $this->index += $d;
+          break;
         }
       }
-
-      $this->close_indentation();
-
-      if ($this->options->rewrite)
-      {
-        $this->tokens = Rewriter::rewrite($this->tokens);
-      }
-
-      // Finished analysis.
-      return false;
     }
+
+    $this->close_indentation();
+
+    if ($this->options['rewrite'])
+    {
+      $this->tokens = Rewriter::rewrite($this->tokens);
+    }
+
+    return $this->tokens;
   }
 
   function value($index = 0, $value = NULL)
@@ -1065,11 +1061,11 @@ class Lexer
       return 0;
     }
 
-    $prev = last($this->tokens);
+    $prev = &last($this->tokens);
 
     if ($prev)
     {
-      $prev[$match ? 'spaced' : 'newLine'] = true;
+      $prev[$match ? 'spaced' : 'newLine'] = TRUE;
     }
 
     return $match ? strlen($match[0]) : 0;

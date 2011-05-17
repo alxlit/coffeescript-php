@@ -56,7 +56,7 @@ alphanumeric(A) ::= YY_STRING(B)  . { A = new yyLiteral(B); }
 literal(A) ::= alphanumeric(B)  . { A = B; } 
 literal(A) ::= YY_JS(B)         . { A = new yyLiteral(B); }
 literal(A) ::= YY_REGEX(B)      . { A = new yyLiteral(B); }
-literal(A) ::= YY_BOOL(B)       . { $val = new yyLiteral(B); $val->$isUndefined = A === 'undefined'; A = $val; }
+literal(A) ::= YY_BOOL(B)       . { $val = new yyLiteral(B); $val->is_undefined(A === 'undefined'); A = $val; }
 
 assign(A) ::= assignable(B) YY_EQUALS expression(C)             . { A = new yyAssign(B, C); }
 assign(A) ::= assignable(B) YY_INDENT expression(C) YY_OUTDENT  . { A = new yyAssign(B, C); }
@@ -158,8 +158,8 @@ this(A) ::= YY_AMPERSAND  . { A = new yyValue(new yyLiteral('this')); }
 
 thisProperty(A) ::= YY_AMPERSAND identifier(B)  . { A = new yyValue(new yyLiteral('this'), array(new yyAccess(B)), 'this'); }
 
-array(A) ::= YY_ARRAY_START YY_ARRAY_END                      . { A = new yyArray(array()); }
-array(A) ::= YY_ARRAY_START argList(B) optComma YY_ARRAY_END  . { A = new yyArray(B); }
+array(A) ::= YY_ARRAY_START YY_ARRAY_END                      . { A = new yyArr(array()); }
+array(A) ::= YY_ARRAY_START argList(B) optComma YY_ARRAY_END  . { A = new yyArr(B); }
 
 rangeDots(A) ::= YY_RANGE_INCLUSIVE . { A = 'inclusive'; }
 rangeDots(A) ::= YY_RANGE_EXCLUSIVE . { A = 'exclusive'; }
@@ -171,8 +171,8 @@ slice(A) ::= YY_INDEX_START expression(B) rangeDots(C) YY_INDEX_END             
 slice(A) ::= YY_INDEX_START rangeDots(B) expression(C) YY_INDEX_END               . { A = new yyRange(NULL, C, B); }
 
 argList(A) ::= arg(B)                                                       . { A = array(B); }
-argList(A) ::= argList(B) YY_COMMA arg(C)                                   . { A = array_merge(B, C); }
-argList(A) ::= argList(B) optComma YY_TERMINATOR arg(C)                     . { A = array_merge(B, C); }
+argList(A) ::= argList(B) YY_COMMA arg(C)                                   . { A = array_merge(B, array(C)); }
+argList(A) ::= argList(B) optComma YY_TERMINATOR arg(C)                     . { A = array_merge(B, array(C)); }
 argList(A) ::= YY_INDENT argList(B) optComma YY_OUTDENT                     . { A = B; }
 argList(A) ::= argList(B) optComma YY_INDENT argList(C) optComma YY_OUTDENT . { A = array_merge(B, C); }
 
@@ -180,7 +180,7 @@ arg(A) ::= expression(B)  . { A = B; }
 arg(A) ::= splat(B) . { A = B; }
 
 simpleArgs(A) ::= expression(B)                         . { A = B; }
-simpleArgs(A) ::= simpleArgs(B) YY_COMMA expression(C)  . { A = array_merge(array(), B, C); }
+simpleArgs(A) ::= simpleArgs(B) YY_COMMA expression(C)  . { A = array(B, C); }
 
 try(A) ::= YY_TRY block(B)                              . { A = new yyTry(B); }
 try(A) ::= YY_TRY block(B) catch(C)                     . { A = new yyTry(B, C[0], C[1]);  }
@@ -199,30 +199,30 @@ whileSource(A) ::= YY_WHILE expression(B) YY_WHEN expression(C) . { A = new yyWh
 whileSource(A) ::= YY_UNTIL expression(B)                       . { A = new yyWhile(B, array('invert' => TRUE)); }
 whileSource(A) ::= YY_UNTIL expression(B) YY_WHEN expression(C) . { A = new yyWhile(B, array('invert' => TRUE, 'guard' => C)); }
 
-while(A) ::= whileSource(B) block(C)      . { A = B->addBody(C); }
-while(A) ::= statement(B) whileSource(C)  . { A = C->addBody(yyBlock::wrap(array(B))); }
-while(A) ::= expression(B) whileSource(C) . { A = C->addBody(yyBlock::wrap(array(B))); }
+while(A) ::= whileSource(B) block(C)      . { A = B->add_body(C); }
+while(A) ::= statement(B) whileSource(C)  . { A = C->add_body(yyBlock::wrap(array(B))); }
+while(A) ::= expression(B) whileSource(C) . { A = C->add_body(yyBlock::wrap(array(B))); }
 while(A) ::= loop(B)                      . { A = B; }
 
-loop(A) ::= YY_LOOP block(B)      . { A = new yyWhile(new yyLiteral('true')); A->addBody(B); }
-loop(A) ::= YY_LOOP expression(B) . { A = new yyWhile(new yyLiteral('true')); A->addBody(yyBlock::wrap(B)); }
+loop(A) ::= YY_LOOP block(B)      . { A = new yyWhile(new yyLiteral('true')); A->add_body(B); }
+loop(A) ::= YY_LOOP expression(B) . { A = new yyWhile(new yyLiteral('true')); A->add_body(yyBlock::wrap(B)); }
 
 for(A) ::= statement(B) forBody(C)  . { A = new yyFor(B, C); }
 for(A) ::= expression(B) forBody(C) . { A = new yyFor(B, C); }
 for(A) ::= forBody(B) block(C)      . { A = new yyFor(C, B); }
 
 forBody(A) ::= YY_FOR range(B)          . { A = array('source' => new yyValue(B)); }
-forBody(A) ::= forStart(B) forSource(C) . { C->own = B->own; C->name = B[0]; C->index = B[1]; A = C; }
+forBody(A) ::= forStart(B) forSource(C) . { C['own'] = B['own']; C['name'] = B[0]; C['index'] = B[1]; A = C; }
 
 forStart(A) ::= YY_FOR forVariables(B)        . { A = B; }
-forStart(A) ::= YY_FOR YY_OWN forVariables(B) . { B->own = TRUE; A = B; }
+forStart(A) ::= YY_FOR YY_OWN forVariables(B) . { B['own'] = TRUE; A = B; }
 
 forValue(A) ::= identifier(B) . { A = B; }
 forValue(A) ::= array(B)      . { A = new yyValue(B); }
 forValue(A) ::= object(B)     . { A = new yyValue(B); }
 
-forVariables(A) ::= forValue(B)                       . { A = array(B); }
-forVariables(A) ::= forValue(B) YY_COMMA forValue(C)  . { A = array(B, C); }
+forVariables(A) ::= forValue(B)                       . { A = array(B, NULL,  'own' => NULL); }
+forVariables(A) ::= forValue(B) YY_COMMA forValue(C)  . { A = array(B, C,     'own' => NULL); }
 
 forSource(A) ::= YY_FORIN expression(B)                                           . { A = array('source' => B); }
 forSource(A) ::= YY_FOROF expression(B)                                           . { A = array('source' => B, 'object' => TRUE); }
@@ -244,7 +244,7 @@ when(A) ::= YY_LEADING_WHEN simpleArgs(B) block(C)                . { A = array(
 when(A) ::= YY_LEADING_WHEN simpleArgs(B) block(C) YY_TERMINATOR  . { A = array(array(B, C)); }
 
 ifBlock(A) ::= YY_IF(B) expression(C) block(D)                    . { A = new yyIf(C, D, array('type' => B)); }
-ifBlock(A) ::= ifBlock(B) YY_ELSE YY_IF(C) expression(D) block(E) . { A = B->addElse(new yyIf(D, E, array('type' => C))); }
+ifBlock(A) ::= ifBlock(B) YY_ELSE YY_IF(C) expression(D) block(E) . { A = B->add_else(new yyIf(D, E, array('type' => C))); }
 
 if(A) ::= ifBlock(B)                                . { A = B; }
 if(A) ::= ifBlock(B) YY_ELSE block(C)               . { A = B->addElse(C); }

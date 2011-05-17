@@ -94,6 +94,7 @@ $nodes = array(
   'index',
   'literal',
   'obj',
+  'op',
   'param',
   'parens',
   'push',

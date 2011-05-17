@@ -49,11 +49,10 @@ function flatten(array $array)
   return $flattened;
 }
 
-function last($array, $back = 0)
+function & last($array, $back = 0)
 {
   $i = count($array) - $back - 1;
-
-  return isset($array[$i]) ? $array[$i] : NULL;
+  return $array[$i];
 }
 
 /**
@@ -71,10 +70,19 @@ function t($name)
     '&'   => 'AMPERSAND',
     '['   => 'ARRAY_START',
     ']'   => 'ARRAY_END',
+    '=>'  => 'BOUND_FUNC',
     ':'   => 'COLON',
+    ','   => 'COMMA',
+    '...' => 'ELLIPSIS',
+    '='   => 'EQUALS',
     '?.'  => 'EXISTENTIAL_ACCESSOR',
+    '->'  => 'FUNC',
+    '&&'  => 'LOGIC',
+    '||'  => 'LOGIC',
+    '-'   => 'MINUS',
     '('   => 'PAREN_START',
     ')'   => 'PAREN_END',
+    '+'   => 'PLUS',
     '::'  => 'PROTOTYPE'
   );
 
@@ -83,7 +91,7 @@ function t($name)
     $name = func_get_args();
   }
 
-  if ((func_num_args() > 1 && $name = func_get_args()) || is_array($name))
+  if (is_array($name) || (func_num_args() > 1 && $name = func_get_args()))
   {
     $tags = array();
 
@@ -95,7 +103,7 @@ function t($name)
     return $tags;
   }
 
-  $name = 'Parser::YY_'.(isset($map[$name]) ? $map[$name] : $name);
+  $name = 'CoffeeScript\Parser::YY_'.(isset($map[$name]) ? $map[$name] : $name);
 
   return defined($name) ? constant($name) : NULL;
 }

@@ -10,7 +10,7 @@ $tests = array(
 ?>
 <html>
 <head>
-  <title>PHP CoffeeScript Tests</title>
+  <title>CoffeeScript PHP Tests</title>
 </head>
 <body>
 <?php

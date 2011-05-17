@@ -47,6 +47,18 @@ class yyLiteral extends yyBase
     return in_array($this->value, array('break', 'continue', 'debugger'));
   }
 
+  function is_undefined($set = NULL)
+  {
+    static $val = FALSE;
+
+    if ( ! is_null($set))
+    {
+      $val = $set;
+    }
+
+    return $val;
+  }
+
   function jumps($options = array())
   {
     if ( ! $this->is_statement())
