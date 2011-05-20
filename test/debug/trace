@@ -1,0 +1,7 @@
+> Input YY_IDENTIFIER
+> Shift 244
+> Stack: YY_IDENTIFIER
+> Input YY_STRING
+> Syntax Error!
+> Popping YY_IDENTIFIER
+> Popping $
