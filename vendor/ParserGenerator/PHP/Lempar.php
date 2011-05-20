@@ -99,6 +99,9 @@ class yyStackEntry
 // declare_class is output here
 %%
 {
+  static $LINE = 0;
+  static $FILE = '';
+
 /* First off, code is included which follows the "include_class" declaration
 ** in the input file. */
 %%
@@ -800,8 +803,10 @@ class yyStackEntry
      *
      * @return void
      */
-    function parse($yymajor, $yytokenvalue)
+    function parse($token)
     {
+        list($yymajor, $yytokenvalue, $yyline) = $token;
+        self::$LINE = $yyline;
 //        $yyact;            /* The parser action. */
 //        $yyendofinput;     /* True if we are at the end of input */
         $yyerrorhit = 0;   /* True if yymajor has invoked an error */

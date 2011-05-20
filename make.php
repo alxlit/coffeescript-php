@@ -31,11 +31,11 @@ function init()
 function make()
 {
   // Included locally because the PEAR package doesn't seem to work. Also, some
-  // minor changes may have been made to the source.
+  // minor changes were made to the source and template.
   require 'vendor/ParserGenerator/ParserGenerator.php';
 
-  $source = 'src/grammar';
-  $target = 'src/coffeescript/parser.php';
+  $source = 'grammar';
+  $target = 'coffeescript/classes/parser.php';
 
   // Lemon takes arguments on the command line.
   $_SERVER['argv'] = $argv = array('-s', ROOT.$source.'.y');
@@ -87,6 +87,8 @@ function make()
     // Write.
     file_put_contents(ROOT.$target, $content);
 
+    echo "Success!\n";
+
     // Clean up.
     unlink(ROOT.$source.'.php');
     unlink(ROOT.$source.'.out');
@@ -96,6 +98,7 @@ function make()
   else
   {
     // Bad permissions.
+    echo "Failed!\n";
     echo "Couldn't remove {$target}. Check your permissions.\n";
 
     exit(1);
@@ -105,5 +108,7 @@ function make()
 function make_test()
 {
 }
+
+init();
 
 ?>
