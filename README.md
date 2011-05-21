@@ -25,20 +25,20 @@ to PHP, once that's done they'll undoubtedly need tweaking.
 
 ## FAQ
 
-### Why not modify the original compiler to emit PHP?
+#### Why not modify the original compiler to emit PHP?
 
 The compiler itself depends on Jison, which is written in JavaScript, so you'd
 have to do something about that... More generally speaking, it'd be too much 
 work to try and sort out all the differences between JavaScript and PHP (object
 model, core classes/libraries, etc), I imagine. There's also much less incentive
-to do all that work server side, where the choice to not use one language is, 
+to do all that work server side, where the choice to not use one language is,
 if not easy, at least available.
 
-### Why is ParserGenerator included locally?
+#### Why is ParserGenerator included locally?
 
-The PEAR package is unmaintained and seems to be broken, though the actual
-source works fine. In addition, some minor changes (undocumented) changes were
-made to the template (Lempar.php) and actual generator.
+The PEAR package is unmaintained and seems to be broken. In addition, some 
+minor (undocumented) changes have been made to the parser template (Lempar.php)
+and the actual generator.
 
 ## Requirements
 
