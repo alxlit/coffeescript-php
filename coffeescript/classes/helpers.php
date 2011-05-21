@@ -75,9 +75,9 @@ function & last( & $array, $back = 0)
 }
 
 /**
- * In Jison, token types (tags) are represented simply using strings, whereas
- * with ParserGenerator (a port of Lemon) we're stuck with using numeric
- * constants for each type.
+ * In Jison, token tags can be represented simply using strings, whereas with
+ * ParserGenerator (a port of Lemon) we're stuck using numeric constants for
+ * everything.
  *
  * This function maps those string representations to their numeric constants,
  * making it easier to port directly from the CoffeeScript source.
@@ -133,6 +133,63 @@ function t($name = NULL)
   $name = 'CoffeeScript\Parser::YY_'.(isset($map[$name]) ? $map[$name] : $name);
 
   return defined($name) ? constant($name) : NULL;
+}
+
+/**
+ * Change a CoffeeScript PHP token tag to it's equivalent canonical form (used
+ * in the JavaScript version).
+ *
+ * This function is used for testing purposes only.
+ */
+function t_canonical($token)
+{
+  static $map = array(
+    'ACCESSOR'              => '.',
+
+    // These are separate from INDEX_START and INDEX_END.
+    'ARRAY_START'           => '[', 
+    'ARRAY_END'             => ']',
+
+    'AT_SIGN'               => '@',
+    'BOUND_FUNC'            => '=>',
+    'COLON'                 => ':',
+    'COMMA'                 => ',',
+    'ELLIPSIS'              => '...',
+    'EQUALS'                => '=',
+    'EXISTENTIAL_ACCESSOR'  => '?.',
+    'FUNC'                  => '->',
+    'OBJECT_START'          => '{',
+    'OBJECT_END'            => '}',
+    'PAREN_START'           => '(',
+    'PAREN_END'             => ')',
+    'PLUS'                  => '+',
+    'PROTOTYPE'             => '::',
+  );
+
+  if (is_array($token))
+  {
+    for ($i = 0; $i < count($token); $i++)
+    {
+      if (is_array($token[$i]))
+      {
+        $t = & $token[$i][0];
+      }
+      else
+      {
+        $t = & $token[$i];
+      }
+
+      $t = t_canonical($t);
+    }
+
+    return $token;
+  }
+  else if (is_numeric($token))
+  {
+    $token = substr(Parser::tokenName($token), 3);
+  }
+
+  return isset($map[$token]) ? $map[$token] : $token;
 }
 
 ?>

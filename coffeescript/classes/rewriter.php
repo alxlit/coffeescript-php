@@ -256,7 +256,7 @@ class Rewriter
           ($tag !== t('INDENT') || 
             ( $self->tag($i - 2) !== t('CLASS') && 
               ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
-              ! (($post = $self->tokens($i + 1) && (isset($post['generated']) && $post['generated']) && 
+              ! (($post = $self->tokens[$i + 1] && (isset($post['generated']) && $post['generated']) && 
               $post[0] === t('{')))));
       },
       $action);

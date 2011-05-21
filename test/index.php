@@ -36,6 +36,9 @@ if ($run)
 
   if ($tokens)
   {
+    $tokens = CoffeeScript\t_canonical($tokens);
+
+    /*
     $map = array_flip(CoffeeScript\t());
 
     foreach ($tokens as & $tok)
@@ -45,6 +48,7 @@ if ($run)
       // Change back to canonical form.
       $tok[0] = isset($map[$tok[0]]) ? $map[$tok[0]] : $tok[0];
     }
+     */
   }
 }
 
@@ -53,32 +57,32 @@ if ($run)
 <head>
   <title>CoffeeScript PHP Tests</title>
   <? if ($run): ?>
-  <script src="js/lib/coffee-script.js"></script>
-  <script src="js/lib/diff.js"></script>
-  <script src="js/helpers.js"></script>
-  <script>
-    window.addEventListener('load', function() {
-      get('<?= $run ?>', function(code) {
-        var tmp = tokenize(code);
+    <script src="js/lib/coffee-script.js"></script>
+    <script src="js/lib/diff.js"></script>
+    <script src="js/helpers.js"></script>
+    <script>
+      window.addEventListener('load', function() {
+        get('<?= $run ?>', function(code) {
+          var tmp = tokenize(code);
 
-        // Diff between the reference and our result.
-        var diff = JsDiff.diffLines(
-              formatTokens(tmp), 
-              formatTokens(<?= json_encode(array('tokens' => $tokens)) ?>.tokens)
-            );
+          // Diff between the reference and our result.
+          var diff = JsDiff.diffLines(
+                formatTokens(tmp), 
+                formatTokens(<?= json_encode(array('tokens' => $tokens)) ?>.tokens)
+              );
 
-        write('tokens', formatLineDiff(diff));
-      });
-    },
-    false);
-  </script>
+          write('tokens', formatLineDiff(diff));
+        });
+      },
+      false);
+    </script>
   <? endif; ?>
   <style>
-    body { font: 12.8px 'Arial', sans-serif; margin-bottom: 100px; }
+    body { background: #fff; font: 12.8px 'Arial', sans-serif; margin-bottom: 100px; }
     code { display: block; font: 13px 'Inconsolata', monospace; overflow: auto; }
     h1, h2 { clear: both; }
-    ins { background-color: rgba(0, 255, 0, 0.25); }
-    del { background-color: rgba(255, 0, 0, 0.25); }
+    ins { background: rgba(0, 255, 0, 0.25); }
+    del { background: rgba(255, 0, 0, 0.25); }
   </style>
 </head>
 <body>
@@ -90,8 +94,9 @@ if ($run)
     <p><?= $code ?>.</p>
 
     <h2>Lexical Tokens</h2>
-    <p>Lines in red are in the reference stack of tokens, but missing in ours. Likewise, lines in
+    <p>Lines in red are in the reference stack of tokens, but missing in ours. Lines in
     green were generated in our stack but are not present in the reference.</p>
+    <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
     <code id="tokens" style=""></code>
   <? else: ?>
     <h1>Tests</h1>
