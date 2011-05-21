@@ -7,7 +7,7 @@ require 'classes/parser.php';
 
 /**
  */
-function compile($source, $options = array())
+function compile($source, $options = array(), & $tokens = NULL)
 {
   $options = array_merge(array(
     'indent'  => 0,
@@ -22,15 +22,14 @@ function compile($source, $options = array())
 
   Parser::$FILE = $source;
 
-  foreach ($lexer->tokenize() as $token)
+  foreach (($tokens = $lexer->tokenize()) as $token)
   {
-    $parser->parse($token);
+   $parser->parse($token);
   }
 
   // Signal end-of-input to the parser.
-  $parser->parse(0, 0);
+  $parser->parse(NULL);
 
-  return $lexer->tokens;
   // return $parser->yystack;
 }
 

@@ -4,7 +4,7 @@
 %syntax_error { 
   throw new SyntaxError(
     'unexpected '.$this->tokenName($yymajor).' in '.self::$FILE.':'.(self::$LINE + 1)
-  ); 
+  );
 }
 
 %right          YY_POST_IF.

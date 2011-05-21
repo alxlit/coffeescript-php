@@ -1879,7 +1879,7 @@ static public $yy_action = array(
      * @param int
      * @return string
      */
-    function tokenName($tokenType)
+    static function tokenName($tokenType)
     {
         if ($tokenType === 0) {
             return 'End of Input';
@@ -1932,7 +1932,7 @@ static public $yy_action = array(
         $yytos = array_pop($this->yystack);
         if (self::$yyTraceFILE && $this->yyidx >= 0) {
             fwrite(self::$yyTraceFILE,
-                self::$yyTracePrompt . 'Popping ' . self::$yyTokenName[$yytos->major] .
+                self::$yyTracePrompt . 'Popping ' . self::tokenName($yytos->major) .
                     "\n");
         }
         $yymajor = $yytos->major;
@@ -2139,8 +2139,8 @@ static public $yy_action = array(
                    && ($iFallback = self::$yyFallback[$iLookAhead]) != 0) {
                 if (self::$yyTraceFILE) {
                     fwrite(self::$yyTraceFILE, self::$yyTracePrompt . "FALLBACK " .
-                        self::$yyTokenName[$iLookAhead] . " => " .
-                        self::$yyTokenName[$iFallback] . "\n");
+                        self::tokenName($iLookAhead) . " => " .
+                        self::tokenName($iFallback) . "\n");
                 }
                 return $this->yy_find_shift_action($iFallback);
             }
@@ -2215,7 +2215,7 @@ static public $yy_action = array(
             fprintf(self::$yyTraceFILE, "%sStack:", self::$yyTracePrompt);
             for ($i = 1; $i <= $this->yyidx; $i++) {
                 fprintf(self::$yyTraceFILE, " %s",
-                    self::$yyTokenName[$this->yystack[$i]->major]);
+                    self::tokenName($this->yystack[$i]->major));
             }
             fwrite(self::$yyTraceFILE,"\n");
         }
@@ -3102,7 +3102,7 @@ static public $yy_action = array(
  
   throw new SyntaxError(
     'unexpected '.$this->tokenName($yymajor).' in '.self::$FILE.':'.(self::$LINE + 1)
-  ); 
+  );
 #line 3109 "/srv/http/coffeescript-php/grammar.php"
     }
 
@@ -3137,8 +3137,9 @@ static public $yy_action = array(
      */
     function parse($token)
     {
-        list($yymajor, $yytokenvalue, $yyline) = $token;
-        self::$LINE = $yyline;
+          list($yymajor, $yytokenvalue, ) = $token ? $token : array(0, 0);
+          self::$LINE = isset($token[2]) ? $token[2] : -1;
+
 //        $yyact;            /* The parser action. */
 //        $yyendofinput;     /* True if we are at the end of input */
         $yyerrorhit = 0;   /* True if yymajor has invoked an error */
@@ -3161,7 +3162,7 @@ static public $yy_action = array(
                 self::$yyTraceFILE,
                 "%sInput %s\n",
                 self::$yyTracePrompt,
-                self::$yyTokenName[$yymajor]
+                self::tokenName($yymajor)
             );
         }
         
@@ -3221,7 +3222,7 @@ static public $yy_action = array(
                                 self::$yyTraceFILE,
                                 "%sDiscard input token %s\n",
                                 self::$yyTracePrompt,
-                                self::$yyTokenName[$yymajor]
+                                self::tokenName($yymajor)
                             );
                         }
                         $this->yy_destructor($yymajor, $yytokenvalue);

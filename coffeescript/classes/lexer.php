@@ -588,7 +588,7 @@ class Lexer
     $indent = $match[0];
     $this->line += substr_count($indent, "\n");
 
-    $prev = last($this->tokens, 1);
+    // $prev = & last($this->tokens, 1);
     $size = strlen($indent) - 1 - strrpos($indent, "\n");
 
     $no_newlines = $this->unfinished();
@@ -651,7 +651,7 @@ class Lexer
     }
 
     $tag = $value;
-    $prev = &last($this->tokens);
+    $prev = & last($this->tokens);
 
     if ($value === '=' && $prev)
     {
@@ -665,7 +665,7 @@ class Lexer
         $prev[0] = t('COMPOUND_ASSIGN');
         $prev[1] .= '=';
 
-        return strlen($value);
+        return 1; // strlen($value);
       }
     }
 
@@ -689,8 +689,7 @@ class Lexer
 
     if ($tag === $value)
     {
-      if (in_array($value, self::$LOGIC) || $value === '?' && ($prev &&
-        isset($prev['spaced']) && $prev['spaced']))
+      if (in_array($value, self::$LOGIC) || $value === '?' && ($prev && isset($prev['spaced']) && $prev['spaced']))
       {
         $tag = 'LOGIC';
       }
@@ -729,7 +728,7 @@ class Lexer
   {
     if ( ! $body)
     {
-      return $quote . $quote;
+      return $quote.$quote;
     }
 
     $body = preg_replace(
@@ -823,7 +822,10 @@ class Lexer
 
     if (preg_match(self::$HEREGEX, $this->chunk, $match))
     {
-      return $this->heregex_token($match);
+      $length = $this->heregex_token($match);
+      $this->line += substr_count($match[0], "\n");
+
+      return $length;
     }
 
     $prev = last($this->tokens);
@@ -944,7 +946,7 @@ class Lexer
 
   function tag($index = 0, $tag = NULL)
   {
-    $token = last($this->tokens, $index);
+    $token = & last($this->tokens, $index);
 
     if ( ! is_null($tag))
     {
@@ -1031,7 +1033,7 @@ class Lexer
 
   function value($index = 0, $value = NULL)
   {
-    $token = last($this->tokens, $index);
+    $token = & last($this->tokens, $index);
 
     if ( ! is_null($value))
     {
@@ -1061,7 +1063,7 @@ class Lexer
       return 0;
     }
 
-    $prev = &last($this->tokens);
+    $prev = & last($this->tokens);
 
     if ($prev)
     {

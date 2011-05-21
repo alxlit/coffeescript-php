@@ -198,7 +198,7 @@ class Rewriter
       array_splice($self->tokens, $idx, 0, array(array(t('CALL_END'), ')', $token[2])));
     };
 
-    $this->scan_tokens(function( & $token, $i, & $tokens)
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $self)
     {
       $tag = $token[0];
       $no_call = in_array($tag, t('CLASS', 'IF'));
@@ -214,24 +214,26 @@ class Rewriter
       $seen_single = FALSE;
       $seen_control = FALSE;
       $no_call = ! in_array($tag, t(Rewriter::$LINEBREAKS));
-      $token['call'] = $prev && in_array($prev[0], t(Rewriter::$IMPLICIT_FUNC));
+      $token['call'] = $prev && ! (isset($prev['spaced']) && $prev['spaced']) && $tag === t('?');
 
       if (isset($token['fromThen']) && $token['fromThen'])
       {
         return 1;
       }
 
-      if ( ! ($call_object || $prev && (isset($prev['spaced']) && $prev['spaced']) && 
+      if ( ! ($call_object || ($prev && (isset($prev['spaced']) && $prev['spaced'])) && 
         ( (isset($prev['call']) && $prev['call']) || in_array($prev[0], t(Rewriter::$IMPLICIT_FUNC)) ) &&
-        ( in_array($tag, t(Rewriter::$IMPLICIT_CALL)) || ! ($token['spaced'] || $token['newLine']) &&
-          in_array($tag, t(Rewriter::$IMPLICIT_UNSPACED_CALL))  )))
+        ( in_array($tag, t(Rewriter::$IMPLICIT_CALL)) || ! ( (isset($token['spaced']) && $token['spaced']) || 
+          (isset($token['newLine']) && $token['newLine'])) &&
+          in_array($tag, t(Rewriter::$IMPLICIT_UNSPACED_CALL)) )
+        ))
       {
         return 1;
       }
 
-      array_splice($tokens, $i, 0, array(array(t('CALL_START', '(', $token[2]))));
+      array_splice($tokens, $i, 0, array(array(t('CALL_START'), '(', $token[2])));
 
-      $self->detect_end($i + 1, function($token, $i) use ( & $seen_single)
+      $self->detect_end($i + 1, function($token, $i) use ( & $seen_control, & $seen_single, & $self)
       {
         $tag = $token[0];
 
@@ -249,11 +251,13 @@ class Rewriter
         }
 
         return 
-          ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== ',' && 
-          (in_array($tag, t(Rewriter::$IMPLICIT_END)) || $tag === t('INDENT') && ! $seen_control) &&
-          ($tag !== t('INDENT') || $self->tag($i - 2) !== t('CLASS') && 
-            ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
-            ! (($post = $self->tokens($i + 1) && (isset($post['generated']) && $post['generated']) && $post[0] === t('{'))));
+          ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') && 
+          (in_array($tag, t(Rewriter::$IMPLICIT_END)) || ($tag === t('INDENT') && ! $seen_control)) &&
+          ($tag !== t('INDENT') || 
+            ( $self->tag($i - 2) !== t('CLASS') && 
+              ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
+              ! (($post = $self->tokens($i + 1) && (isset($post['generated']) && $post['generated']) && 
+              $post[0] === t('{')))));
       },
       $action);
 
@@ -317,14 +321,14 @@ class Rewriter
 
     while (isset($tokens[$i]) && ($token = $tokens[$i]))
     {
-      if ($levels === 0 && $condition( & $token, $i))
+      if ($levels === 0 && $condition($token, $i))
       {
-        return $action( & $token, $i);
+        return $action($token, $i);
       }
 
       if ( ! $token || $levels < 0)
       {
-        return $action( & $token, $i - 1);
+        return $action($token, $i - 1);
       }
 
       if (in_array($token[0], t(Rewriter::$EXPRESSION_START)))
@@ -369,7 +373,7 @@ class Rewriter
         }
         else if ($tag === t($close) && --$levels[$open] < 0)
         {
-          throw Error('too many '.$token[1].' on line '.($token[2] + 1));
+          throw new Error('too many '.$token[1].' on line '.($token[2] + 1));
         }
       }
     }
@@ -378,7 +382,7 @@ class Rewriter
     {
       if ($level > 0)
       {
-        throw Error('unclosed '.$open.' on line '.($open_line[$open] + 1));
+        throw new Error('unclosed '.$open.' on line '.($open_line[$open] + 1));
       }
     }
 
@@ -529,7 +533,7 @@ class Rewriter
 
     while (isset($this->tokens[$i]))
     {
-      $i += $block( & $this->tokens[$i], $i, & $this->tokens);
+      $i += $block($this->tokens[$i], $i, $this->tokens);
     }
 
     return TRUE;

@@ -36,6 +36,8 @@ function extend($obj, $properties)
   {
     $obj->{$k} = $v;
   }
+
+  return $obj;
 }
 
 function flatten(array $array)
@@ -57,11 +59,19 @@ function flatten(array $array)
   return $flattened;
 }
 
-function & last($array, $back = 0)
+function & last( & $array, $back = 0)
 {
+  static $NULL = NULL;
   $i = count($array) - $back - 1;
 
-  return $array[$i];
+  if (isset($array[$i]))
+  {
+    return $array[$i];
+  }
+  else
+  {
+    return $NULL;
+  }
 }
 
 /**
@@ -72,9 +82,9 @@ function & last($array, $back = 0)
  * This function maps those string representations to their numeric constants,
  * making it easier to port directly from the CoffeeScript source.
  */
-function t($name)
+function t($name = NULL)
 {
-  static $map = array(
+  static $map =  array(
     '.'   => 'ACCESSOR',
     '['   => 'ARRAY_START',
     ']'   => 'ARRAY_END',
@@ -97,6 +107,11 @@ function t($name)
     '+'   => 'PLUS',
     '::'  => 'PROTOTYPE'
   );
+
+  if (is_null($name))
+  {
+    return $map;
+  }
 
   if (func_num_args() > 1)
   {

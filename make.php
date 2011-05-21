@@ -30,8 +30,6 @@ function init()
 
 function make()
 {
-  // Included locally because the PEAR package doesn't seem to work. Also, some
-  // minor changes were made to the source and template.
   require 'vendor/ParserGenerator/ParserGenerator.php';
 
   $source = 'grammar';
