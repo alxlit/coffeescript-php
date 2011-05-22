@@ -92,20 +92,20 @@ class Lexer
 
   static $JS_FORBIDDEN = array();
 
-  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x007f-\xffff]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
+  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x{007f}-\x{ffff}]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
   static $CODE              = '/^[-=]>/';
   static $COMMENT           = '/^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/';
-  static $IDENTIFIER        = '/^([$A-Za-z_\x007f-\xffff][$\w\x007f-\xffff]*)([^\n\S]*:(?!:))?/u';
   static $HEREDOC           = '/^("""|\'\'\')([\s\S]*?)(?:\n[^\n\S]*)?\1/';
   static $HEREDOC_INDENT    = '/\n+([^\n\S]*)/';
   static $HEREDOC_ILLEGAL   = '/\*\//';
   static $HEREGEX           = '/^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?!\w)/';
   static $HEREGEX_OMIT      = '/\s+(?:#.*)?/g';
+  static $IDENTIFIER        = '/^([$A-Za-z_\x{007f}-\x{ffff}][$\w\x{007f}-\x{ffff}]*)([^\n\S]*:(?!:))?/u';
   static $JSTOKEN           = '/^`[^\\`]*(?:\\.[^\\`]*)*`/';
   static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NO_NEWLINE        = '/^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/';
+  static $NO_NEWLINE        = '/^(?:[-+*&|\/%=<>!.\\][<>=&|]\*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/';
   static $NUMBER            = '/^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
   static $OPERATOR          = '/^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/';
   static $REGEX             = '/^\/(?![\s=])[^[\/\n\\]*(?:(?:\\[\s\S]|\[[^\]\n\\]*(?:\\[\s\S][^\]\n\\]*)*])[^[\/\n\\]*)*\/[imgy]{0,4}(?!\w)/';
@@ -394,7 +394,7 @@ class Lexer
         $id = (object) $id;
 
         // This is a bit hairy in PHP but should work.
-        $id->reserved = true;
+        $id->reserved = TRUE;
       }
       else if (in_array($id, self::$JS_RESERVED))
       {
@@ -593,6 +593,11 @@ class Lexer
 
     $no_newlines = $this->unfinished();
 
+    $token = & last($this->tokens);
+    $token['noNewlines'] = $no_newlines;
+
+    if ($token['noNewlines']) { echo preg_match(self::$NO_NEWLINE, $this->value(), $match); print_r($match); die(); };
+
     if (($size - $this->indebt) === $this->indent)
     {
       if ($no_newlines)
@@ -678,42 +683,47 @@ class Lexer
       'SHIFT'           => self::$SHIFT
     );
 
+    $mapped = FALSE;
+
     foreach ($map as $k => $v)
     {
       if (in_array($value, $v))
       {
         $tag = $k;
+        $mapped = TRUE;
+
         break;
       }
     }
 
-    if ($tag === $value)
+    if ( ! $mapped)
     {
       if (in_array($value, self::$LOGIC) || $value === '?' && ($prev && isset($prev['spaced']) && $prev['spaced']))
       {
         $tag = 'LOGIC';
       }
-      else if ($prev && isset($prev['spaced']) && ! $prev['spaced'])
+      else if ($prev && ! (isset($prev['spaced']) && $prev['spaced']))
       {
         if ($value === '(' && in_array($prev[0], t(self::$CALLABLE)))
         {
           if ($prev[0] === t('?'))
           {
             $prev[0] = t('FUNC_EXIST');
-            $tag = 'CALL_START';
           }
-          else if ($value === '[' && in_array($prev[0], t(self::$INDEXABLE)))
-          {
-            $tag = 'INDEX_START';
 
-            if ($prev[0] === t('?'))
-            {
-              $prev[0] = t('INDEX_SOAK');
-            }
-            else if ($prev[0] === t('::'))
-            {
-              $prev[0] = t('INDEX_PROTO');
-            }
+          $tag = 'CALL_START';
+        }
+        else if ($value === '[' && in_array($prev[0], t(self::$INDEXABLE)))
+        {
+          $tag = 'INDEX_START';
+
+          if ($prev[0] === t('?'))
+          {
+            $prev[0] = t('INDEX_SOAK');
+          }
+          else if ($prev[0] === t('::'))
+          {
+            $prev[0] = t('INDEX_PROTO');
           }
         }
       }
@@ -746,7 +756,7 @@ class Lexer
       $body
     );
 
-    $body = preg_replace('/'.$quote.'/g', '\\0', $body);
+    $body = preg_replace('/'.$quote.'/g', '$0', $body);
 
     return $quote + $this->escape_lines($body, $heredoc) + $quote;
   }
@@ -1048,7 +1058,7 @@ class Lexer
     return
       preg_match(self::$LINE_CONTINUER, $this->chunk) ||
       ($prev = last($this->tokens, 1)) &&
-      ($prev[0] !== '.') &&
+      ($prev[0] !== t('.')) &&
       ($value = $this->value()) &&
       ( ! (isset($value->reserved) && $value->reserved)) &&
       preg_match(self::$NO_NEWLINE, $value) &&
@@ -1058,7 +1068,7 @@ class Lexer
 
   function whitespace_token()
   {
-    if ( ! (preg_match(self::$WHITESPACE, $this->chunk, $match) || ($nline = $this->chunk{0}) === "\n"))
+    if ( ! (preg_match(self::$WHITESPACE, $this->chunk, $match) || ($nline = ($this->chunk{0} === "\n"))))
     {
       return 0;
     }

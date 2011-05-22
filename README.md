@@ -60,3 +60,11 @@ catch (Exception e) {}
 ?>
 ```
 
+## Development
+
+To rebuild the parser run `php make.php`. Running tests is easy, just put the 
+project directory into /srv/http (or whatever location you're running your
+local server from) and navigate to http://localhost/coffeescript-php/test/.
+
+You'll need to have shorttags enabled (sorry).
+

@@ -61,7 +61,7 @@ function flatten(array $array)
 
 function & last( & $array, $back = 0)
 {
-  static $NULL = NULL;
+  static $NULL;
   $i = count($array) - $back - 1;
 
   if (isset($array[$i]))
@@ -70,6 +70,9 @@ function & last( & $array, $back = 0)
   }
   else
   {
+    // Make sure $NULL is really NULL.
+    $NULL = NULL; 
+
     return $NULL;
   }
 }
@@ -136,8 +139,8 @@ function t($name = NULL)
 }
 
 /**
- * Change a CoffeeScript PHP token tag to it's equivalent canonical form (used
- * in the JavaScript version).
+ * Change a CoffeeScript PHP token tag to it's equivalent canonical form (the
+ * form used in the JavaScript version).
  *
  * This function is used for testing purposes only.
  */
@@ -160,8 +163,11 @@ function t_canonical($token)
     'FUNC'                  => '->',
     'OBJECT_START'          => '{',
     'OBJECT_END'            => '}',
+
+    // These are separate from CALL_START and CALL_END.
     'PAREN_START'           => '(',
     'PAREN_END'             => ')',
+
     'PLUS'                  => '+',
     'PROTOTYPE'             => '::',
   );

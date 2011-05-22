@@ -9,6 +9,8 @@ class yyBase
   public $soak = FALSE;
   public $unfold_soak = FALSE;
 
+  function __construct() {}
+
   function __toString()
   {
     return $this->to_string();

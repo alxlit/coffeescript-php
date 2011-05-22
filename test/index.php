@@ -9,6 +9,7 @@
 error_reporting(E_ALL);
 set_time_limit(30);
 define('ROOT', realpath(dirname(__FILE__)).'/');
+
 require '../coffeescript/coffeescript.php';
 
 // Test cases.
@@ -36,23 +37,14 @@ if ($run)
 
   if ($tokens)
   {
+    // Change the token tags to their canonical string representations, so that
+    // we can compare them to the reference.
     $tokens = CoffeeScript\t_canonical($tokens);
-
-    /*
-    $map = array_flip(CoffeeScript\t());
-
-    foreach ($tokens as & $tok)
-    {
-      $tok[0] = substr(CoffeeScript\Parser::tokenName($tok[0]), 3);
-
-      // Change back to canonical form.
-      $tok[0] = isset($map[$tok[0]]) ? $map[$tok[0]] : $tok[0];
-    }
-     */
   }
 }
 
 ?>
+<!doctype html>
 <html>
 <head>
   <title>CoffeeScript PHP Tests</title>
@@ -83,19 +75,20 @@ if ($run)
     h1, h2 { clear: both; }
     ins { background: rgba(0, 255, 0, 0.25); }
     del { background: rgba(255, 0, 0, 0.25); }
+    .error { background: rgba(255, 0, 0, 0.25); border: 1px solid #800000; padding: 10px; }
   </style>
 </head>
 <body>
   <div style="overflow: auto;">
   <? if ($run): ?>
-    <h1>Test: <?= $run ?></h1>
+    <h1>Test: <a href="<?= $run ?>"><?= $run ?></a></h1>
 
     <h2>Code</h2>
-    <p><?= $code ?>.</p>
+    <p <? if ($error): ?>class="error"<? endif; ?>><?= $code ?>.</p>
 
     <h2>Lexical Tokens</h2>
-    <p>Lines in red are in the reference stack of tokens, but missing in ours. Lines in
-    green were generated in our stack but are not present in the reference.</p>
+    <p>Tokens in <del>red</del> are in the reference stack, but are missing in ours. Tokens in
+    <ins>green</ins> were generated in our stack but are not present in the reference.</p>
     <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
     <code id="tokens" style=""></code>
   <? else: ?>

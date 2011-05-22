@@ -5,9 +5,7 @@ define('ROOT', realpath(dirname(__FILE__)).'/');
 // Disable output.
 ini_set('implicit_flush', false);
 
-function clean()
-{
-}
+function clean() {}
 
 function init()
 {
@@ -23,9 +21,7 @@ function init()
   $all = $arg === 'all';
 
   if ($all || $arg === '')      { make(); }
-  if ($all || $arg === 'test')  { make_test(); }
-
-  clean();
+  if ($all || $arg === 'clean') { clean(); }
 }
 
 function make()
@@ -101,10 +97,6 @@ function make()
 
     exit(1);
   }
-}
-
-function make_test()
-{
 }
 
 init();

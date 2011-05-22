@@ -158,7 +158,7 @@ class Rewriter
           $indent['fromThen'] = TRUE;
         }
 
-        $indent['generated'] = $oudent['generated'] = TRUE;
+        $indent['generated'] = $outdent['generated'] = TRUE;
 
         array_splice($tokens, $i + 1, 0, array($indent));
 
@@ -198,12 +198,18 @@ class Rewriter
       array_splice($self->tokens, $idx, 0, array(array(t('CALL_END'), ')', $token[2])));
     };
 
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $self)
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $no_call, & $self )
     {
       $tag = $token[0];
       $no_call = in_array($tag, t('CLASS', 'IF'));
 
-      $prev = & $tokens[$i - 1];
+      $prev = NULL;
+
+      if (isset($tokens[$i - 1]))
+      {
+        $prev = & $tokens[$i - 1];
+      }
+
       $current = $tokens[$i];
       $next = isset($tokens[$i + 1]) ? $tokens[$i + 1] : NULL;
 
@@ -224,7 +230,7 @@ class Rewriter
       if ( ! ($call_object || ($prev && (isset($prev['spaced']) && $prev['spaced'])) && 
         ( (isset($prev['call']) && $prev['call']) || in_array($prev[0], t(Rewriter::$IMPLICIT_FUNC)) ) &&
         ( in_array($tag, t(Rewriter::$IMPLICIT_CALL)) || ! ( (isset($token['spaced']) && $token['spaced']) || 
-          (isset($token['newLine']) && $token['newLine'])) &&
+          (isset($token['newLine']) && $token['newLine']) ) &&
           in_array($tag, t(Rewriter::$IMPLICIT_UNSPACED_CALL)) )
         ))
       {
@@ -256,14 +262,14 @@ class Rewriter
           ($tag !== t('INDENT') || 
             ( $self->tag($i - 2) !== t('CLASS') && 
               ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
-              ! (($post = $self->tokens[$i + 1] && (isset($post['generated']) && $post['generated']) && 
-              $post[0] === t('{')))));
+              ! (($post = $self->tokens[$i + 1]) && (isset($post['generated']) && $post['generated']) && 
+              $post[0] === t('{')) ));
       },
       $action);
 
       if ($prev[0] === t('?'))
       {
-        $tokens[$i - 1][0] = t('FUNC_EXIST');
+        $prev[0] = t('FUNC_EXIST');
       }
 
       return 2;
@@ -287,7 +293,7 @@ class Rewriter
 
     $this->scan_tokens(function($token, $i) use ( & $self, $condition, $action)
     {
-      if ($token[0] === t('INDEX_START'))
+      if ($token[0] === t('CALL_START'))
       {
         $self->detect_end($i + 1, $condition, $action);
       }
@@ -298,8 +304,15 @@ class Rewriter
 
   function close_open_indexes()
   {
-    $condition = function($token, $i) { return in_array($token[0], t(']', 'INDEX_END')); };
-    $action = function( & $token, $i) { $token[0] = t('INDEX_END'); };
+    $condition = function($token, $i)
+    {
+      return in_array($token[0], t(']', 'INDEX_END'));
+    };
+
+    $action = function( & $token, $i)
+    {
+      $token[0] = t('INDEX_END');
+    };
 
     $self = $this;
 
@@ -316,10 +329,10 @@ class Rewriter
 
   function detect_end($i, $condition, $action)
   {
-    $tokens = $this->tokens;
+    $tokens = & $this->tokens;
     $levels = 0;
 
-    while (isset($tokens[$i]) && ($token = $tokens[$i]))
+    while (isset($tokens[$i]) && ($token = & $tokens[$i]))
     {
       if ($levels === 0 && $condition($token, $i))
       {
@@ -378,7 +391,7 @@ class Rewriter
       }
     }
 
-    foreach ($levels as $level => $open)
+    foreach ($levels as $open => $level)
     {
       if ($level > 0)
       {
@@ -521,8 +534,10 @@ class Rewriter
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
     $this->add_implicit_parenthesis();
+    /*
     $this->ensure_balance(self::$BALANCED_PAIRS);
     $this->rewrite_closing_parens();
+    */
 
     return $this->tokens;
   }

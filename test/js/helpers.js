@@ -45,8 +45,8 @@ function formatLineDiff(diff) {
 }
 
 function formatTokens(tokens) {
-  var properties = [0, 1, 2, 'call'], result = [];
-  var html = '';
+  var properties = [0, 1, 2, 'call', 'fromThen', 'generated', 'newLine', 'noNewlines', 'reserved', 'spaced'];
+  var result = [], html = '';
 
   for (var i = 0; i < tokens.length - 1; i++) {
     var token = [];
@@ -58,10 +58,14 @@ function formatTokens(tokens) {
         v = '\\n';
       }
 
-      v = '"' + v + '"';
-
-      // Label properties.
-      token.push(typeof k == 'string' ? k + ': ' + ( !! v) : v);
+      if (typeof k == 'string') {
+        if ( !! v) {
+          token.push(k);
+        }
+      }
+      else {
+        token.push('"' + v + '"');
+      }
     }
 
     result.push('[' + token.join(', ') + ']');

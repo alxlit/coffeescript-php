@@ -8,8 +8,8 @@ class yySlice extends yyBase
 
   function __construct($range)
   {
-    $this->range = $range;
     parent::__construct();
+    $this->range = $range;
   }
 
   function compile_node($options)
