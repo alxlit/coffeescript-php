@@ -172,7 +172,7 @@ class Lexer
       {
       case '\\':
         $i++;
-        continue;
+        continue 2;
 
       case $end:
         array_pop($stack);
@@ -183,7 +183,7 @@ class Lexer
         }
 
         $end = $stack[count($stack) - 1];
-        continue;
+        continue 2;
       }
 
       if ($end === '}' && ($letter === '"' || $letter === '\''))
@@ -279,7 +279,7 @@ class Lexer
     }
 
     $this->token('IDENTIFIER', 'RegExp');
-    $this->tokens = array_merge($this->tokens, array('CALL_START', '('));
+    $this->tokens[] = array(t('CALL_START'), '(');
 
     $tokens = array();
 
@@ -347,15 +347,13 @@ class Lexer
       return strlen($id);
     }
 
-    $forced_identifier = $colon || 
-      ( ($prev = last($this->tokens)) && 
-        (in_array($prev[0], t('.', '?.', '::')) || 
-        ( ! (isset($prev['spaced']) && $prev['spaced']) && $prev[0] === t('&'))) );
+    $forced_identifier = $colon || ($prev = last($this->tokens)) && 
+      (in_array($prev[0], t('.', '?.', '::')) || 
+      ( ! (isset($prev['spaced']) && $prev['spaced']) && $prev[0] === t('@')));
 
     $tag = 'IDENTIFIER';
 
-    if ( in_array($id, self::$JS_KEYWORDS) ||
-        ($forced_identifier && in_array($id, self::$COFFEE_KEYWORDS)) )
+    if (in_array($id, self::$JS_KEYWORDS) || ! $forced_identifier && in_array($id, self::$COFFEE_KEYWORDS))
     {
       $tag = strtoupper($id);
 
@@ -395,14 +393,19 @@ class Lexer
       }
     }
 
+    // Since data types in PHP are primitive, we can't easily attach parameters
+    // to token values, and must resort to doing so on the token array.
+    $reserved = FALSE;
+
     if (in_array($id, self::$JS_FORBIDDEN))
     {
       if ($forced_identifier)
       {
-        $id = (object) $id;
+        // $id = (object) $id;
+        // $id->reserved = TRUE;
 
-        // This is a bit hairy in PHP but should work.
-        $id->reserved = TRUE;
+        $tag = 'IDENTIFIER';
+        $reserved = TRUE;
       }
       else if (in_array($id, self::$JS_RESERVED))
       {
@@ -435,7 +438,7 @@ class Lexer
       }
     }
 
-    $this->token($tag, $id);
+    $this->token($tag, $id, array('reserved' => $reserved));
 
     if ($colon)
     {
@@ -480,14 +483,14 @@ class Lexer
       }
 
       if ( ! ($letter === '#' && $str{$i + 1} === '{' && 
-        ($expr = $this->balanced_string(substr($str, $i + 1), '}'))))
+        ($expr = $this->balanced_string(substr($str, $i + 1), '}'))) )
       {
         continue;
       }
 
       if ($pi < $i)
       {
-        $tokens[] = array('NEOSTRING', substr($str, $pi, $i));
+        $tokens[] = array('NEOSTRING', substr($str, $pi, $i - $pi));
       }
 
       $inner = substr($expr, 1, -1);
@@ -503,12 +506,12 @@ class Lexer
 
         array_pop($nested);
 
-        if (($length = count($nested)) && $nested[0][0] === t('TERMINATOR'))
+        if (isset($nested[0]) && $nested[0][0] === t('TERMINATOR'))
         {
           array_shift($nested);
         }
 
-        if ($length)
+        if ( ($length = count($nested)) )
         {
           if ($length > 1)
           {
@@ -526,7 +529,7 @@ class Lexer
 
     if ($i > $pi && $pi < strlen($str))
     {
-      $tokens[] = array(t('NEOSTRING'), substr($str, $pi));
+      $tokens[] = array('NEOSTRING', substr($str, $pi));
     }
 
     if ($options['regex'])
@@ -539,12 +542,12 @@ class Lexer
       return $this->token('STRING', '""');
     }
 
-    if ($tokens[0][0] !== t('NEOSTRING'))
+    if ( ! ($tokens[0][0] === 'NEOSTRING'))
     {
       array_unshift($tokens, array('', ''));
     }
 
-    if (($interpolated = count($tokens) > 1))
+    if ( ($interpolated = count($tokens) > 1) )
     {
       $this->token('(', '(');
     }
@@ -665,7 +668,7 @@ class Lexer
 
     if ($value === '=' && $prev)
     {
-      if (is_object($prev[1]) && ! $prev[1]->reserved && in_array($prev[1], t(self::$JS_FORBIDDEN)))
+      if (isset($prev['reserved']) && $prev['reserved'] && in_array($prev[1], t(self::$JS_FORBIDDEN)))
       {
         $this->assignment_error();
       }
@@ -746,20 +749,22 @@ class Lexer
       return $quote.$quote;
     }
 
-    $body = preg_replace_callback('/\\([\s\S]/', function($match, $contents) use ($quote)
+    $body = preg_replace_callback('/\\\\([\s\S])/', function($match) use ($quote)
     {
-      if (in_array($contents, array('\n', $quote)))
+      $contents = $match[1];
+
+      if (in_array($contents, array("\n", $quote)))
       {
         return $contents;
       }
 
-      return $match;
+      return $match[0];
     },
     $body);
 
-    $body = preg_replace('/'.$quote.'/', '$0', $body);
+    $body = preg_replace('/'.$quote.'/', '\\$0', $body);
 
-    return $quote + $this->escape_lines($body, $heredoc) + $quote;
+    return $quote.$this->escape_lines($body, $heredoc).$quote;
   }
 
   function newline_token()
@@ -918,7 +923,7 @@ class Lexer
         return 0;
       }
 
-      $this->token('STRING', preg_replace(self::$MULTILINER, "\\\n", $string = $match[0]));
+      $this->token('STRING', preg_replace(self::$MULTILINER, "\\\\\n", $string = $match[0]));
       break;
 
     case '"':
@@ -1003,15 +1008,24 @@ class Lexer
     return $this;
   }
 
-  function token($tag, $value = NULL)
+  function token($tag, $value = NULL, $props = array())
   {
     if ( ! is_numeric($tag))
     {
       $tag = t($tag);
     }
 
-    // Push new token.
-    return ($this->tokens[] = array($tag, $value, $this->line));
+    $token = array($tag, $value, $this->line);
+
+    if ($props)
+    {
+      foreach ($props as $k => $v)
+      {
+        $token[$k] = $v;
+      }
+    }
+    
+    return ($this->tokens[] = $token);
   }
 
   function tokenize()
@@ -1061,7 +1075,8 @@ class Lexer
       ($prev = last($this->tokens, 1)) &&
       ($prev[0] !== t('.')) &&
       ($value = $this->value()) &&
-      ( ! (isset($value->reserved) && $value->reserved)) &&
+      // ( ! (isset($value->reserved) && $value->reserved)) &&
+      ( ! (isset($prev['reserved']) && $prev['reserved'])) &&
       preg_match(self::$NO_NEWLINE, $value) &&
       ( ! preg_match(self::$CODE, $value)) &&
       ( ! preg_match(self::$ASSIGNED, $this->chunk));

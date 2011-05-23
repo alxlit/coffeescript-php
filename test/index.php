@@ -51,7 +51,7 @@ if ($run)
 <!doctype html>
 <html>
 <head>
-  <title>CoffeeScript PHP Tests</title>
+  <title>Tests <?= $run ? ' - '.$run : '' ?></title>
   <? if ($run): ?>
     <script src="js/lib/coffee-script.js"></script>
     <script src="js/lib/diff.js"></script>

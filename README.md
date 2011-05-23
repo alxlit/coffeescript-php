@@ -14,8 +14,7 @@ to contribute.
 * Rewriter.
 * Some of the nodes (21/31 so far).
 
-The nodes are the focus at the moment. Right now I'm just blindly porting them 
-to PHP, once that's done they'll undoubtedly need tweaking.
+Right now I'm trying to get the lexer and rewriter working 100%.
 
 ### Todo
 

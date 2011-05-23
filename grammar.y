@@ -95,7 +95,7 @@ paramList(A) ::= param(B)                       . { A = array(B); }
 paramList(A) ::= paramList(B) YY_COMMA param(C) . { A = array_merge(B, array(C)); }
 
 param(A) ::= paramVar(B)                          . { A = new yyParam(B); }
-param(A) ::= paramVar(B) YY_ELLIPSIS              . { A = new yyParam(B, NULL, TRUE); }
+param(A) ::= paramVar(B) YY_RANGE_EXCLUSIVE       . { A = new yyParam(B, NULL, TRUE); }
 param(A) ::= paramVar(B) YY_EQUALS expression(C)  . { A = new yyParam(B, C); }
 
 paramVar(A) ::= identifier(B)   . { A = B; }

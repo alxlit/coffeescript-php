@@ -45,7 +45,7 @@ function formatLineDiff(diff) {
 }
 
 function formatTokens(tokens) {
-  var properties = [0, 1, 2, 'call', 'fromThen', 'generated', 'newLine', 'noNewlines', 'reserved', 'spaced'];
+  var properties = [0, 1, 2, 'call', 'fromThen', 'generated', 'newLine', 'spaced'];
   var result = [], html = '';
 
   for (var i = 0; i < tokens.length - 1; i++) {

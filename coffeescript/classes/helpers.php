@@ -85,7 +85,7 @@ function & last( & $array, $back = 0)
  * This function maps those string representations to their numeric constants,
  * making it easier to port directly from the CoffeeScript source.
  */
-function t($name = NULL)
+function t($name)
 {
   static $map =  array(
     '.'   => 'ACCESSOR',
@@ -96,8 +96,8 @@ function t($name = NULL)
     ':'   => 'COLON',
     ','   => 'COMMA',
     '--'  => 'DECREMENT',
-    '...' => 'ELLIPSIS',
     '='   => 'EQUALS',
+    '?'   => 'EXISTENTIAL',
     '?.'  => 'EXISTENTIAL_ACCESSOR',
     '->'  => 'FUNC',
     '++'  => 'INCREMENT',
@@ -110,13 +110,10 @@ function t($name = NULL)
     '('   => 'PAREN_START',
     ')'   => 'PAREN_END',
     '+'   => 'PLUS',
-    '::'  => 'PROTOTYPE'
+    '::'  => 'PROTOTYPE',
+    '...' => 'RANGE_EXCLUSIVE',
+    '..'  => 'RANGE_INCLUSIVE',
   );
-
-  if (is_null($name))
-  {
-    return $map;
-  }
 
   if (func_num_args() > 1)
   {
@@ -137,7 +134,10 @@ function t($name = NULL)
 
   $name = 'CoffeeScript\Parser::YY_'.(isset($map[$name]) ? $map[$name] : $name);
 
-  return defined($name) ? constant($name) : NULL;
+  // Don't return the original name if there's no matching constant, in some
+  // cases intermediate token types are created and the value returned by this
+  // function still needs to be unique.
+  return defined($name) ? constant($name) : $name;
 }
 
 /**
@@ -160,11 +160,11 @@ function t_canonical($token)
     'COLON'                 => ':',
     'COMMA'                 => ',',
     'DECREMENT'             => '--',
-    'ELLIPSIS'              => '...',
     'EQUALS'                => '=',
+    'EXISTENTIAL'           => '?',
     'EXISTENTIAL_ACCESSOR'  => '?.',
     'FUNC'                  => '->',
-    'INCREMENT'             => '--',
+    'INCREMENT'             => '++',
     'OBJECT_START'          => '{',
     'OBJECT_END'            => '}',
 
@@ -174,6 +174,8 @@ function t_canonical($token)
 
     'PLUS'                  => '+',
     'PROTOTYPE'             => '::',
+    'RANGE_EXCLUSIVE'       => '...',
+    'RANGE_INCLUSIVE'       => '..'
   );
 
   if (is_array($token))
@@ -197,6 +199,12 @@ function t_canonical($token)
   else if (is_numeric($token))
   {
     $token = substr(Parser::tokenName($token), 3);
+  }
+  else if (is_string($token))
+  {
+    // The token type isn't known to the parser, so t() returned a unique
+    // string to use instead.
+    $token = substr($token, strlen('CoffeeScript\Parser::YY_'));
   }
 
   return isset($map[$token]) ? $map[$token] : $token;

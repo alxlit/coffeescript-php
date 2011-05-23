@@ -170,7 +170,7 @@ class Rewriter
 
         array_splice($tokens, $i + 1, 0, array($indent));
 
-        $condition = function($token, $i)
+        $condition = function($token, $i) use ($starter)
         {
           return $token[1] !== ';' && in_array($token[0], t(Rewriter::$SINGLE_CLOSERS)) &&
             ! ($token[0] === t('ELSE') && ! in_array($starter, t('IF', 'THEN')));
