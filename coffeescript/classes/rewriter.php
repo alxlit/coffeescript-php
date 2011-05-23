@@ -55,8 +55,13 @@ class Rewriter
 
     $condition = function( & $token, $i) use ( & $self)
     {
-      $list = array_slice($self->tokens, $i + 1, 3);
-      $list = array_merge(array_fill(0, 3, array(NULL, NULL)), $list);
+      $list = array();
+
+      for ($j = 0; $j < 3; $j++)
+      {
+        $k = ($i + 1) + $j;
+        $list[$j] = isset($self->tokens[$k]) ? $self->tokens[$k] : array(NULL, NULL);
+      }
 
       list($one, $two, $three) = $list;
 
@@ -68,7 +73,7 @@ class Rewriter
       $tag = $token[0];
 
       return 
-        ( in_array($tag, t('TERMINATOR', 'OUTDENT')) &&
+        (in_array($tag, t('TERMINATOR', 'OUTDENT')) &&
           ! ($two[0] === t(':') || $one[0] === t('@') && $three[0] === t(':')) ) ||
         ($tag === t(',') && ! is_null($one[0]) && 
           ! in_array($one[0], t('IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT')));
@@ -84,7 +89,7 @@ class Rewriter
     {
       if (in_array(($tag = $token[0]), t(Rewriter::$EXPRESSION_START)))
       {
-        $stack[] = array(($tag === t('INDENT') && $self->tag($i - 1) === t('{')) ? '{' : $tag, $i);
+        $stack[] = array( ($tag === t('INDENT') && $self->tag($i - 1) === t('{')) ? t('{') : $tag, $i );
         return 1;
       }
     
@@ -94,13 +99,14 @@ class Rewriter
         return 1;
       }
 
-      if ( ! ($tag === t(':') && (($ago = $self->tag($i - 2)) === t(':') || 
-        (($len = count($stack)) && $stack[$len - 1][0] !== '{'))))
+      $len = count($stack);
+
+      if ( ! ($tag === t(':') && (($ago = $self->tag($i - 2)) === t(':') || ($len && $stack[$len - 1][0] !== t('{'))) ))
       {
         return 1;
       }
 
-      $stack[] = '{';
+      $stack[] = array(t('{'));
       $idx = $ago === t('@') ? $i - 2 : $i - 1;
 
       while ($self->tag($i - 2) === t('HERECOMMENT'))
@@ -108,9 +114,11 @@ class Rewriter
         $idx -= 2;
       }
 
-      $value = (object) '{';
-      $value->generated = TRUE;
+      // This causes problems, and doesn't appear to be used for anything.
+      // $value = (object) '{';
+      // $value->generated = TRUE;
 
+      $value = '{';
       $tok = array(t('{'), $value, $token[2], 'generated' => TRUE);
 
       array_splice($tokens, $idx, 0, array($tok));
@@ -332,8 +340,10 @@ class Rewriter
     $tokens = & $this->tokens;
     $levels = 0;
 
-    while (isset($tokens[$i]) && ($token = & $tokens[$i]))
+    while (isset($tokens[$i]))
     {
+      $token = & $tokens[$i];
+
       if ($levels === 0 && $condition($token, $i))
       {
         return $action($token, $i);
@@ -404,7 +414,7 @@ class Rewriter
 
   function indentation($token)
   {
-    return array(array(t('INDENT'), 2, $token[2]), array(t('OUTDENT'), 2, $token[2]));
+    return array( array(t('INDENT'), 2, $token[2]), array(t('OUTDENT'), 2, $token[2]) );
   }
 
   static function init()
@@ -417,74 +427,7 @@ class Rewriter
       self::$EXPRESSION_END[] = self::$INVERSES[$left] = $rite;
     }
 
-    self::$EXPRESSION_CLOSE = array(self::$EXPRESSION_CLOSE, self::$EXPRESSION_END);
-  }
-
-  function rewrite_closing_parens()
-  {
-    $stack = array();
-    $debt = array();
-
-    // Need to change to an associative array of numeric constants, rather
-    // than the string names.
-    $inverses = array();
-
-    foreach (Rewriter::$INVERSES as $k => $v)
-    {
-      $inverses[t($k)] = t($v);
-    }
-
-    foreach ($inverses as $k => $v)
-    {
-      $debt[$k] = 0;
-    }
-    
-    $self = $this;
-
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $debt, $inverses)
-    {
-      if (in_array(($tag = $token[0]), t(Rewriter::$EXPRESSION_START)))
-      {
-        $stack[] = $token;
-        return 1;
-      }
-
-      if ( ! (in_array($tag, t(Rewriter::$EXPRESSION_END))))
-      {
-        return 1;
-      }
-
-      if ($debt[($inv = $inverses[$tag])] > 0)
-      {
-        $debt[$inv] -= 1;
-        array_splice($tokens, $i, 1);
-        return 0;
-      }
-
-      $match = array_pop($stack);
-      $mtag = $match[0];
-      $oppos = $inverses[$mtag];
-
-      if ($tag === $oppos)
-      {
-        return 1;
-      }
-
-      $debt[$mtag] += 1;
-      $val = array($oppos, $mtag === t('INDENT') ? $match[1] : $oppos);
-
-      if ($self->tag($i + 2) === $mtag)
-      {
-        array_splice($tokens, $i + 3, 0, array($val));
-        $stack[] = $match;
-      }
-      else
-      {
-        array_splice($tokens, $i, 0, array($val));
-      }
-
-      return 1;
-    });
+    self::$EXPRESSION_CLOSE = array_merge(self::$EXPRESSION_CLOSE, self::$EXPRESSION_END);
   }
 
   function remove_leading_newlines()
@@ -534,12 +477,83 @@ class Rewriter
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
     $this->add_implicit_parenthesis();
-    /*
-    $this->ensure_balance(self::$BALANCED_PAIRS);
+    // $this->ensure_balance(self::$BALANCED_PAIRS);
     $this->rewrite_closing_parens();
-    */
 
     return $this->tokens;
+  }
+
+  function rewrite_closing_parens()
+  {
+    $stack = array();
+    $debt = array();
+
+    // Need to change to an associative array of numeric constants, rather
+    // than the string names.
+    $inverses = array();
+
+    foreach (Rewriter::$INVERSES as $k => $v)
+    {
+      $inverses[t($k)] = $v;
+    }
+
+    foreach ($inverses as $k => $v)
+    {
+      $debt[$k] = 0;
+    }
+    
+    $self = $this;
+
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $debt, $inverses)
+    {
+      if (in_array(($tag = $token[0]), t(Rewriter::$EXPRESSION_START)))
+      {
+        $stack[] = $token;
+        return 1;
+      }
+
+      if ( ! (in_array($tag, t(Rewriter::$EXPRESSION_END))))
+      {
+        return 1;
+      }
+
+      if ($debt[ ($inv = t($inverses[$tag])) ] > 0)
+      {
+        $debt[$inv] -= 1;
+        array_splice($tokens, $i, 1);
+        return 0;
+      }
+
+      $match = array_pop($stack);
+      $mtag = $match[0];
+      $oppos = $inverses[$mtag];
+
+      if ($tag === t($oppos))
+      {
+        return 1;
+      }
+
+      $debt[$mtag] += 1;
+
+      $val = array(t($oppos), ')', $token[2]);
+
+      if ($oppos === 'INDEX_END')
+      {
+        $val[1] = ']';
+      }
+
+      if ($self->tag($i + 2) === $mtag)
+      {
+        array_splice($tokens, $i + 3, 0, array($val));
+        $stack[] = $match;
+      }
+      else
+      {
+        array_splice($tokens, $i, 0, array($val));
+      }
+
+      return 1;
+    });
   }
 
   function scan_tokens($block)
@@ -565,7 +579,7 @@ class Rewriter
 
     $self = $this;
 
-    $this->scan_tokens(function($token, $i) use ( & $self)
+    $this->scan_tokens(function($token, $i) use ( & $condition, & $self)
     {
       if ( ! ($token[0] === t('IF')))
       {

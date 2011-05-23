@@ -92,24 +92,24 @@ class Lexer
 
   static $JS_FORBIDDEN = array();
 
-  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x{007f}-\x{ffff}]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
+  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x7f-\x{ffff}]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
   static $CODE              = '/^[-=]>/';
   static $COMMENT           = '/^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/';
   static $HEREDOC           = '/^("""|\'\'\')([\s\S]*?)(?:\n[^\n\S]*)?\1/';
   static $HEREDOC_INDENT    = '/\n+([^\n\S]*)/';
-  static $HEREDOC_ILLEGAL   = '/\*\//';
-  static $HEREGEX           = '/^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?!\w)/';
-  static $HEREGEX_OMIT      = '/\s+(?:#.*)?/g';
-  static $IDENTIFIER        = '/^([$A-Za-z_\x{007f}-\x{ffff}][$\w\x{007f}-\x{ffff}]*)([^\n\S]*:(?!:))?/u';
-  static $JSTOKEN           = '/^`[^\\`]*(?:\\.[^\\`]*)*`/';
+  static $HEREDOC_ILLEGAL   = '%\*/%';
+  static $HEREGEX           = '%^/{3}([\s\S]+?)/{3}([imgy]{0,4})(?!\w)%';
+  static $HEREGEX_OMIT      = '/\s+(?:#.*)?/';
+  static $IDENTIFIER        = '/^([$A-Za-z_\x7f-\x{ffff}][$\w\x7f-\x{ffff}]*)([^\n\S]*:(?!:))?/u';
+  static $JSTOKEN           = '/^`[^\\\\`]*(?:\\\\.[^\\\\`]*)*`/';
   static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NO_NEWLINE        = '/^(?:[-+*&|\/%=<>!.\\][<>=&|]\*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/';
+  static $NO_NEWLINE        = '#^(?:[-+*&|/%=<>!.\\\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$#';
   static $NUMBER            = '/^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
-  static $OPERATOR          = '/^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/';
-  static $REGEX             = '/^\/(?![\s=])[^[\/\n\\]*(?:(?:\\[\s\S]|\[[^\]\n\\]*(?:\\[\s\S][^\]\n\\]*)*])[^[\/\n\\]*)*\/[imgy]{0,4}(?!\w)/';
-  static $SIMPLESTR         = '/^\'[^\\\']*(?:\\.[^\\\']*)*\'/';
+  static $OPERATOR          = '#^(?:[-=]>|[-+*/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})#';
+  static $REGEX             = '%^/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/[imgy]{0,4}(?!\w)%';
+  static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/';
   static $TRAILING_SPACES   = '/\s+$/';
   static $WHITESPACE        = '/^[^\n\S]+/';
 
@@ -135,6 +135,14 @@ class Lexer
     }
 
     $code = preg_replace(self::$TRAILING_SPACES, '', str_replace("\r", '', $code));
+
+    $options = array_merge(array(
+      'indent'  => 0,
+      'index'   => 0,
+      'line'    => NULL,
+      'rewrite' => TRUE
+    ),
+    $options);
 
     $this->code     = $code;
     $this->chunk    = '';
@@ -251,7 +259,7 @@ class Lexer
       $this->token('STRING', $this->make_string($doc, $quote, true));
     }
 
-    $line += substr_count($heredoc, "\n");
+    $this->line += substr_count($heredoc, "\n");
 
     return strlen($heredoc);
   }
@@ -449,7 +457,7 @@ class Lexer
     self::$NOT_SPACED_REGEX = array_merge(self::$NOT_REGEX, self::$NOT_SPACED_REGEX);
   }
 
-  function interpolate_string($str, array $options = NULL)
+  function interpolate_string($str, array $options = array())
   {
     $options = array_merge(array(
       'heredoc'   => '',
@@ -461,8 +469,10 @@ class Lexer
     $pi = 0;
     $i = -1;
 
-    while ( ($letter = $str{$i++}) )
+    while ( isset($str{++$i}) )
     {
+      $letter = $str{$i};
+
       if ($letter === '\\')
       {
         $i++;
@@ -477,7 +487,7 @@ class Lexer
 
       if ($pi < $i)
       {
-        $tokens[] = array('NEOSTRING', substr($str, pi, $i));
+        $tokens[] = array('NEOSTRING', substr($str, $pi, $i));
       }
 
       $inner = substr($expr, 1, -1);
@@ -592,11 +602,6 @@ class Lexer
     $size = strlen($indent) - 1 - strrpos($indent, "\n");
 
     $no_newlines = $this->unfinished();
-
-    $token = & last($this->tokens);
-    $token['noNewlines'] = $no_newlines;
-
-    if ($token['noNewlines']) { echo preg_match(self::$NO_NEWLINE, $this->value(), $match); print_r($match); die(); };
 
     if (($size - $this->indebt) === $this->indent)
     {
@@ -741,22 +746,18 @@ class Lexer
       return $quote.$quote;
     }
 
-    $body = preg_replace(
-      '/\\([\s\S]/g', 
-      
-      function($match, $contents) use ($quote) {
-        if (in_array($contents, array('\n', $quote)))
-        {
-          return $contents;
-        }
+    $body = preg_replace_callback('/\\([\s\S]/', function($match, $contents) use ($quote)
+    {
+      if (in_array($contents, array('\n', $quote)))
+      {
+        return $contents;
+      }
 
-        return $match;
-      },
+      return $match;
+    },
+    $body);
 
-      $body
-    );
-
-    $body = preg_replace('/'.$quote.'/g', '$0', $body);
+    $body = preg_replace('/'.$quote.'/', '$0', $body);
 
     return $quote + $this->escape_lines($body, $heredoc) + $quote;
   }
@@ -787,7 +788,7 @@ class Lexer
     {
       $len = count($this->indents) - 1;
 
-      if ($this->indents[$len] === NULL)
+      if ( ! isset($this->indents[$len]))
       {
         $move_out = 0;
       }
@@ -863,13 +864,10 @@ class Lexer
 
   function sanitize_heredoc($doc, array $options)
   {
-    $options = array_merge(array(
-      'herecomment' => FALSE,
-      'indent' => 0
-    ),
-    $options);
+    $herecomment = isset($options['herecomment']) ? $options['herecomment'] : NULL;
+    $indent = isset($options['indent']) ? $options['indent'] : NULL;
 
-    if ($options['herecomment'])
+    if ($herecomment)
     {
       if (preg_match(self::$HEREDOC_ILLEGAL, $doc))
       {
@@ -883,23 +881,26 @@ class Lexer
     }
     else
     {
-      while (preg_match(self::$HEREDOC_INDENT, $doc, $match))
-      {
-        $attempt = $match[1];
+      $offset = 0;
 
-        if ( ! $options['indent'] || (strlen($indent) > strlen($attempt) && strlen($attempt) > 0))
+      while (preg_match(self::$HEREDOC_INDENT, $doc, $match, PREG_OFFSET_CAPTURE, $offset))
+      {
+        $attempt = $match[1][0];
+        $offset = strlen($match[0][0]) + $match[0][1];
+
+        if ( ! $indent || (strlen($indent) > strlen($attempt) && strlen($attempt) > 0))
         {
-          $options['indent'] = $attempt;
+          $indent = $attempt;
         }
       }
     }
 
-    if ($options['indent'])
+    if ($indent)
     {
-      $doc = preg_replace('/ \n '.$indent.'/g', "\n", $doc);
+      $doc = preg_replace('/ \n '.$indent.'/', "\n", $doc);
     }
 
-    if ( ! $options['herecomment'])
+    if ( ! $herecomment)
     {
       $doc = preg_replace('/^\n/', '', $doc);
     }

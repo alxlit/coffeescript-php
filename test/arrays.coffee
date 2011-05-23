@@ -75,4 +75,3 @@ test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   fn = -> a = true
   [] = fn()
   ok a
-

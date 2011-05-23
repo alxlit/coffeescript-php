@@ -97,8 +97,12 @@ function lpad(str, length) {
   return str;
 }
 
-function tokenize(code) {
-  return CoffeeScript.tokens(code);
+function show(id) {
+  document.getElementById(id).style.display = 'block';
+}
+
+function tokenize(code, rewrite) {
+  return CoffeeScript.tokens(code, { 'rewrite': typeof rewrite == 'undefined' ? true : !! rewrite });
 }
 
 function trim(str) {
