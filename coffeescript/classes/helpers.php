@@ -165,6 +165,7 @@ function t_canonical($token)
     'EXISTENTIAL_ACCESSOR'  => '?.',
     'FUNC'                  => '->',
     'INCREMENT'             => '++',
+    'MINUS'                 => '-',
     'OBJECT_START'          => '{',
     'OBJECT_END'            => '}',
 

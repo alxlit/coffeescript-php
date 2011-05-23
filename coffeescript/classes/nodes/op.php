@@ -39,7 +39,7 @@ class yyOp extends yyBase
         return $first->new_instance();
       }
 
-      if ($first instanceof yyCode && $first->bound || $first->do)
+      if ($first instanceof yyCode && $first->bound || (isset($first->do) && $first->do))
       {
         $first = new yyParens($first);
       }

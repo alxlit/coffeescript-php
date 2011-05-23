@@ -131,7 +131,7 @@ class Lexer
   {
     if (preg_match(self::$WHITESPACE, $code))
     {
-      $code = "\r{$code}";
+      $code = "\n{$code}";
     }
 
     $code = preg_replace(self::$TRAILING_SPACES, '', str_replace("\r", '', $code));
@@ -145,7 +145,7 @@ class Lexer
     $options);
 
     $this->code     = $code;
-    $this->chunk    = '';
+    $this->chunk    = $code;
     $this->indent   = 0;
     $this->indents  = array();
     $this->indebt   = 0;
@@ -165,8 +165,9 @@ class Lexer
   function balanced_string($str, $end)
   {
     $stack = array($end);
+    $prev = NULL;
 
-    for ($i = 1; $i <= strlen($str); $i++)
+    for ($i = 1; $i < strlen($str); $i++)
     {
       switch ($letter = $str{$i})
       {
@@ -194,7 +195,7 @@ class Lexer
       {
         $stack[] = $end = '}';
       }
-      else if ($end === '"' && $this->value() === '#' && $letter === '{')
+      else if ($end === '"' && $prev === '#' && $letter === '{')
       {
         $stack[] = $end = '}';
       }
@@ -248,15 +249,15 @@ class Lexer
 
     $heredoc = $match[0];
     $quote = $heredoc{0};
-    $doc = $this->sanitize_heredoc($match[2], array('quote' => $quote, 'indent' => null));
+    $doc = $this->sanitize_heredoc($match[2], array('quote' => $quote, 'indent' => NULL));
 
-    if ($quote === '"' && strpos($doc, '#{'))
+    if ($quote === '"' && strpos($doc, '#{') !== FALSE)
     {
-      $this->interpolate_string($doc, array('heredoc' => true));
+      $this->interpolate_string($doc, array('heredoc' => TRUE));
     }
     else
     {
-      $this->token('STRING', $this->make_string($doc, $quote, true));
+      $this->token('STRING', $this->make_string($doc, $quote, TRUE));
     }
 
     $this->line += substr_count($heredoc, "\n");
@@ -268,10 +269,10 @@ class Lexer
   {
     list($heregex, $body, $flags) = $match;
 
-    if (strpos($body, '#{'))
+    if (strpos($body, '#{') === FALSE)
     {
       $re = preg_replace(self::$HEREGEX_OMIT, '', $body);
-      $re = preg_replace('/\//g', '\\/', $re);
+      $re = preg_replace('/\//', '\\/', $re);
 
       $this->token('REGEX', '/'.($re ? $re : '(?:)').'/'.$flags);
 
@@ -283,7 +284,7 @@ class Lexer
 
     $tokens = array();
 
-    foreach ($this->interpolate_string($body, array('regex' => true)) as $token)
+    foreach ($this->interpolate_string($body, array('regex' => TRUE)) as $token)
     {
       list($tag, $value) = $token;
 
@@ -298,8 +299,8 @@ class Lexer
           continue;
         }
 
-        $value = preg_replace('/\\/g', '\\\\', $value);
-        $tokens[] = array(t('STRING'), $this->make_string($value, '"', true));
+        $value = preg_replace('/\\\\/', '\\\\\\\\', $value);
+        $tokens[] = array(t('STRING'), $this->make_string($value, '"', TRUE));
       }
 
       $tokens[] = array(t('+'), '+');
@@ -375,7 +376,7 @@ class Lexer
       }
       else if (in_array($tag, self::$RELATION))
       {
-        if ($tag !== 'INSTANCEOF' && $this->seen_for)
+        if ($tag !== 'INSTANCEOF' && (isset($this->seen_for) && $this->seen_for))
         {
           $tag = 'FOR'.$tag;
           $this->seen_for = FALSE;
@@ -387,7 +388,7 @@ class Lexer
           if ($this->value() === '!')
           {
             array_pop($this->tokens);
-            $id = '!' + $id;
+            $id = '!'. $id;
           }
         }
       }
@@ -407,7 +408,7 @@ class Lexer
         $tag = 'IDENTIFIER';
         $reserved = TRUE;
       }
-      else if (in_array($id, self::$JS_RESERVED))
+      else if (in_array($id, self::$JS_RESERVED, TRUE))
       {
         $this->identifier_error($id);
       }
@@ -460,7 +461,7 @@ class Lexer
     self::$NOT_SPACED_REGEX = array_merge(self::$NOT_REGEX, self::$NOT_SPACED_REGEX);
   }
 
-  function interpolate_string($str, array $options = array())
+  function interpolate_string($str, array $options = array()) // #{0}
   {
     $options = array_merge(array(
       'heredoc'   => '',
@@ -581,7 +582,7 @@ class Lexer
 
   function js_token()
   {
-    if ( ! ($this->chunk{0} === '`' && preg_match(self::$JSTOKEN, $this->chunk)))
+    if ( ! ($this->chunk{0} === '`' && preg_match(self::$JSTOKEN, $this->chunk, $match)))
     {
       return 0;
     }
@@ -673,7 +674,7 @@ class Lexer
         $this->assignment_error();
       }
 
-      if (in_array($prev[1], t('||', '&&')))
+      if (in_array($prev[1], array('||', '&&')))
       {
         $prev[0] = t('COMPOUND_ASSIGN');
         $prev[1] .= '=';
@@ -762,7 +763,7 @@ class Lexer
     },
     $body);
 
-    $body = preg_replace('/'.$quote.'/', '\\$0', $body);
+    $body = preg_replace('/'.$quote.'/', '\\\\$0', $body);
 
     return $quote.$this->escape_lines($body, $heredoc).$quote;
   }
@@ -839,7 +840,9 @@ class Lexer
     if (preg_match(self::$HEREGEX, $this->chunk, $match))
     {
       $length = $this->heregex_token($match);
-      $this->line += substr_count($match[0], "\n");
+
+      // This seems to be broken in the JavaScript compiler...
+      // $this->line += substr_count($match[0], "\n");
 
       return $length;
     }
@@ -848,8 +851,8 @@ class Lexer
 
     if ($prev)
     {
-      if (in_array($prev[0], (isset($prev['spaced']) && $prev['spaced']) ? 
-        self::$NOT_REGEX : self::$NOT_SPACED_REGEX))
+      if (in_array($prev[0], t((isset($prev['spaced']) && $prev['spaced']) ? 
+        self::$NOT_REGEX : self::$NOT_SPACED_REGEX)))
       {
         return 0;
       }
@@ -879,7 +882,7 @@ class Lexer
         throw new Error('block comment cannot contain \"*/\", starting on line '.($line + 1));
       }
 
-      if (strpos($doc, "\n") <= 0)
+      if (strpos($doc, "\n") == 0) // No match or 0
       {
         return $doc;
       }
@@ -893,7 +896,7 @@ class Lexer
         $attempt = $match[1][0];
         $offset = strlen($match[0][0]) + $match[0][1];
 
-        if ( ! $indent || (strlen($indent) > strlen($attempt) && strlen($attempt) > 0))
+        if ( is_null($indent) || (strlen($indent) > strlen($attempt) && strlen($attempt) > 0))
         {
           $indent = $attempt;
         }
@@ -902,7 +905,7 @@ class Lexer
 
     if ($indent)
     {
-      $doc = preg_replace('/ \n '.$indent.'/', "\n", $doc);
+      $doc = preg_replace('/\n'.$indent.'/', "\n", $doc);
     }
 
     if ( ! $herecomment)
@@ -923,7 +926,7 @@ class Lexer
         return 0;
       }
 
-      $this->token('STRING', preg_replace(self::$MULTILINER, "\\\\\n", $string = $match[0]));
+      $this->token('STRING', preg_replace(self::$MULTILINER, "\\\n", $string = $match[0]));
       break;
 
     case '"':
@@ -947,7 +950,7 @@ class Lexer
       return 0;
     }
 
-    $this->line += substr_count($string, '\n');
+    $this->line += substr_count($string, "\n");
 
     return strlen($string);
   }
@@ -1030,7 +1033,7 @@ class Lexer
 
   function tokenize()
   {
-    while ( ($this->chunk = substr($this->code, $this->index)) )
+    while ( ($this->chunk = substr($this->code, $this->index)) !== FALSE )
     {
       $types = array('identifier', 'comment', 'whitespace', 'line', 'heredoc', 
         'string', 'number', 'regex', 'js', 'literal');
