@@ -10,17 +10,13 @@ to contribute.
 * Grammar for the parser generator (using a PHP port of 
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
   port of Bison to PHP as far as I know).
-* Lexer.
-* Rewriter.
-* Some of the nodes (21/31 so far).
-
-Right now I'm trying to get the lexer and rewriter working 100%.
+* Lexer (passes all test cases).
 
 ### Todo
 
-* Lexical scope regulator.
-* Test cases. I figure these will just compare to references created by the 
-  original compiler, nothing fancy.
+* Rewriter (bugfixes).
+* Nodes (21/31 have been drafted).
+* Scope regulator.
 
 ## FAQ
 
