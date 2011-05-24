@@ -34,7 +34,7 @@ class yyOp extends yyBase
 
     if ($op === 'new')
     {
-      if ($first instanceof yyCall && ! $first->do)
+      if ($first instanceof yyCall && ! (isset($first->do) && $first->do))
       {
         return $first->new_instance();
       }

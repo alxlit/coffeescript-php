@@ -82,7 +82,7 @@ class Rewriter
     $action = function( & $token, $i) use ( & $self)
     {
       $tok = array(t('}'), '}', $token[2], 'generated' => TRUE);
-      return array_splice($self->tokens, $i, 0, array($tok));
+      array_splice($self->tokens, $i, 0, array($tok));
     };
 
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $start, & $start_indent, & $condition, & $action)
@@ -92,16 +92,16 @@ class Rewriter
         $stack[] = array( ($tag === t('INDENT') && $self->tag($i - 1) === t('{')) ? t('{') : $tag, $i );
         return 1;
       }
-    
+
       if (in_array($tag, t(Rewriter::$EXPRESSION_END)))
       {
         $start = array_pop($stack);
         return 1;
       }
 
-      $len = count($stack);
+      $len = count($stack) - 1;
 
-      if ( ! ($tag === t(':') && (($ago = $self->tag($i - 2)) === t(':') || ($len && $stack[$len - 1][0] !== t('{'))) ))
+      if ( ! ($tag === t(':') && (($ago = $self->tag($i - 2)) === t(':') || ( ! isset($stack[$len]) || $stack[$len][0] !== t('{'))) ))
       {
         return 1;
       }
@@ -109,17 +109,17 @@ class Rewriter
       $stack[] = array(t('{'));
       $idx = $ago === t('@') ? $i - 2 : $i - 1;
 
-      while ($self->tag($i - 2) === t('HERECOMMENT'))
+      while ($self->tag($idx - 2) === t('HERECOMMENT'))
       {
         $idx -= 2;
       }
 
-      // This causes problems, and doesn't appear to be used for anything.
+      // Doesn't seem to be used anywhere, and it causes problems in PHP.
       // $value = (object) '{';
       // $value->generated = TRUE;
 
       $value = '{';
-      $tok = array(t('{'), $value, $token[2], 'generated' => TRUE);
+      $tok = array(t('{'), $value, $token[2], 'generated' => TRUE, 'generatedValue' => TRUE);
 
       array_splice($tokens, $idx, 0, array($tok));
 
@@ -183,7 +183,7 @@ class Rewriter
 
         $self->detect_end($i + 2, $condition, $action);
 
-        if ($tag === t('WHEN'))
+        if ($tag === t('THEN'))
         {
           array_splice($tokens, $i, 1);
         }
@@ -209,7 +209,11 @@ class Rewriter
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $no_call, & $self )
     {
       $tag = $token[0];
-      $no_call = in_array($tag, t('CLASS', 'IF'));
+      
+      if (in_array($tag, t('CLASS', 'IF')))
+      {
+        $no_call = TRUE;
+      }
 
       $prev = NULL;
 
@@ -227,7 +231,12 @@ class Rewriter
 
       $seen_single = FALSE;
       $seen_control = FALSE;
-      $no_call = ! in_array($tag, t(Rewriter::$LINEBREAKS));
+      
+      if (in_array($tag, t(Rewriter::$LINEBREAKS)))
+      {
+        $no_call = FALSE;
+      }
+      
       $token['call'] = $prev && ! (isset($prev['spaced']) && $prev['spaced']) && $tag === t('?');
 
       if (isset($token['fromThen']) && $token['fromThen'])
@@ -256,8 +265,15 @@ class Rewriter
           return TRUE;
         }
 
-        $seen_single = in_array($tag, t('IF', 'ELSE', 'CATCH', '->', '=>'));
-        $seen_control = in_array($tag, t('IF', 'ELSE', 'SWITCH', 'TRY'));
+        if (in_array($tag, t('IF', 'ELSE', 'CATCH', '->', '=>')))
+        {
+          $seen_single = TRUE;
+        }
+
+        if (in_array($tag, t('IF', 'ELSE', 'SWITCH', 'TRY')))
+        {
+          $seen_control = TRUE;
+        }
 
         if (in_array($tag, t('.', '?.', '::')) && $self->tag($i - 1) === t('OUTDENT'))
         {
@@ -477,7 +493,7 @@ class Rewriter
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
     $this->add_implicit_parenthesis();
-    // $this->ensure_balance(self::$BALANCED_PAIRS);
+    //$this->ensure_balance(self::$BALANCED_PAIRS);
     $this->rewrite_closing_parens();
 
     return $this->tokens;
@@ -535,7 +551,7 @@ class Rewriter
 
       $debt[$mtag] += 1;
 
-      $val = array(t($oppos), ')', $token[2]);
+      $val = array(t($oppos), $mtag === t('INDENT') ? $match[1] : $oppos);
 
       if ($oppos === 'INDEX_END')
       {
@@ -575,11 +591,14 @@ class Rewriter
 
   function tag_postfix_conditionals()
   {
-    $condition = function($token, $i) { return in_array($token[0], t('TERMINATOR', 'INDENT')); };
+    $condition = function($token, $i) 
+    {
+      return in_array($token[0], t('TERMINATOR', 'INDENT'));
+    };
 
     $self = $this;
 
-    $this->scan_tokens(function($token, $i) use ( & $condition, & $self)
+    $this->scan_tokens(function( & $token, $i) use ( & $condition, & $self)
     {
       if ( ! ($token[0] === t('IF')))
       {
@@ -592,7 +611,7 @@ class Rewriter
       {
         if ($token[0] !== t('INDENT'))
         {
-          $original[0] = 'POST_'.$original[0];
+          $original[0] = t('POST_IF'); // 'POST_'.$original[0];
         }
       });
 

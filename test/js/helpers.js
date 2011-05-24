@@ -54,8 +54,8 @@ function formatTokens(tokens) {
     for (var j = 0; j < properties.length; j++) {
       var k = properties[j], v = tokens[i][k];
 
-      if (v === '\n') {
-        v = '\\n';
+      if (typeof v == 'string') {
+        v = v.replace(/\n/g, '\\n');
       }
 
       if (typeof k == 'string') {

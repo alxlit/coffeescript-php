@@ -16,13 +16,11 @@ function compile($source, $options = array(), & $tokens = NULL)
 
   foreach (($tokens = $lexer->tokenize()) as $token)
   {
-    $parser->parse($token);
+    // $parser->parse($token);
   }
 
   // Signal end-of-input to the parser.
-  $parser->parse(NULL);
-
-  // return $parser->yystack;
+  // $parser->parse(NULL);
 }
 
 ?>

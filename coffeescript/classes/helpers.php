@@ -181,18 +181,17 @@ function t_canonical($token)
 
   if (is_array($token))
   {
-    for ($i = 0; $i < count($token); $i++)
+    if (is_array($token[0]))
     {
-      if (is_array($token[$i]))
+      for ($i = 0; $i < count($token); $i++)
       {
-        $t = & $token[$i][0];
+        $token[$i] = t_canonical($token[$i]);
       }
-      else
-      {
-        $t = & $token[$i];
-      }
-
-      $t = t_canonical($t);
+    }
+    else
+    {
+      // Single token.
+      $token[0] = t_canonical($token[0]);
     }
 
     return $token;
