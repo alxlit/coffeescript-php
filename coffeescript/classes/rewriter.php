@@ -33,7 +33,7 @@ class Rewriter
 
   static $IMPLICIT_BLOCK = array('->', '=>', '{', '[', ',');
 
-  static $IMPLICIT_END = array('POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR');
+  static $IMPLICIT_END = array('POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR', 'INDENT');
 
   static $SINGLE_LINERS = array('ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN');
   static $SINGLE_CLOSERS = array('TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN');
@@ -195,7 +195,7 @@ class Rewriter
     });
   }
 
-  function add_implicit_parenthesis()
+  function add_implicit_parentheses()
   {
     $no_call = FALSE;
     $self = $this;
@@ -203,7 +203,14 @@ class Rewriter
     $action = function( & $token, $i) use ( & $self)
     {
       $idx = ($token[0] === t('OUTDENT')) ? $i + 1 : $i;
-      array_splice($self->tokens, $idx, 0, array(array(t('CALL_END'), ')', $token[2])));
+      $tok = array(t('CALL_END'), ')');
+
+      if (isset($token[2]))
+      {
+        $tok[2] = $token[2];
+      }
+
+      array_splice($self->tokens, $idx, 0, array($tok));
     };
 
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $no_call, & $self )
@@ -236,8 +243,11 @@ class Rewriter
       {
         $no_call = FALSE;
       }
-      
-      $token['call'] = $prev && ! (isset($prev['spaced']) && $prev['spaced']) && $tag === t('?');
+
+      if ($prev && ! (isset($prev['spaced']) && $prev['spaced']) && $tag === t('?'))
+      {
+        $token['call'] = TRUE;
+      }
 
       if (isset($token['fromThen']) && $token['fromThen'])
       {
@@ -265,7 +275,7 @@ class Rewriter
           return TRUE;
         }
 
-        if (in_array($tag, t('IF', 'ELSE', 'CATCH', '->', '=>')))
+        if (in_array($tag, t('IF', 'ELSE', '->', '=>')))
         {
           $seen_single = TRUE;
         }
@@ -282,12 +292,13 @@ class Rewriter
 
         return 
           ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') && 
-          (in_array($tag, t(Rewriter::$IMPLICIT_END)) || ($tag === t('INDENT') && ! $seen_control)) &&
+          (in_array($tag, t(Rewriter::$IMPLICIT_END))) &&
           ($tag !== t('INDENT') || 
             ( $self->tag($i - 2) !== t('CLASS') && 
               ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
-              ! (($post = $self->tokens[$i + 1]) && (isset($post['generated']) && $post['generated']) && 
-              $post[0] === t('{')) ));
+              ! ( (isset($self->tokens[$i + 1]) && ($post = $self->tokens[$i + 1])) && 
+                  (isset($post['generated']) && $post['generated']) && $post[0] === t('{') )
+          ));
       },
       $action);
 
@@ -492,7 +503,7 @@ class Rewriter
     $this->add_implicit_indentation();
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
-    $this->add_implicit_parenthesis();
+    $this->add_implicit_parentheses();
     //$this->ensure_balance(self::$BALANCED_PAIRS);
     $this->rewrite_closing_parens();
 
@@ -535,7 +546,7 @@ class Rewriter
 
       if ($debt[ ($inv = t($inverses[$tag])) ] > 0)
       {
-        $debt[$inv] -= 1;
+        $debt[$inv]--;
         array_splice($tokens, $i, 1);
         return 0;
       }
@@ -549,14 +560,14 @@ class Rewriter
         return 1;
       }
 
-      $debt[$mtag] += 1;
+      $debt[$mtag]++;
 
       $val = array(t($oppos), $mtag === t('INDENT') ? $match[1] : $oppos);
 
-      if ($oppos === 'INDEX_END')
-      {
-        $val[1] = ']';
-      }
+      //if ($oppos === 'INDEX_END')
+      //{
+      //  $val[1] = ']';
+      //}
 
       if ($self->tag($i + 2) === $mtag)
       {

@@ -14,14 +14,11 @@ function init()
 
   if (in_array($arg, array('?', 'help')))
   {
-    echo "make.php [all|test]\n";
+    echo "make.php";
     exit(1);
   }
 
-  $all = $arg === 'all';
-
-  if ($all || $arg === '')      { make(); }
-  if ($all || $arg === 'clean') { clean(); }
+  make();
 }
 
 function make()

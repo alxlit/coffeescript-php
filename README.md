@@ -11,10 +11,10 @@ to contribute.
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
   port of Bison to PHP as far as I know).
 * Lexer (passes all test cases).
+* Rewriter (passes all test cases).
 
 ### Todo
 
-* Rewriter (bugfixes).
 * Nodes (21/31 have been drafted).
 * Scope regulator.
 
@@ -57,9 +57,11 @@ catch (Exception e) {}
 
 ## Development
 
+We're porting the **stable** branch (CoffeeScript 1.1.1).
+
 To rebuild the parser run `php make.php`. Running tests is easy, just put the 
 project directory into /srv/http (or whatever location you're running your
 local server from) and navigate to http://localhost/coffeescript-php/test/.
 
-You'll need to have shorttags enabled (sorry).
+You'll need to have short tags enabled (sorry).
 

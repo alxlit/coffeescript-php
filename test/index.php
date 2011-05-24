@@ -53,7 +53,7 @@ if ($run)
 <head>
   <title>Tests <?= $run ? ' - '.$run : '' ?></title>
   <? if ($run): ?>
-    <script src="js/lib/coffee-script.js"></script>
+    <script src="js/lib/coffeescript-1.1.1.js"></script>
     <script src="js/lib/diff.js"></script>
     <script src="js/helpers.js"></script>
     <script>
