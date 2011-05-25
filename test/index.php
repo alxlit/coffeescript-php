@@ -13,7 +13,7 @@ define('ROOT', realpath(dirname(__FILE__)).'/');
 require '../coffeescript/coffeescript.php';
 
 // Test cases.
-$tests = glob(ROOT.'*.coffee');
+$tests = glob(ROOT.'cases/*.coffee');
 foreach ($tests as & $test) { $test = basename($test); }
 
 // Test case to run.
@@ -29,9 +29,11 @@ if ($run)
   $code = '';
   $tokens = array();
 
+  CoffeeScript\Parser::Trace(fopen('trace.txt', 'w'), '> ');
+
   try
   {
-    $code = CoffeeScript\compile($run, array('rewrite' => $rewrite), $tokens);
+    $code = CoffeeScript\compile('cases/'.$run, array('rewrite' => $rewrite), $tokens);
   }
   catch (Exception $e) 
   {
@@ -58,7 +60,7 @@ if ($run)
     <script src="js/helpers.js"></script>
     <script>
       window.addEventListener('load', function() {
-        get('<?= $run ?>', function(code) {
+        get('cases/<?= $run ?>', function(code) {
           var tmp = tokenize(code, <?= (int) $rewrite; ?>);
 
           // Diff between the reference and our result.
@@ -93,7 +95,7 @@ if ($run)
     <a href="index.php">Back</a>
     <h1>Test: <a href="<?= $run ?>"><?= $run ?></a></h1>
     <h2>Code</h2>
-    <p <? if ($error): ?>class="error"<? endif; ?>><?= $code ?>.</p>
+    <p <? if ($error): ?>class="error"<? endif; ?>><?= $code ?></p>
 
     <h2>Lexical Tokens (rewriting <?= $rewrite ? 'on' : 'off' ?>)</h2>
     <p>Tokens in <del>red</del> are in the reference stack, but are missing in ours. Tokens in <ins>green</ins> were generated in our stack but are not present in the reference.</p>

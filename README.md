@@ -7,7 +7,7 @@ to contribute.
 
 ### Complete
 
-* Grammar for the parser generator (using a PHP port of 
+* Grammar for the parser generator (we're using a PHP port of 
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
   port of Bison to PHP as far as I know).
 * Lexer (passes all test cases).
@@ -15,6 +15,7 @@ to contribute.
 
 ### Todo
 
+* Parser (bugfixes).
 * Nodes (21/31 have been drafted).
 * Scope regulator.
 

@@ -3,25 +3,26 @@
 
 %syntax_error { 
   throw new SyntaxError(
-    'unexpected '.$this->tokenName($yymajor).' in '.self::$FILE.':'.(self::$LINE + 1)
+    'unexpected '.$this->tokenName($yymajor).' in '.self::$FILE.':'
+  . (self::$LINE + 1).'.'
   );
 }
 
-%right          YY_POST_IF.
-%right          YY_IF YY_ELSE YY_FOR YY_DO YY_WHILE YY_UNTIL YY_LOOP YY_SUPER YY_CLASS.
-%right          YY_FORIN YY_FOROF YY_BY YY_WHEN.
-%right          YY_EQUALS YY_COLON YY_COMPOUND_ASSIGN YY_RETURN YY_THROW YY_EXTENDS.
-%nonassoc       YY_INDENT YY_OUTDENT.
-%left           YY_LOGIC.
-%left           YY_COMPARE.
-%left           YY_RELATION.
-%left           YY_SHIFT.
-%left           YY_PLUS YY_MINUS.
-%right          YY_UNARY.
-%left           YY_EXISTENTIAL.
-%nonassoc       YY_INCREMENT YY_DECREMENT.
-%left           YY_CALL_START YY_CALL_END.
-%left           YY_ACCESSOR YY_EXISTENTIAL_ACCESSOR YY_PROTOTYPE.
+%right      YY_POST_IF.
+%right      YY_IF YY_ELSE YY_FOR YY_DO YY_WHILE YY_UNTIL YY_LOOP YY_SUPER YY_CLASS.
+%right      YY_FORIN YY_FOROF YY_BY YY_WHEN.
+%right      YY_EQUALS YY_COLON YY_COMPOUND_ASSIGN YY_RETURN YY_THROW YY_EXTENDS.
+%nonassoc   YY_INDENT YY_OUTDENT.
+%left       YY_LOGIC.
+%left       YY_COMPARE.
+%left       YY_RELATION.
+%left       YY_SHIFT.
+%left       YY_PLUS YY_MINUS.
+%right      YY_UNARY.
+%left       YY_EXISTENTIAL.
+%nonassoc   YY_INCREMENT YY_DECREMENT.
+%left       YY_CALL_START YY_CALL_END.
+%left       YY_ACCESSOR YY_EXISTENTIAL_ACCESSOR YY_PROTOTYPE.
 
 root(A) ::=                         . { A = new yyBlock; }
 root(A) ::= body(B)                 . { A = B; }
@@ -62,10 +63,12 @@ alphanumeric(A) ::= YY_STRING(B)  . { A = new yyLiteral(B); }
 literal(A) ::= alphanumeric(B)  . { A = B; } 
 literal(A) ::= YY_JS(B)         . { A = new yyLiteral(B); }
 literal(A) ::= YY_REGEX(B)      . { A = new yyLiteral(B); }
-literal(A) ::= YY_BOOL(B)       . { $val = new yyLiteral(B); $val->is_undefined(A === 'undefined'); A = $val; }
+literal(A) ::= YY_BOOL(B)       . { $val = new yyLiteral(B);
+                                    $val->is_undefined(A === 'undefined');
+                                    A = $val; }
 
-assign(A) ::= assignable(B) YY_EQUALS expression(C)             . { A = new yyAssign(B, C); }
-assign(A) ::= assignable(B) YY_INDENT expression(C) YY_OUTDENT  . { A = new yyAssign(B, C); }
+assign(A) ::= assignable(B) YY_EQUALS expression(C)                       . { A = new yyAssign(B, C); }
+assign(A) ::= assignable(B) YY_EQUALS YY_INDENT expression(C) YY_OUTDENT  . { A = new yyAssign(B, C); }
 
 assignObj(A) ::= objAssignable(B)                                             . { A = new yyValue(B); }
 assignObj(A) ::= objAssignable(B) YY_COLON expression(C)                      . { A = new yyAssign(new yyValue(B), C, 'object'); }
@@ -125,7 +128,6 @@ accessor(A) ::= YY_EXISTENTIAL_ACCESSOR identifier(B) . { A = new yyAccess(B, 's
 accessor(A) ::= YY_PROTOTYPE identifier(B)            . { A = new yyAccess(B, 'proto'); }
 accessor(A) ::= YY_PROTOTYPE                          . { A = new yyAccess(new yyLiteral('prototype')); }
 accessor(A) ::= index(B)                              . { A = B; }
-// accessor(A) ::= slice(B)                              . { A = new yySlice(B); }
 
 index(A) ::= YY_INDEX_START indexValue(B) YY_INDEX_END  . { A = new yySlice(B); }
 index(A) ::= YY_INDEX_SOAK index(B)                     . { A = extend(B, array('soak' => TRUE)); }
@@ -179,10 +181,6 @@ slice(A) ::= expression(B) rangeDots(C) expression(D)   . { A = new yyRange(B, D
 slice(A) ::= expression(B) rangeDots(C)                 . { A = new yyRange(B, NULL, C); }
 slice(A) ::= rangeDots(B) expression(C)                 . { A = new yyRange(NULL, C, B); }
 
-//slice(A) ::= YY_INDEX_START expression(B) rangeDots(C) expression(D) YY_INDEX_END . { A = new yyRange(B, D, C); }
-//slice(A) ::= YY_INDEX_START expression(B) rangeDots(C) YY_INDEX_END               . { A = new yyRange(B, NULL, C); }
-//slice(A) ::= YY_INDEX_START rangeDots(B) expression(C) YY_INDEX_END               . { A = new yyRange(NULL, C, B); }
-
 argList(A) ::= arg(B)                                                       . { A = array(B); }
 argList(A) ::= argList(B) YY_COMMA arg(C)                                   . { A = array_merge(B, array(C)); }
 argList(A) ::= argList(B) optComma YY_TERMINATOR arg(C)                     . { A = array_merge(B, array(C)); }
@@ -225,7 +223,7 @@ for(A) ::= expression(B) forBody(C) . { A = new yyFor(B, C); }
 for(A) ::= forBody(B) block(C)      . { A = new yyFor(C, B); }
 
 forBody(A) ::= YY_FOR range(B)          . { A = array('source' => new yyValue(B)); }
-forBody(A) ::= forStart(B) forSource(C) . { C['own'] = B['own']; C['name'] = B[0]; C['index'] = B[1]; A = C; }
+forBody(A) ::= forStart(B) forSource(C) . { C['own'] = isset(B['own']) ? B['own'] : NULL; C['name'] = B[0]; C['index'] = isset(B[1]) ? B[1] : NULL; A = C; }
 
 forStart(A) ::= YY_FOR forVariables(B)        . { A = B; }
 forStart(A) ::= YY_FOR YY_OWN forVariables(B) . { B['own'] = TRUE; A = B; }
@@ -234,8 +232,8 @@ forValue(A) ::= identifier(B) . { A = B; }
 forValue(A) ::= array(B)      . { A = new yyValue(B); }
 forValue(A) ::= object(B)     . { A = new yyValue(B); }
 
-forVariables(A) ::= forValue(B)                       . { A = array(B, NULL,  'own' => NULL); }
-forVariables(A) ::= forValue(B) YY_COMMA forValue(C)  . { A = array(B, C,     'own' => NULL); }
+forVariables(A) ::= forValue(B)                       . { A = array(B); }
+forVariables(A) ::= forValue(B) YY_COMMA forValue(C)  . { A = array(B, C); }
 
 forSource(A) ::= YY_FORIN expression(B)                                           . { A = array('source' => B); }
 forSource(A) ::= YY_FOROF expression(B)                                           . { A = array('source' => B, 'object' => TRUE); }
