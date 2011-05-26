@@ -2,15 +2,17 @@
 
 namespace CoffeeScript;
 
-class yyParam extends yyBase
+class yy_Param extends yy_Base
 {
   public $children = array('name', 'value');
 
-  function __construct($name, $value = NULL, $splat = NULL)
+  function constructor($name, $value = NULL, $splat = NULL)
   {
     $this->name = $name;
     $this->value = $value;
     $this->splat = $splat;
+
+    return $this;
   }
 
   function as_reference($options)
@@ -28,25 +30,25 @@ class yyParam extends yyBase
 
       if ($node->value->reserved)
       {
-        $node = new yyLiteral('_'.$node->value);
+        $node = yy('Literal', '_'.$node->value);
       }
     }
     else if ($node->is_complex())
     {
-      $node = new yyLiteral($options['scope']->free_variable('arg'));
+      $node = yy('Literal', $options['scope']->free_variable('arg'));
     }
 
-    $node = new yyValue($node);
+    $node = yy('Value', $node);
 
     if ($this->splat)
     {
-      $node = new yySplat($node);
+      $node = yy('Splat', $node);
     }
 
     return ($this->reference = $node);
   }
 
-  function compile($options)
+  function compile($options, $level = NULL)
   {
     return $this->name->compile($options, LEVEL_LIST);
   }

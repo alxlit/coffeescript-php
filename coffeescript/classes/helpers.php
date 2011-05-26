@@ -210,4 +210,22 @@ function t_canonical($token)
   return isset($map[$token]) ? $map[$token] : $token;
 }
 
+/**
+ * Since PHP can't return values from __construct, and the nodes classes rely
+ * heavily on this feature in JavaScript, we use this function instead of the
+ * new keyword to instantiate and implicitly call the constructor.
+ */
+function yy($type)
+{
+  $args = func_get_args();
+  array_shift($args);
+
+  $type = __NAMESPACE__.'\yy_'.$type;
+
+  $inst = new $type;
+  $inst = call_user_func_array(array($inst, 'constructor'), $args);
+
+  return $inst; 
+}
+
 ?>

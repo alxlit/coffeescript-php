@@ -2,14 +2,17 @@
 
 namespace CoffeeScript;
 
-class yySlice extends yyBase
+class yy_Slice extends yy_Base
 {
   public $children = array('range');
 
-  function __construct($range)
+  function constructor($range)
   {
-    parent::__construct();
+    parent::constructor();
+
     $this->range = $range;
+
+    return $this;
   }
 
   function compile_node($options)

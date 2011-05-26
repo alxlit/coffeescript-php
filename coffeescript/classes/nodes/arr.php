@@ -2,13 +2,15 @@
 
 namespace CoffeeScript;
 
-class yyArr extends yyBase
+class yy_Arr extends yy_Base
 {
   public $children = array('objects');
 
-  function __construct($objs)
+  function constructor($objs)
   {
     $this->objects = $objs ? $objs : array();
+
+    return $this;
   }
 
   function assigns($name)
@@ -26,7 +28,7 @@ class yyArr extends yyBase
 
   function compile_node($options)
   {
-    if ( ! count($this->options))
+    if ( ! count($options))
     {
       return '[]';
     }
@@ -34,7 +36,7 @@ class yyArr extends yyBase
     $options['indent'] .= TAB;
     $objs = $this->filter_implicit_objects($this->objects);
 
-    if (($code = Splat::compile_splatted_array($options, $objs)))
+    if (($code = yy_Splat::compile_splatted_array($options, $objs)))
     {
       return $code;
     }
@@ -48,7 +50,7 @@ class yyArr extends yyBase
 
     $code = implode(', ', $code);
 
-    if (strpos("\n", $code) >= 0)
+    if (strpos($code, "\n") >= 0)
     {
       return "[\n{$options['indent']}{$code}\n{$this->tab}]";
     }
@@ -60,7 +62,7 @@ class yyArr extends yyBase
 
   function filter_implicit_objects()
   {
-    return call_user_func_array(array(new yyCall, __METHOD__), func_get_args());
+    return call_user_func_array(array(new yy_Call, __FUNCTION__), func_get_args());
   }
 }
 

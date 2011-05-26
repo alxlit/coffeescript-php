@@ -805,8 +805,8 @@ class yyStackEntry
      */
     function parse($token)
     {
-          list($yymajor, $yytokenvalue, ) = $token ? $token : array(0, 0);
-          self::$LINE = isset($token[2]) ? $token[2] : -1;
+        list($yymajor, $yytokenvalue, ) = $token ? $token : array(0, 0);
+        self::$LINE = isset($token[2]) ? $token[2] : -1;
 
 //        $yyact;            /* The parser action. */
 //        $yyendofinput;     /* True if we are at the end of input */
@@ -939,5 +939,10 @@ class yyStackEntry
                 $yymajor = self::YYNOCODE;
             }            
         } while ($yymajor != self::YYNOCODE && $this->yyidx >= 0);
+
+        if ($token === NULL)
+        {
+          return $this->_retvalue;
+        }
     }
 }

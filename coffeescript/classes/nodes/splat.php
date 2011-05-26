@@ -2,11 +2,11 @@
 
 namespace CoffeeScript;
 
-class yySplat extends yyBase
+class yy_Splat extends yy_Base
 {
   public $children = array('name');
 
-  function __construct($name)
+  function constructor($name)
   {
     if (isset($name->compile))
     {
@@ -14,8 +14,10 @@ class yySplat extends yyBase
     }
     else
     {
-      $this->name = new yyLiteral($name);
+      $this->name = yy('Literal', $name);
     }
+
+    return $this;
   }
 
   function assigns($name)
@@ -35,11 +37,11 @@ class yySplat extends yyBase
     }
   }
 
-  static function compile_splatted_array($options, $list, $apply)
+  static function compile_splatted_array($options, $list, $apply = FALSE)
   {
     $index = -1;
 
-    while (($node = $list[++$index]) && !($node instanceof yySplat))
+    while (isset($node[++$index]) && ($node = $list[$index]) && !($node instanceof yy_Splat))
     {
       continue;
     }
@@ -66,7 +68,7 @@ class yySplat extends yyBase
     foreach ($args as $i => $node)
     {
       $code = $node->compile($options, LEVEL_LIST);
-      $args[$i] = (node instanceof yySplat) ? utility('slice').".call({$code})" : "[{$code}]";
+      $args[$i] = ($node instanceof yy_Splat) ? utility('slice').".call({$code})" : "[{$code}]";
     }
 
     if ($index === 0)

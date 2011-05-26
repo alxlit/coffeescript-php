@@ -2,21 +2,27 @@
 
 namespace CoffeeScript;
 
-class yyCode extends yyBase
+class yy_Code extends yy_Base
 {
   public $children = array('params', 'body');
 
-  function __construct($params = NULL, $body = NULL, $tag = NULL)
+  public $ctor = NULL;
+  public $front = NULL;
+  public $no_return = NULL;
+
+  function constructor($params = NULL, $body = NULL, $tag = NULL)
   {
     $this->params = $params ? $params : array();
-    $this->body = $body ? $body : new yyBlock;
+    $this->body = $body ? $body : new yy_Block;
     $this->bound = $tag === 'boundfunc';
     $this->context = $this->bound ? 'this' : NULL;
+
+    return $this;
   }
 
   function compile_node($options)
   {
-    $options['scope'] = new yyScope($options['scope'], $this->body, $this);
+    $options['scope'] = new Scope($options['scope'], $this->body, $this);
     $options['scope']->shared = del($options, 'sharedScope');
     $options['indent'] .= TAB;
 
@@ -41,7 +47,7 @@ class yyCode extends yyBase
           $params[] = $p->as_reference($options);
         }
 
-        $splats = new yyAssign(new yyValue(new yyArr($params)), new yyValue(new yyLiteral('arguments')));
+        $splats = yy('Assign', yy('Value', yy('Arr', $params)), yy('Value', yy('Literal', 'arguments')));
 
         break;
       }
@@ -55,10 +61,10 @@ class yyCode extends yyBase
 
         if ($param->value)
         {
-          $val = new yyOp('?', $ref, $param->value);
+          $val = yy('Op', '?', $ref, $param->value);
         }
 
-        $exprs[] = new yyAssign(new yyValue($param->name), $val, '=', array('param' => TRUE));
+        $exprs[] = yy('Assign', yy('Value', $param->name), $val, '=', array('param' => TRUE));
       }
       else
       {
@@ -66,14 +72,14 @@ class yyCode extends yyBase
 
         if ($param->value)
         {
-          $lit = new yyLiteral($ref->name->value.' == null');
-          $val = new yyAssign(new yyValue($param->name), $param->value, '=');
+          $lit = yy('Literal', $ref->name->value.' == null');
+          $val = yy('Assign', yy('Value', $param->name), $param->value, '=');
 
-          $exprs[] = new yyIf($lit, $val);
+          $exprs[] = yy('If', $lit, $val);
         }
       }
 
-      if ( ! $splats)
+      if ( ! (isset($splats) && $splats))
       {
         $vars[] = $ref;
       }
@@ -81,7 +87,7 @@ class yyCode extends yyBase
 
     $was_empty = $this->body->is_empty();
 
-    if ($splats)
+    if (isset($splats) && $splats)
     {
       array_unshift($exprs, $splats);
     }
@@ -91,7 +97,7 @@ class yyCode extends yyBase
       $this->body->expressions = array_merge($this->body->expressions, $exprs);
     }
 
-    if ( ! $splats)
+    if ( ! (isset($splats) && $splats))
     {
       foreach ($vars as $i => $v)
       {
@@ -131,7 +137,7 @@ class yyCode extends yyBase
       return utility('bind')."({$code}, {$this->context})";
     }
 
-    return ($this->front || ($options['level'] >= LEVEL_ACCESS)) ? "({$code})" : $code;
+    return ($this->front ? $this->front : ($options['level'] >= LEVEL_ACCESS ? "({$code})" : $code));
   }
 
   function is_statement()

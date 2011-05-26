@@ -2,16 +2,22 @@
 
 namespace CoffeeScript;
 
-class yyIndex extends yyBase
+class yy_Index extends yy_Base
 {
   public $children = array('index');
 
-  function __construct($index)
+  public $from = NULL;
+  public $to = NULL;
+  public $exclusive = NULL;
+
+  function constructor($index)
   {
     $this->index = $index;
+
+    return $this;
   }
 
-  function compile($options)
+  function compile($options, $level = NULL)
   {
     return ($this->proto ? '.prototype' : '').'['.$this->index->compile($options, LEVEL_PAREN).']';
   }

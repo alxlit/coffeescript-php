@@ -2,11 +2,13 @@
 
 namespace CoffeeScript;
 
-class yyLiteral extends yyBase
+class yy_Literal extends yy_Base
 {
-  function __construct($value)
+  function constructor($value)
   {
     $this->value = $value;
+
+    return $this;
   }
 
   function assigns($name)
@@ -44,7 +46,7 @@ class yyLiteral extends yyBase
 
   function is_statement()
   {
-    return in_array($this->value, array('break', 'continue', 'debugger'));
+    return in_array($this->value, array('break', 'continue', 'debugger'), TRUE);
   }
 
   function is_undefined($set = NULL)
@@ -78,10 +80,10 @@ class yyLiteral extends yyBase
 
   function make_return()
   {
-    return $this->is_statement() ? $this : new yyReturn($this);
+    return $this->is_statement() ? $this : yy('Return', $this);
   }
 
-  function to_string()
+  function to_string($idt = '', $name = __CLASS__)
   {
     return ' "'.$this->value.'"';
   }

@@ -14,10 +14,9 @@ define('LEVEL_ACCESS',  6);
 
 define('TAB', '  ');
 
-define('TRAILING_WHITESPACE',   '/[ \t]+$/gm');
-define('IDENTIFIER',            '/^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/');
-define('IS_STRING',             '/^[\'"]/');
-define('SIMPLENUM',             '/^[+-]?\d+$/');
+define('IDENTIFIER',  '/^[$A-Za-z_\x7f-\x{ffff}][$\w\x7f-\x{ffff}]*$/u');
+define('IS_STRING',   '/^[\'"]/');
+define('SIMPLENUM',   '/^[+-]?\d+$/');
 
 $UTILITIES = array(
   'bind'    => 
@@ -48,18 +47,18 @@ $UTILITIES = array(
 
 function multident($code, $tab)
 {
-  return preg_replace('/\n/g', "\n$tab");
+  return preg_replace('/\n/', "\n{$tab}", $code);
 }
 
 function unfold_soak($options, $parent, $name)
 {
-  if ( ! ($ifn = $parent[$name]->unfold_soak($options)))
+  if ( ! (isset($parent->{$name}) && $parent->{$name} && $ifn = $parent->{$name}->unfold_soak($options)))
   {
     return;
   }
 
   $parent[$name] = $ifn->body;
-  $ifn->body = new yyValue($parent);
+  $ifn->body = new YY_Value($parent);
 
   return $ifn;
 }

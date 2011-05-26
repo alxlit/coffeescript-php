@@ -2,11 +2,13 @@
 
 namespace CoffeeScript;
 
-class yyComment extends yyBase
+class yy_Comment extends yy_Base
 {
-  function __construct($comment)
+  function constructor($comment)
   {
     $this->comment = $comment;
+
+    return $this;
   }
 
   function compile_node($options, $level = NULL)

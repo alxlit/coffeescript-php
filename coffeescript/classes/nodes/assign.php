@@ -2,18 +2,20 @@
 
 namespace CoffeeScript;
 
-class yyAssign extends yyBase
+class yy_Assign extends yy_Base
 {
   public $children = array('variable', 'value');
 
-  const METHOD_DEF = '/^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\uffff]*)$/';
+  const METHOD_DEF = '/^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\x{ffff}]*)$/u';
 
-  function __construct($variable, $value, $context = NULL, $options = NULL)
+  function constructor($variable, $value, $context = '', $options = NULL)
   {
     $this->variable = $variable;
     $this->value = $value;
     $this->context = $context;
     $this->param = $options ? $options['param'] : NULL;
+
+    return $this;
   }
 
   function assigns($name)
@@ -31,13 +33,14 @@ class yyAssign extends yyBase
   function compile_conditional($options)
   {
     list($left, $rite) = $this->variable->cache_reference($options);
-    $tmp = new yyOp(array_slice($this->context, 0, -1), $left, new yyAssign($rite, $this->value, '='));
+    $tmp = yy('Op', substr($this->context, 0, -1), $left, yy('Assign', $rite, $this->value, '='));
+
     return $tmp->compile($options);
   }
 
   function compile_node($options)
   {
-    if (($is_value = ($this->variable instanceof yyValue)))
+    if (($is_value = ($this->variable instanceof yy_Value)))
     {
       if ($this->variable->is_array() || $this->variable->is_object())
       {
@@ -55,14 +58,19 @@ class yyAssign extends yyBase
       }
     }
 
-    $name = $this->variable->compile($options, LEVEL_LIST);
+    $name = '';
+    
+    if ($this->variable)
+    {
+      $name = $this->variable->compile($options, LEVEL_LIST);
+    }
 
-    if ( ! ($this->context || $this->variable->is_assignable()))
+    if ( ! ($this->context || ($this->variable && $this->variable->is_assignable())))
     {
       throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
     }
 
-    if ( ! ($this->context || $is_value && ($this->variable->namespaced || $this->variable->has_properties())))
+    if ( ! ($this->context || $is_value && ($this->variable && ($this->variable->namespaced || $this->variable->has_properties()))))
     {
       if ($this->param)
       {
@@ -74,7 +82,7 @@ class yyAssign extends yyBase
       }
     }
 
-    if ($this->value instanceof yyCode && preg_match(self::METHOD_DEF, $name, $match))
+    if ($this->value instanceof yy_Code && preg_match(self::METHOD_DEF, $name, $match))
     {
       $this->value->name = $match[2];
 
@@ -100,7 +108,7 @@ class yyAssign extends yyBase
   {
     $top = $options['level'] === LEVEL_TOP;
     $value = $this->value;
-    $objects = $this->variable->objects;
+    $objects = isset($this->variable->objects) ? $this->variable->objects : array();
     
     if ( ! ($olen = count($objects)))
     {
@@ -110,18 +118,18 @@ class yyAssign extends yyBase
 
     $is_object = $this->variable->is_object();
 
-    if ($top && $olen === 1 && ! (($obj = $objects[0]) instanceof yySplat))
+    if ($top && $olen === 1 && ! (($obj = $objects[0]) instanceof yy_Splat))
     {
-      if ($obj instanceof yyAssign)
+      if ($obj instanceof yy_Assign)
       {
         $idx = $obj->variable->base;
         $obj = $obj->value;
       }
       else
       {
-        if ($obj->base instanceof yyParens)
+        if ($obj->base instanceof yy_Parens)
         {
-          $tmp = new yyValue($obj->unwrap_all());
+          $tmp = yy('Value', $obj->unwrap_all());
           list($obj, $idx) = $tmp->cache_reference($options);
         }
         else
@@ -132,23 +140,23 @@ class yyAssign extends yyBase
           }
           else
           {
-            $idx = new yyLiteral(0);
+            $idx = yy('Literal', 0);
           }
         }
 
         $acc = preg_match(IDENTIFIER, $idx->unwrap()->value);
-        $value = new yyValue($value);
+        $value = yy('Value', $value);
 
         if ($acc)
         {
-          $value->properties[] = new yyAccess($idx);
+          $value->properties[] = yy('Access', $idx);
         }
         else
         {
-          $value->properties[] = new yyIndex($idx);
+          $value->properties[] = yy('Index', $idx);
         }
 
-        $tmp = new yyAssign($obj, $value);
+        $tmp = yy('Assign', $obj, $value);
 
         return $tmp->compile($options);
       }
@@ -169,16 +177,16 @@ class yyAssign extends yyBase
 
         if ($is_object)
         {
-          if ($obj instanceof yyAssign)
+          if ($obj instanceof yy_Assign)
           {
             $idx = $obj->variable->base;
             $obj = $obj->value;
           }
           else
           {
-            if ($obj->base instanceof yyParens)
+            if ($obj->base instanceof yy_Parens)
             {
-              $tmp = new yyValue($obj->unwrap_all());
+              $tmp = yy('Value', $obj->unwrap_all());
               list($obj, $idx) = $tmp->cache_reference($options);
             }
             else
@@ -188,7 +196,7 @@ class yyAssign extends yyBase
           }
         }
 
-        if ( ! $splat && ($obj instanceof yySplat))
+        if ( ! $splat && ($obj instanceof yy_Splat))
         {
           $val = "{$olen} <={$vvar}.length ? ".utility('slice').".call({$vvar}, {$i})";
 
@@ -202,12 +210,12 @@ class yyAssign extends yyBase
             $val .= ') : []';
           }
 
-          $val = new yyLiteral($val);
+          $val = yy('Literal', $val);
           $splat = "{$ivar}++";
         }
         else
         {
-          if ($obj instanceof yySplat)
+          if ($obj instanceof yy_Splat)
           {
             $obj = $obj->name->compile($options);
             throw SyntaxError("multiple splats are disallowed in an assignment: {$obj} ...");
@@ -215,7 +223,7 @@ class yyAssign extends yyBase
 
           if (is_int($idx) || is_float($idx))
           {
-            $idx = new yyLiteral($splat ? $splat : $idx);
+            $idx = yy('Literal', $splat ? $splat : $idx);
             $acc = FALSE;
           }
           else
@@ -223,13 +231,13 @@ class yyAssign extends yyBase
             $acc = $is_object ? preg_match(IDENTIFIER, $idx->unwrap()->value) : 0;
           }
 
-          $val = new yyValue(new yyLiteral($vvar), array($acc ? new yyAccess($idx) : new yyIndex($idx)));
+          $val = yy('Value', yy('Literal', $vvar), array($acc ? yy('Access', $idx) : yy('Index', $idx)));
         }
 
 
       }
 
-      $tmp = new yyAssign($obj, $val, NULL, array('param' => $this->param));
+      $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param));
       $assigns[] = $tmp->compile($options, LEVEL_TOP);
     }
 
@@ -245,11 +253,11 @@ class yyAssign extends yyBase
 
   function compile_splice($options)
   {
-    $tmp = array_pop($this->varaiable->properties);
+    $tmp = array_pop($this->variable->properties);
 
-    $from = $tmp->from;
-    $to = $tmp->to;
-    $exclusive = $tmp->exclusive;
+    $from = $tmp->range->from;
+    $to = $tmp->range->to;
+    $exclusive = $tmp->range->exclusive;
 
     $name = $this->variable->compile($options);
 

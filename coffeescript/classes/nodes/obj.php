@@ -2,14 +2,16 @@
 
 namespace CoffeeScript;
 
-class yyObj extends yyBase
+class yy_Obj extends yy_Base
 {
   public $children = array('properties');
 
-  function __construct($props, $generated = FALSE)
+  function constructor($props, $generated = FALSE)
   {
     $this->generated = $generated;
     $this->objects = $this->properties = $props ? $props : array();
+
+    return $this;
   }
 
   function assigns($name)
@@ -38,7 +40,7 @@ class yyObj extends yyBase
     {
       foreach ($props as $node)
       {
-        if ($node instanceof yyValue)
+        if ($node instanceof yy_Value)
         {
           throw new Error('cannot have an implicit value in an implicit object');
         }
@@ -54,7 +56,7 @@ class yyObj extends yyBase
       {
         $join = '';
       }
-      else if ($prop === $last_non_com || $prop instanceof yyComment)
+      else if ($prop === $last_non_com || $prop instanceof yy_Comment)
       {
         $join = "\n";
       }
@@ -63,18 +65,18 @@ class yyObj extends yyBase
         $join = ",\n";
       }
 
-      $indent = $prop instanceof yyComment ? '' : $idt;
+      $indent = $prop instanceof yy_Comment ? '' : $idt;
 
-      if ($prop instanceof yyValue && $prop->this)
+      if ($prop instanceof yy_Value && $prop->this)
       {
-        $prop = new yyAssign($prop->properties[0]->name, $prop, 'object');
+        $prop = yy('Assign', $prop->properties[0]->name, $prop, 'object');
       }
 
-      if ( ! ($prop instanceof yyComment))
+      if ( ! ($prop instanceof yy_Comment))
       {
-        if ( ! ($prop instanceof yyAssign))
+        if ( ! ($prop instanceof yy_Assign))
         {
-          $prop = new yyAssign($prop, $prop, 'object');
+          $prop = yy('Assign', $prop, $prop, 'object');
         }
 
         if (isset($prop->variable->base))

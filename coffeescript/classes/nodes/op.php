@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-class yyOp extends yyBase
+class yy_Op extends yy_Base
 {
   static $CONVERSIONS = array(
     '==' => '===',
@@ -16,17 +16,19 @@ class yyOp extends yyBase
   );
 
   public $children = array('first', 'second');
+  public $front = NULL;
+  public $operator = NULL;
 
-  function __construct($op, $first, $second = NULL, $flip = NULL)
+  function constructor($op, $first, $second = NULL, $flip = NULL)
   {
     if ($op === 'in')
     {
-      return new yyIn($first, $second);
+      return yy('In', $first, $second);
     }
 
     if ($op === 'do')
     {
-      $call = new yyCall($first, isset($first->params) ? $first->params : array());
+      $call = yy('Call', $first, isset($first->params) ? $first->params : array());
       $call->do = TRUE;
 
       return $call;
@@ -34,21 +36,21 @@ class yyOp extends yyBase
 
     if ($op === 'new')
     {
-      if ($first instanceof yyCall && ! (isset($first->do) && $first->do))
+      if ($first instanceof yy_Call && ! (isset($first->do) && $first->do))
       {
         return $first->new_instance();
       }
 
-      if ($first instanceof yyCode && $first->bound || (isset($first->do) && $first->do))
+      if ($first instanceof yy_Code && $first->bound || (isset($first->do) && $first->do))
       {
-        $first = new yyParens($first);
+        $first = yy('Parens', $first);
       }
     }
 
     $this->operator = isset(self::$CONVERSIONS[$op]) ? self::$CONVERSIONS[$op] : $op;
     $this->first = $first;
     $this->second = $second;
-    $this->flip = (bool) $flip;
+    $this->flip = !! $flip;
 
     return $this;
   }
@@ -71,8 +73,8 @@ class yyOp extends yyBase
   {
     if ($this->first->is_complex())
     {
-      $ref = new yyLiteral($options['scope']->free_variable('ref'));
-      $fst = new yyParens(new yyAssign($ref, $this->first));
+      $ref = yy('Literal', $options['scope']->free_variable('ref'));
+      $fst = yy('Parens', yy('Assign', $ref, $this->first));
     }
     else
     {
@@ -80,13 +82,13 @@ class yyOp extends yyBase
       $ref = $fst;
     }
 
-    $tmp = new yyIf(new yyExistence($fst), $ref, array('type' => 'if'));
+    $tmp = yy('If', yy('Existence', $fst), $ref, array('type' => 'if'));
     $tmp->add_else($this->second);
 
     return $tmp->compile($options);
   }
 
-  function compile_node($options)
+  function compile_node($options, $level = NULL)
   {
     if ($this->is_unary())
     {
@@ -106,7 +108,7 @@ class yyOp extends yyBase
     $this->first->front = $this->front;
 
     $code = $this->first->compile($options, LEVEL_OP).' '.$this->operator.' '
-      .$tihs->second->compile($options, LEVEL_OP);
+      .$this->second->compile($options, LEVEL_OP);
 
     return $options['level'] <= LEVEL_OP ? $code : "({$code})";
   }
@@ -115,15 +117,21 @@ class yyOp extends yyBase
   {
     $parts = array($op = $this->operator);
 
-    if (in_array($op, array('new', 'typeof', 'delete')) || in_array($op, array('+', '-')) &&
-      $this->first instanceof yyOp && $this->first->operator === $op)
+    if (in_array($op, array('new', 'typeof', 'delete'), TRUE) || in_array($op, array('+', '-'), TRUE) &&
+      $this->first instanceof yy_Op && $this->first->operator === $op)
     {
       $parts[] = ' ';
     }
 
     if ($op === 'new' && $this->first->is_statement($options))
     {
-      $this->first = new yyParens($this->first);
+      $this->first = yy('Parens', $this->first);
+    }
+
+    if ( ! isset($this->first))
+    {
+      var_dump($this);
+      die();
     }
 
     $parts[] = $this->first->compile($options, LEVEL_OP);
@@ -161,7 +169,7 @@ class yyOp extends yyBase
 
       if ( ! $all_invertable)
       {
-        $tmp = new yyParens($this);
+        $tmp = yy('Parens', $this);
         return $tmp->invert();
       }
 
@@ -180,7 +188,7 @@ class yyOp extends yyBase
     {
       $op = self::$INVERSIONS[$this->operator];
 
-      if ($first->unwrap() instanceof yyOp)
+      if ($first->unwrap() instanceof yy_Op)
       {
         $first->invert();
       }
@@ -189,17 +197,17 @@ class yyOp extends yyBase
     }
     else if ($this->second)
     {
-      $tmp = new yyParens($this);
+      $tmp = yy('Parens', $this);
       return $tmp->invert();
     }
-    else if ($this->operator === '!' && ($fst = $this->first->unwrap()) instanceof yyOp &&
+    else if ($this->operator === '!' && ($fst = $this->first->unwrap()) instanceof yy_Op &&
       in_array($fst->operator, array('!', 'in', 'instanceof')))
     {
       return $fst;
     }
     else
     {
-      return new yyOp('!', $this);
+      return yy('Op', '!', $this);
     }
   }
 
@@ -210,16 +218,16 @@ class yyOp extends yyBase
 
   function is_unary()
   {
-    return ! $this->second;
+    return ! (isset($this->second) && $this->second);
   }
 
   function unfold_soak($options)
   {
-    return in_array($this->operator, array('++', '--', 'delete')) &&
+    return in_array($this->operator, array('++', '--', 'delete'), TRUE) &&
       unfold_soak($options, $this, 'first');
   }
 
-  function to_string($idt = NULL)
+  function to_string($idt = '', $name = __CLASS__)
   {
     return parent::to_string($idt, $this->constructor->name.' '.$this->operator);
   }

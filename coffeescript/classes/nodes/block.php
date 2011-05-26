@@ -2,13 +2,15 @@
 
 namespace CoffeeScript;
 
-class yyBlock extends yyBase
+class yy_Block extends yy_Base
 {
   public $children = array('expressions');
 
-  function __construct($nodes = array())
+  function constructor($nodes = array())
   {
     $this->expressions = compact(flatten($nodes));
+
+    return $this;
   }
 
   function compile($options, $level = NULL)
@@ -74,13 +76,14 @@ class yyBlock extends yyBase
 
   function compile_root($options)
   {
-    $options['indent'] = $this->tab = $options['bare'] ? '' : TAB;
+    $options['indent'] = $this->tab = isset($options['bare']) && $options['bare'] ? '' : TAB;
     $options['scope'] = new Scope(null, $this, null);
     $options['level'] = LEVEL_TOP;
     
     $code = $this->compile_with_declarations($options);
 
-    return $options['bare'] ? $code : "(function() {\n{$code}\n}).call(this);\n";
+    return (isset($options['bare']) && $options['bare']) ? $code : 
+      "(function() {\n{$code}\n}).call(this);\n";
   }
 
   function compile_with_declarations($options)
@@ -91,7 +94,7 @@ class yyBlock extends yyBase
     {
       $expr = $expr->unwrap();
 
-      if ( ! ($expr instanceof yyComment || $expr instanceof yyLiteral))
+      if ( ! ($expr instanceof yy_Comment || $expr instanceof yy_Literal))
       {
         break;
       }
@@ -111,7 +114,7 @@ class yyBlock extends yyBase
 
     $scope = $options['scope'];
 
-    if ($scope->expressions == $this)
+    if ($scope->expressions === $this)
     {
       if ($scope->has_declarations())
       {
@@ -145,7 +148,7 @@ class yyBlock extends yyBase
     return FALSE;
   }
 
-  function jumps($options)
+  function jumps($options = array())
   {
     foreach ($this->expressions as $i => $expr)
     {
@@ -166,11 +169,11 @@ class yyBlock extends yyBase
     {
       $expr = $this->expressions[$len];
 
-      if ( ! ($expr instanceof yyComment))
+      if ( ! ($expr instanceof yy_Comment))
       {
         $this->expressions[$len] = $expr->make_return();
 
-        if ($expr instanceof yyReturn && ! $expr->expression)
+        if ($expr instanceof yy_Return && ! $expr->expression)
         {
           return array_splice($this->expressions, $len, 1);
         }
@@ -211,12 +214,12 @@ class yyBlock extends yyBase
       $nodes = array($nodes);
     }
 
-    if (count($nodes) === 1 && $nodes[0] instanceof yyBlock)
+    if (count($nodes) === 1 && $nodes[0] instanceof yy_Block)
     {
       return $nodes[0];
     }
 
-    return new yyBlock($nodes);
+    return yy('Block', $nodes);
   }
 }
 

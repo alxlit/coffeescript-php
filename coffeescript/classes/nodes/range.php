@@ -2,16 +2,18 @@
 
 namespace CoffeeScript;
 
-class yyRange
+class yy_Range
 {
   public $children = array('from', 'to');
 
-  function __construct($from, $to, $tag)
+  function constructor($from, $to, $tag)
   {
     $this->from = $from;
     $this->to = $to;
     $this->exclusive = $tag === 'exclusive';
     $this->equals = $this->exclusive ? '' : '=';
+
+    return $this;
   }
 
   function compile_array($options)

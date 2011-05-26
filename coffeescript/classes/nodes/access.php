@@ -2,20 +2,22 @@
 
 namespace CoffeeScript;
 
-class yyAccess extends yyBase
+class yy_Access extends yy_Base
 {
   public $children = array('name');
 
-  function __construct($name, $tag = NULL)
+  function constructor($name, $tag = NULL)
   {
     $this->name = $name;
     $this->name->as_key = TRUE;
 
     $this->proto = $tag === 'proto' ? '.prototype' : '';
     $this->soak = $tag === 'soak';
+
+    return $this;
   }
 
-  function compile($options)
+  function compile($options, $level = NULL)
   {
     $name = $this->name->compile($options);
     return $this->proto.(preg_match(IS_STRING, $name) ? "[{$name}]" : ".{$name}");

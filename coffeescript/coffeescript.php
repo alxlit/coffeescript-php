@@ -14,13 +14,18 @@ function compile($source, $options = array(), & $tokens = NULL)
 
   Parser::$FILE = $source;
 
+  if (isset($options['trace']))
+  {
+    Parser::Trace(fopen($options['trace'], TRUE), '> ');
+  }
+
   foreach (($tokens = $lexer->tokenize()) as $token)
   {
     $parser->parse($token);
   }
 
-  // Signal end-of-input to the parser.
-  $parser->parse(NULL);
+  // Done parsing.
+  return $parser->parse(NULL)->compile($options);
 }
 
 ?>

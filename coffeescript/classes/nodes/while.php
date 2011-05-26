@@ -2,14 +2,16 @@
 
 namespace CoffeeScript;
 
-class yyWhile extends yyBase
+class yy_While extends yy_Base
 {
   public $children = array('condition', 'guard', 'body');
 
-  function __construct($condition, $options = NULL)
+  function constructor($condition, $options = NULL)
   {
     $this->condition = $options && $options->invert ? $condition->invert : $condition;
     $this->guard = $options ? $options->guard : NULL;
+
+    return $this;
   }
 
   function add_body($body)
@@ -37,13 +39,13 @@ class yyWhile extends yyBase
 
         if ($body)
         {
-          $body = yyPush::wrap($rvar, $body);
+          $body = yy_Push::wrap($rvar, $body);
         }
       }
 
       if ($this->guard)
       {
-        $body = Block::wrap(array(new yyIf($this->guard, $body)));
+        $body = Block::wrap(array(yy('If', $this->guard, $body)));
       }
 
       $body = "\n".$body->compile($options, LEVEL_TOP)."\n{$this->tab}";

@@ -2,21 +2,23 @@
 
 namespace CoffeeScript;
 
-class yyExtends extends yyBase
+class yy_Extends extends yy_Base
 {
   public $children = array('child', 'parent');
 
-  function __construct($child, $parent)
+  function constructor($child, $parent)
   {
     $this->child = $child;
     $this->parent = $parent;
+
+    return $this;
   }
 
   function compile($options)
   {
     utility('hasProp');
 
-    $tmp = new yyCall(new yyValue(new yyLiteral(utility('extends'))), array($this->child, $this->parent));
+    $tmp = yy('Call', yy('Value', yy('Literal', utility('extends'))), array($this->child, $this->parent));
 
     return $tmp->compile($options);
   }

@@ -2,24 +2,28 @@
 
 namespace CoffeeScript;
 
-class yyValue extends yyBase
+class yy_Value extends yy_Base
 {
   public $children = array('base', 'properties');
+  public $front = NULL;
+  public $namespaced = FALSE;
 
-  function __construct($base, $props = NULL, $tag = NULL)
+  function constructor($base, $props = NULL, $tag = NULL)
   {
-    if ( ! $props && $base instanceof yyValue)
+    $this->base = $base;
+    $this->properties = is_null($props) ? array() : $props;
+
+    if ( ! $props && $base instanceof yy_Value)
     {
       return $base;
     }
-
-    $this->base = $base;
-    $this->properties = is_null($props) ? array() : $props;
 
     if ( ! is_null($tag))
     {
       $this->{$tag} = $tag;
     }
+
+    return $this;
   }
 
   function assigns($name)
@@ -36,12 +40,13 @@ class yyValue extends yyBase
       return array($this, $this);
     }
 
-    $base = new yyValue($this->base, array_slice($this->properties, 0, -1));
+    $base = yy('Value', $this->base, array_slice($this->properties, 0, -1));
+    $bref = NULL;
 
     if ($base->is_complex())
     {
-      $bref = new yyLiteral($options['scope']->free_variable('base'));
-      $base = new yyValue(new yyParens(new yyAssign($bref, $base)));
+      $bref = yy('Literal', $options['scope']->free_variable('base'));
+      $base = yy('Value', yy('Parens', yy('Assign', $bref, $base)));
     }
 
     if ( ! $name)
@@ -51,14 +56,14 @@ class yyValue extends yyBase
 
     if ($name->is_complex())
     {
-      $nref = new yyLiteral($options['scope']->free_variable('name'));
-      $name = new yyIndex(new yyAssign($nref, $name->index));
-      $nref = new yyIndex($nref);
+      $nref = yy('Literal', $options['scope']->free_variable('name'));
+      $name = yy('Index', yy('Assign', $nref, $name->index));
+      $nref = yy('Index', $nref);
     }
 
-    $base[] = $name;
+    $base->push($name);
 
-    return array($base, new yyValue(isset($bref) ? $bref : $base->base, array(isset($nref) ? $nref : $name)));
+    return array($base, yy('Value', isset($bref) ? $bref : $base->base, array(isset($nref) ? $nref : $name)));
   }
 
   function compile_node($options)
@@ -68,7 +73,7 @@ class yyValue extends yyBase
 
     $code = $this->base->compile($options, count($props) ? LEVEL_ACCESS : NULL);
 
-    if ($props[0] instanceof yyAccess && $this->is_simple_number())
+    if ($props && $props[0] instanceof yy_Access && $this->is_simple_number())
     {
       $code = "($code)";
     }
@@ -95,7 +100,7 @@ class yyValue extends yyBase
 
   function is_array()
   {
-    return ! count($this->properties) && $this->base instanceof yyArr;
+    return ! count($this->properties) && $this->base instanceof yy_Arr;
   }
 
   function is_assignable()
@@ -107,7 +112,7 @@ class yyValue extends yyBase
   {
     foreach (array_merge($this->properties, (array) $this->base) as $node)
     {
-      if ($node->soak || $node instanceof yyCall)
+      if ($node->soak || $node instanceof yy_Call)
       {
         return FALSE;
       }
@@ -121,24 +126,24 @@ class yyValue extends yyBase
     return $this->has_properties() || $this->base->is_complex();
   }
 
-  function is_object($only_generated)
+  function is_object($only_generated = array())
   {
     if (count($this->properties))
     {
       return FALSE;
     }
 
-    return ($this->base instanceof yyObj) && ( ! $only_generated || $this->base->generated);
+    return ($this->base instanceof yy_Obj) && ( ! $only_generated || $this->base->generated);
   }
 
   function is_simple_number()
   {
-    return ($this->base instanceof yyLiteral) && preg_match(SIMPLENUM, $this->base->value);
+    return ($this->base instanceof yy_Literal) && preg_match(SIMPLENUM, $this->base->value);
   }
 
   function is_splice()
   {
-    return last($this->properties) instanceof yySlice;
+    return last($this->properties) instanceof yy_Slice;
   }
 
   function is_statement($options)
@@ -146,9 +151,10 @@ class yyValue extends yyBase
     return ! count($this->properties) && $this->base->is_statement($options);
   }
 
-  function jumps($options)
+  function jumps($options = array())
   {
-    return ! $this->properties->length && $this->base->jumps($options);
+    return ! (isset($this->properties['length']) && $this->properties['length']) &&
+      $this->base->jumps($options);
   }
 
   function make_return()
@@ -163,7 +169,7 @@ class yyValue extends yyBase
     }
   }
 
-  function unfold_soak()
+  function unfold_soak($options)
   {
     if (isset($this->unfolded_soak))
     {
@@ -184,17 +190,17 @@ class yyValue extends yyBase
       {
         $prop->soak = FALSE;
 
-        $fst = new yyValue($this->base, array_slice($this->properties, 0, $i));
-        $snd = new yyValue($this->base, array_slice($this->properties, $i));
+        $fst = yy('Value', $this->base, array_slice($this->properties, 0, $i));
+        $snd = yy('Value', $this->base, array_slice($this->properties, $i));
 
         if ($fst->is_complex())
         {
-          $ref = new yyLiteral($options['scope']->free_variable('ref'));
-          $fst = new yyParens(new yyAssign($ref, $fst));
+          $ref = yy('Literal', $options['scope']->free_variable('ref'));
+          $fst = yy('Parens', yy('Assign', $ref, $fst));
           $snd->base = $ref;
         }
 
-        return yyIf(new yyExistence($fst), $snd, array('soak' => TRUE));
+        return yy_If(yy('Existence', $fst), $snd, array('soak' => TRUE));
       }
     }
 

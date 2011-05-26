@@ -2,15 +2,19 @@
 
 namespace CoffeeScript;
 
-class yyCall extends yyBase
+class yy_Call extends yy_Base
 {
   public $children = array('variable', 'args');
 
-  function __construct($variable, $args = array(), $soak = FALSE)
+  public $front = NULL;
+
+  function constructor($variable, $args = array(), $soak = FALSE)
   {
     $this->args = $args;
     $this->super = $variable === 'super';
     $this->variable = $this->super ? NULL : $variable;
+
+    return $this;
   }
 
   function compile_node($options)
@@ -20,7 +24,7 @@ class yyCall extends yyBase
       $this->variable->front = $this->front;
     }
 
-    if (($code = yySplat::compile_splatted_array($options, $this->args, TRUE)))
+    if (($code = yy_Splat::compile_splatted_array($options, $this->args, TRUE)))
     {
       return $this->compile_splat($options, $code);
     }
@@ -68,7 +72,7 @@ class yyCall extends yyBase
       . "{$this->tab}})(".$this->variable->compile($options, LEVEL_LIST).", $splat_args, function() {})";
     }
 
-    $base = new yyValue($this->variable);
+    $base = yy('Value', $this->variable);
 
     if (($name = array_pop($base->properties)) && $base->is_complex())
     {
@@ -91,7 +95,7 @@ class yyCall extends yyBase
       }
     }
 
-    return "{$fun}.apply({$ref}, {$splatArgs})";
+    return "{$fun}.apply({$ref}, {$splat_args})";
   }
 
   function is_new($set = NULL)
@@ -123,11 +127,11 @@ class yyCall extends yyBase
 
       foreach ($node->base->properties as $prop)
       {
-        if ($prop instanceof yyAssign)
+        if ($prop instanceof yy_Assign)
         {
           if ( ! $obj)
           {
-            $nodes[] = ($obj = new yyObj($properties = array(), TRUE));
+            $nodes[] = ($obj = yy('Obj', $properties = array(), TRUE));
           }
 
           $properties[] = $prop;
@@ -145,9 +149,9 @@ class yyCall extends yyBase
 
   function new_instance()
   {
-    $base = isset($this->variable->base) ? $this->variable->base : $variable;
+    $base = isset($this->variable->base) ? $this->variable->base : $this->variable;
 
-    if ($base instanceof yyCall)
+    if ($base instanceof yy_Call)
     {
       $base->new_instance();
     }
@@ -175,7 +179,7 @@ class yyCall extends yyBase
       throw SyntaxError('cannot call super on an anonymous function.');
     }
 
-    if ($method->klass)
+    if (isset($method->klass) && $method->klass)
     {
       return $method->klass.'.__super__.'.$name;
     }
@@ -196,20 +200,20 @@ class yyCall extends yyBase
           return $ifn;
         }
 
-        $tmp = new yyValue($this->variable);
+        $tmp = yy('Value', $this->variable);
         list($left, $rite) = $tmp->cache_reference($options);
       }
       else
       {
-        $left = new yyLiteral($this->super_reference($options));
-        $rite = new yyValue($left);
+        $left = yy('Literal', $this->super_reference($options));
+        $rite = yy('Value', $left);
       }
 
-      $rite = new yyCall($rite, $this->args);
+      $rite = yy('Call', $rite, $this->args);
       $rite->is_new($this->is_new());
-      $left = new yyLiteral('typeof '.$left->compile($options).' === "function"');
+      $left = yy('Literal', 'typeof '.$left->compile($options).' === "function"');
 
-      return new yyIf($left, new yyValue($rite), array('soak' => TRUE));
+      return yy('If', $left, yy('Value', $rite), array('soak' => TRUE));
     }
 
     $call = $this;
@@ -217,14 +221,22 @@ class yyCall extends yyBase
   
     while (TRUE)
     {
-      if ($call->variable instanceof yyCall)
+      if ($call->variable instanceof yy_Call)
       {
         $list[] = $call;
         $call = $call->variable;
+
         continue;
       }
 
-      if ( ! (($call = $call->variable->base) instanceof yyCall))
+      if ( ! ($call->variable instanceof yy_Value))
+      {
+        break;
+      }
+
+      $list[] = $call;
+
+      if ( ! (($call = $call->variable->base) instanceof yy_Call))
       {
         break;
       }
@@ -234,7 +246,7 @@ class yyCall extends yyBase
     {
       if (isset($ifn))
       {
-        if ($call->variable instanceof yyCall)
+        if ($call->variable instanceof yy_Call)
         {
           $call->variable = $ifn;
         }
@@ -242,12 +254,12 @@ class yyCall extends yyBase
         {
           $call->variable->base = $ifn;
         }
-
-        $ifn = unfold_soak($options, $call, 'variable');
       }
+
+      $ifn = unfold_soak($options, $call, 'variable');
     }
 
-    return $ifn;
+    return isset($ifn) ? $ifn : NULL;
   }
 }
 

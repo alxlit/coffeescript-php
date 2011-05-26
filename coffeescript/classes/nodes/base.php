@@ -2,14 +2,15 @@
 
 namespace CoffeeScript;
 
-class yyBase
+class yy_Base
 {
   public $assigns = FALSE;
   public $children = array();
   public $soak = FALSE;
-  public $unfold_soak = FALSE;
 
   function __construct() {}
+
+  function constructor() { return $this; }
 
   function __toString()
   {
@@ -25,8 +26,8 @@ class yyBase
     }
     else
     {
-      $ref = new yyLiteral($reused ? $reused : $options['scope']->free_variable('ref'));
-      $sub = new yyAssign($ref, $this);
+      $ref = yy('Literal', $reused ? $reused : $options['scope']->free_variable('ref'));
+      $sub = yy('Assign', $ref, $this);
 
       if ($level)
       {
@@ -43,7 +44,7 @@ class yyBase
   {
     if ($level)
     {
-      $options->level = $level;
+      $options['level'] = $level;
     }
 
     if ( ! ($node = $this->unfold_soak($options)))
@@ -51,9 +52,9 @@ class yyBase
       $node = $this;
     }
 
-    $node->tab = $options->indent;
+    $node->tab = $options['indent'];
 
-    if ($options->level === LEVEL_TOP || ! $node->is_statement($options))
+    if ($options['level'] === LEVEL_TOP || ! $node->is_statement($options))
     {
       return $node->compile_node($options);
     }
@@ -63,14 +64,14 @@ class yyBase
 
   function compile_closure($options)
   {
-    if ($this->jumps() || ($this instanceof yyThrow))
+    if (($tmp = $this->jumps()) || ($this instanceof yy_Throw))
     {
-      throw new SyntaxError('cannot use a pure statement in an expression');
+      throw new SyntaxError('cannot use a pure statement in an expression.');
     }
 
-    $options->shared_scope = TRUE;
+    $options['shared_scope'] = TRUE;
 
-    $closure = Closure::wrap($this);
+    $closure = yy_Closure::wrap($this);
     return $closure->compile_node($options);
   }
 
@@ -91,9 +92,19 @@ class yyBase
   {
     $contains = FALSE;
 
-    $this->traverse_children(FALSE, function($node) use ( & $contains)
+    if (is_string($pred))
     {
-      if ($pred(node))
+      $tmp = __NAMESPACE__.'\\'.$pred;
+
+      $pred = function($node) use ($tmp)
+      {
+        return call_user_func($tmp, $node);
+      };
+    }
+
+    $this->traverse_children(FALSE, function($node) use ( & $contains, & $pred)
+    {
+      if ($pred($node))
       {
         $contains = TRUE;
         return FALSE;
@@ -135,7 +146,7 @@ class yyBase
 
   function invert()
   {
-    return new yyOp('!', $this);
+    return yy('Op', '!', $this);
   }
 
   function is_assignable()
@@ -149,6 +160,11 @@ class yyBase
   }
 
   function is_chainable()
+  {
+    return FALSE;
+  }
+
+  function is_object()
   {
     return FALSE;
   }
@@ -169,7 +185,7 @@ class yyBase
 
     while ($i--)
     {
-      if ( ! ($list[$i] instanceof yyComment))
+      if ( ! ($list[$i] instanceof yy_Comment))
       {
         return $list[$i];
       }
@@ -180,7 +196,7 @@ class yyBase
 
   function make_return()
   {
-    return new yyReturn($this);
+    return yy('Return', $this);
   }
 
   function to_string($idt = '', $name = __CLASS__)
@@ -192,9 +208,9 @@ class yyBase
       $tree .= '?';
     }
 
-    $this->each_child(function($node) use ( & $tree)
+    $this->each_child(function($node) use ($idt, & $tree)
     {
-      $tree .= $node.to_string($idt + TAB);
+      $tree .= $node->to_string($idt.TAB);
     });
 
     return $tree;
@@ -202,27 +218,35 @@ class yyBase
 
   function traverse_children($cross_scope, $func)
   {
-    $this->each_child(function($child) use ( & $func, & $cross_scope)
+    $this->each_child(function($child) use ($cross_scope, & $func)
     {
       if ( ! $func($child))
       {
-        return false;
+        return FALSE;
       }
 
       return $child->traverse_children($cross_scope, $func);
     });
   }
 
+  function unfold_soak($options)
+  {
+    return FALSE;
+  }
+
   function unwrap()
   {
-    return NULL;
+    return $this;
   }
 
   function unwrap_all()
   {
     $node = $this;
 
-    while (($tmp = $node->unwrap()) && $node != $tmp) {}
+    while ($node !== ($node = $node->unwrap()))
+    {
+      continue;
+    }
 
     return $node;
   }

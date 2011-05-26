@@ -2,30 +2,32 @@
 
 namespace CoffeeScript;
 
-class yyReturn extends yyBase
+class yy_Return extends yy_Base
 {
   public $children = array('expression');
   public $expression;
 
-  function __construct($expr)
+  function constructor($expr)
   {
-    if ($expr && $expr->unwrap !== NULL)
+    if ($expr && (isset($expr->unwrap) && ! is_null($expr->unwrap)))
     {
       $this->expression = $expr;
     }
+
+    return $this;
   }
 
-  function compile($options, $level)
+  function compile($options, $level = NULL)
   {
     $expr = isset($this->expression) ? $this->expression->make_return() : NULL;
 
-    if ($expr && ! ($expr instanceof yyReturn))
+    if ($expr && ! ($expr instanceof yy_Return))
     {
       return $expr->compile($options);
     }
     else
     {
-      parent::compile($options, $level);
+      return parent::compile($options, $level);
     }
   }
 

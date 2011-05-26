@@ -10,14 +10,15 @@ to contribute.
 * Grammar for the parser generator (we're using a PHP port of 
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
   port of Bison to PHP as far as I know).
-* Lexer (passes all test cases).
-* Rewriter (passes all test cases).
+* Lexer
+* Rewriter
+* Parser
+* Scope Regulator
 
 ### Todo
 
-* Parser (bugfixes).
-* Nodes (21/31 have been drafted).
-* Scope regulator.
+* Nodes (testing compiled code & bugfixes).
+* Make it `E_STRICT`.
 
 ## FAQ
 

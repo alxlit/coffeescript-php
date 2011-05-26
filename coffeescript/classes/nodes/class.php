@@ -2,19 +2,21 @@
 
 namespace CoffeeScript;
 
-class yyClass extends yyBase
+class yy_Class extends yy_Base
 {
   public $children = array('variable', 'parent', 'body');
 
-  function __construct($variable, $parent, $body = NULL)
+  function constructor($variable = NULL, $parent = NULL, $body = NULL)
   {
-    $this->variable = $parent;
+    $this->variable = $variable;
     $this->parent = $parent;
 
-    $this->body = is_null($body) ? new yyBlock : $body;
+    $this->body = is_null($body) ? new yy_Block : $body;
     $this->body->class_body = TRUE;
 
     $this->bound_funcs = array();
+
+    return $this;
   }
 
   function add_bound_functions($options)
@@ -24,7 +26,7 @@ class yyClass extends yyBase
       foreach ($this->bound_funcs as $bvar)
       {
         $bname = $bvar->compile($options);
-        array_unshift($this->ctor->body, new yyLiteral("this.{$bname} = ".utility('bind')."(this.{$bname}, this);"));
+        array_unshift($this->ctor->body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this);"));
       }
     }
   }
@@ -35,7 +37,7 @@ class yyClass extends yyBase
 
     while ($assign = array_shift($props))
     {
-      if ($assign instanceof yyAssign)
+      if ($assign instanceof yy_Assign)
       {
         $base = $assign->variable->base;
         $func = $assign->value;
@@ -54,23 +56,23 @@ class yyClass extends yyBase
             throw new Error('cannot define a constructor as a bound functions');
           }
 
-          if ($func instanceof yyCode)
+          if ($func instanceof yy_Code)
           {
             $assign = $this->ctor = $func;
           }
           else
           {
-            $assign = $this->ctor = new yyAssign(new yyValue(new yyLiteral($name)), $func);
+            $assign = $this->ctor = yy('Assign', yy('Value', yy('Literal', $name)), $func);
           }
         }
         else
         {
           if ( ! ($assign->variable->this))
           {
-            $assign->variable = new yyValue(new yyLiteral($name), array(new yyAccess($base, 'proto')));
+            $assign->variable = yy('Value', yy('Literal', $name), array(yy('Access', $base, 'proto')));
           }
 
-          if ($func instanceof yyCode && $func->bound)
+          if ($func instanceof yy_Code && $func->bound)
           {
             $this->bound_funcs[] = $base;
             $func->bound = FALSE;
@@ -85,8 +87,8 @@ class yyClass extends yyBase
   function compile_node($options)
   {
     $decl = $this->determine_name();
-    $name = $decl ? $decl : ($this->name ? $this->name : '_Class');
-    $lname = new yyLiteral($name);
+    $name = $decl ? $decl : (isset($this->name) && $this->name ? $this->name : '_Class');
+    $lname = yy('Literal', $name);
 
     $this->set_context($name);
     $this->walk_body($name);
@@ -94,18 +96,18 @@ class yyClass extends yyBase
 
     if ($this->parent)
     {
-      array_splice($this->body->expressions, 1, 0, new yyExtends($lname, $this->parent));
+      array_splice($this->body->expressions, 1, 0, array(yy('Extends', $lname, $this->parent)));
     }
 
     $this->body->expressions[] = $lname;
 
     $this->add_bound_functions($options);
 
-    $klass = new yyParens(Closure::wrap($this->body), TRUE);
+    $klass = yy('Parens', yy_Closure::wrap($this->body), TRUE);
 
     if ($this->variable)
     {
-      $klass = new yyAssigns($this->variable, $klass);
+      $klass = yy('Assign', $this->variable, $klass);
     }
 
     return $klass->compile($options);
@@ -120,7 +122,7 @@ class yyClass extends yyBase
 
     if (($tail = last($this->variable->properties)))
     {
-      $decl = (tail instanceof yyAccess) ? $tail->name->value : NULL;
+      $decl = ($tail instanceof yy_Access) ? $tail->name->value : NULL;
     }
     else
     {
@@ -132,13 +134,13 @@ class yyClass extends yyBase
 
   function ensure_constructor($name)
   {
-    if ( ! $this->ctor)
+    if ( ! (isset($this->ctor) && $this->ctor))
     {
-      $this->ctor = new yyCode;
+      $this->ctor = new yy_Code;
 
       if ($this->parent)
       {
-        $this->ctor->body[] = new yyCall('super', array(new yySplat(new yyLiteral('arguments'))));
+        $this->ctor->body->push(yy('Call', 'super', array(yy('Splat', yy('Literal', 'arguments')))));
       }
 
       array_unshift($this->body->expressions, $this->ctor);
@@ -153,16 +155,16 @@ class yyClass extends yyBase
   {
     $this->body->traverse_children(FALSE, function($node)
     {
-      if ($node->class_body)
+      if (isset($node->class_body) && $node->class_body)
       {
         return FALSE;
       }
 
-      if ($node instanceof yyLiteral && $node->value === 'this')
+      if ($node instanceof yy_Literal && $node->value === 'this')
       {
         $node->value = $name;
       }
-      else if ($node instanceof yyCode)
+      else if ($node instanceof yy_Code)
       {
         $node->klass = $name;
 
@@ -180,18 +182,16 @@ class yyClass extends yyBase
 
     $this->traverse_children(FALSE, function($child) use ( & $self)
     {
-      if ($child instanceof yyClass)
+      if ($child instanceof yy_Class)
       {
         return FALSE;
       }
 
-      if ($child instanceof yyBlock)
+      if ($child instanceof yy_Block)
       {
-        $exps = $child->expressions;
-
-        foreach ($exps as $i => $node)
+        foreach (($exps = $child->expressions) as $i => $node)
         {
-          if ($node instanceof yyValue && $node->is_object(TRUE))
+          if ($node instanceof yy_Value && $node->is_object(TRUE))
           {
             $exps[$i] = $this->add_properties($node, $name);
           }
