@@ -10,10 +10,10 @@ to contribute.
 * Grammar for the parser generator (we're using a PHP port of 
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
   port of Bison to PHP as far as I know).
-* Lexer
-* Rewriter
-* Parser
-* Scope Regulator
+* Lexer.
+* Lexical scope regulator.
+* Rewriter.
+* Parser.
 
 ### Todo
 
@@ -43,14 +43,16 @@ PHP 5.3+ (uses namespaces, anonymous functions).
 
 ## Usage
 
-In your projects,
+At the moment the API is pretty basic. It'll be expanded a bit in the future.
 
 ```php
 <?php
 
+$coffee = file_get_contents('path/to/source.coffee');
+
 try
 {
-  $js = CoffeeScript\compile('path/to/source.coffee');
+  $js = CoffeeScript\compile($coffee);
 }
 catch (Exception e) {}
 
@@ -61,9 +63,6 @@ catch (Exception e) {}
 
 We're porting the **stable** branch (CoffeeScript 1.1.1).
 
-To rebuild the parser run `php make.php`. Running tests is easy, just put the 
-project directory into /srv/http (or whatever location you're running your
-local server from) and navigate to http://localhost/coffeescript-php/test/.
-
-You'll need to have short tags enabled (sorry).
+To rebuild the parser run `php make.php`. Running tests is easy, just drop the
+entire folder into localhost and go to coffeescript-php/test/. 
 

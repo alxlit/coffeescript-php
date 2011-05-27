@@ -100,7 +100,7 @@ class yyStackEntry
 %%
 {
   static $LINE = 0;
-  static $FILE = '';
+  static $FILE = 'unknown';
 
 /* First off, code is included which follows the "include_class" declaration
 ** in the input file. */

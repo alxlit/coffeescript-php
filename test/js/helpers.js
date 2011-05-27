@@ -1,5 +1,5 @@
-function $(id) {
-  return typeof id == 'string' ? document.getElementById(id) : id;
+function $(elem) {
+  return typeof elem == 'string' ? document.querySelector(elem) : elem;
 }
 
 function compile(tokens) {
@@ -7,7 +7,7 @@ function compile(tokens) {
     tokens = tokenize(tokens);
   }
 
-  return CoffeeScript.Parser.parse(tokens).compile();
+  return CoffeeScript.require['./parser'].parse(tokens).compile();
 }
 
 function count(str, substr) {
@@ -97,8 +97,8 @@ function lpad(str, length) {
   return str;
 }
 
-function show(id) {
-  document.getElementById(id).style.display = 'block';
+function show(elem) {
+  $(elem).style.display = 'block';
 }
 
 function tokenize(code, rewrite) {
