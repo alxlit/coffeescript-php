@@ -75,7 +75,8 @@ if ($run)
       <p class="fail">Failed.</p>
       <p class="pass">Passed!</p>
 
-      <code></code>
+      <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
+      <code class="result"></code>
     <? endif; ?>
     </div>
 
@@ -86,7 +87,8 @@ if ($run)
       <p class="fail">Failed.</p>
       <p class="pass">Passed!</p>
 
-      <code></code>
+      <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
+      <code class="result"></code>
     </div>
   <? else: ?>
     <h1>Tests</h1>

@@ -6,9 +6,6 @@ require_once 'helpers.php';
 
 /**
  * Lexical scope manager.
- *
- * Slightly different than the original compiler, variable.type is an array
- * rather than an object, where [0] is the name of the type.
  */
 class Scope
 {
@@ -23,7 +20,7 @@ class Scope
     $this->method = $method;
 
     $this->variables = array(
-      array('name' => 'arguments', 'type' => array('arguments'))
+      array('name' => 'arguments', 'type' => 'arguments')
     );
 
     $this->positions = array();
@@ -43,11 +40,11 @@ class Scope
 
     if (isset($this->positions[$name]) && is_numeric($pos = $this->positions[$name]))
     {
-      $this->variables[$pos]['type'] = array($type);
+      $this->variables[$pos]['type'] = $type;
     }
     else
     {
-      $this->variables[] = array('name' => $name, 'type' => array($type));
+      $this->variables[] = array('name' => $name, 'type' => $type);
       $this->positions[$name] = count($this->variables) - 1;
     }
   }
@@ -64,9 +61,11 @@ class Scope
 
     foreach ($this->variables as $v)
     {
-      if (isset($v['type']['assigned']) && $v['type']['assigned'])
+      $type = $v['type'];
+
+      if (is_array($type) && isset($type['assigned']) && $type['assigned'])
       {
-        $tmp[] = "{$v['name']} = {$v['type'][0]}";
+        $tmp[] = "{$v['name']} = {$v['type']['value']}";
       }
     }
 
@@ -92,7 +91,7 @@ class Scope
 
     foreach ($this->variables as $v)
     {
-      if ($v['type'][0] === 'var')
+      if ($v['type'] === 'var')
       {
         if ($v['name']{0} === '_')
         {
@@ -139,14 +138,9 @@ class Scope
 
   function has_assignments($set = NULL)
   {
-    static $value = FALSE;
+    static $val = FALSE;
 
-    if ( ! is_null($set))
-    {
-      $value = $set;
-    }
-
-    return $value;
+    return is_null($set) ? $val : ($val = $set);
   }
 
   function has_declarations()

@@ -41,7 +41,7 @@ class yy_Splat extends yy_Base
   {
     $index = -1;
 
-    while (isset($node[++$index]) && ($node = $list[$index]) && !($node instanceof yy_Splat))
+    while (isset($list[++$index]) && ($node = $list[$index]) && ! ($node instanceof yy_Splat))
     {
       continue;
     }

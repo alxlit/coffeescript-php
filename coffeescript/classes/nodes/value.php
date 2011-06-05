@@ -5,8 +5,6 @@ namespace CoffeeScript;
 class yy_Value extends yy_Base
 {
   public $children = array('base', 'properties');
-  public $front = NULL;
-  public $namespaced = FALSE;
 
   function constructor($base, $props = NULL, $tag = NULL)
   {
@@ -200,7 +198,7 @@ class yy_Value extends yy_Base
           $snd->base = $ref;
         }
 
-        return yy_If(yy('Existence', $fst), $snd, array('soak' => TRUE));
+        return yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
       }
     }
 

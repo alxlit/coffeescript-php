@@ -58,7 +58,7 @@ function unfold_soak($options, $parent, $name)
   }
 
   $parent[$name] = $ifn->body;
-  $ifn->body = new YY_Value($parent);
+  $ifn->body = new yy_Value($parent);
 
   return $ifn;
 }

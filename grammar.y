@@ -129,7 +129,7 @@ accessor(A) ::= YY_PROTOTYPE identifier(B)            . { A = yy('Access', B, 'p
 accessor(A) ::= YY_PROTOTYPE                          . { A = yy('Access', yy('Literal', 'prototype')); }
 accessor(A) ::= index(B)                              . { A = B; }
 
-index(A) ::= YY_INDEX_START indexValue(B) YY_INDEX_END  . { A = yy('Slice', B); }
+index(A) ::= YY_INDEX_START indexValue(B) YY_INDEX_END  . { A = B; }
 index(A) ::= YY_INDEX_SOAK index(B)                     . { A = extend(B, array('soak' => TRUE)); }
 index(A) ::= YY_INDEX_PROTO index(B)                    . { A = extend(B, array('proto' => TRUE)); }
 

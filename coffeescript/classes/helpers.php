@@ -211,7 +211,7 @@ function t_canonical($token)
 }
 
 /**
- * Since PHP can't return values from __construct, and the nodes classes rely
+ * Since PHP can't return values from __construct, some of the node classes
  * heavily on this feature in JavaScript, we use this function instead of the
  * new keyword to instantiate and implicitly call the constructor.
  */

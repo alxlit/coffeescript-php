@@ -24,6 +24,7 @@ class yy_Parens extends yy_Base
     }
 
     $code = $expr->compile($options, LEVEL_PAREN);
+
     $bare = $options['level'] < LEVEL_OP && ($expr instanceof yy_Op || $expr instanceof yy_Call ||
       ($expr instanceof yy_For && $expr->returns));
 

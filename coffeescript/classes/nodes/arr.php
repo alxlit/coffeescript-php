@@ -50,7 +50,7 @@ class yy_Arr extends yy_Base
 
     $code = implode(', ', $code);
 
-    if (strpos($code, "\n") >= 0)
+    if (strpos($code, "\n") !== FALSE)
     {
       return "[\n{$options['indent']}{$code}\n{$this->tab}]";
     }

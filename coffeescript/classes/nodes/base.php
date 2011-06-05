@@ -6,7 +6,17 @@ class yy_Base
 {
   public $assigns = FALSE;
   public $children = array();
+  public $ctor = NULL;
+  public $exclusive = NULL;
+  public $expression = NULL;
+  public $from = NULL;
+  public $front = NULL;
+  public $namespaced = FALSE;
+  public $negated = FALSE;
+  public $no_return = FALSE;
+  public $proto = FALSE;
   public $soak = FALSE;
+  public $to = NULL;
 
   function __construct() {}
 
@@ -170,6 +180,11 @@ class yy_Base
   }
 
   function is_statement()
+  {
+    return FALSE;
+  }
+
+  function is_undefined()
   {
     return FALSE;
   }

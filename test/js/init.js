@@ -5,7 +5,7 @@ function init() {
 
     diff = JsDiff.diffLines(formatTokens(tokens), formatTokens(PHP.tokens));
 
-    $('#tokens code').innerHTML = formatLineDiff(diff);
+    $('#tokens code.result').innerHTML = formatLineDiff(diff);
 
     // Result of the test.
     show('#tokens .' + (diff.length > 1 || diff[0].removed ? 'fail' : 'pass'));
@@ -14,7 +14,7 @@ function init() {
 
     diff = JsDiff.diffLines(js, PHP.js);
 
-    $('#code code').innerHTML = formatLineDiff(diff);
+    $('#code code.result').innerHTML = formatLineDiff(diff);
 
     show('#code .' + (diff.length > 1 || diff[0].removed ? 'fail' : 'pass'));
   });

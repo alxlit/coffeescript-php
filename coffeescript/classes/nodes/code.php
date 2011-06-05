@@ -6,10 +6,6 @@ class yy_Code extends yy_Base
 {
   public $children = array('params', 'body');
 
-  public $ctor = NULL;
-  public $front = NULL;
-  public $no_return = NULL;
-
   function constructor($params = NULL, $body = NULL, $tag = NULL)
   {
     $this->params = $params ? $params : array();

@@ -16,7 +16,7 @@ class yy_Op extends yy_Base
   );
 
   public $children = array('first', 'second');
-  public $front = NULL;
+
   public $operator = NULL;
 
   function constructor($op, $first, $second = NULL, $flip = NULL)

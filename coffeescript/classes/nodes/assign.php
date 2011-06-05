@@ -86,7 +86,7 @@ class yy_Assign extends yy_Base
     {
       $this->value->name = $match[2];
 
-      if ($match[1])
+      if (isset($match[1]) && $match[1])
       {
         $this->value->klass = $match[1];
       }
@@ -99,7 +99,7 @@ class yy_Assign extends yy_Base
       return "{$name}: {$val}";
     }
 
-    $val = $name.($this->context ? $this->context : '=').' '.$val;
+    $val = $name.' '.($this->context ? $this->context : '=').' '.$val;
 
     return $options['level'] <= LEVEL_LIST ? $val : "({$val})";
   }
@@ -233,8 +233,6 @@ class yy_Assign extends yy_Base
 
           $val = yy('Value', yy('Literal', $vvar), array($acc ? yy('Access', $idx) : yy('Index', $idx)));
         }
-
-
       }
 
       $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param));

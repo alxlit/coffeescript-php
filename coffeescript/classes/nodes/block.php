@@ -123,7 +123,7 @@ class yy_Block extends yy_Base
 
       if ($scope->has_assignments())
       {
-        $code .= $this->tab.'var '.multident(implode(', ', $scope->assigned_variables()), $this->tab)."\n";
+        $code .= $this->tab.'var '.multident(implode(', ', $scope->assigned_variables()), $this->tab).";\n";
       }
     }
 

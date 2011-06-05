@@ -6,10 +6,6 @@ class yy_Index extends yy_Base
 {
   public $children = array('index');
 
-  public $from = NULL;
-  public $to = NULL;
-  public $exclusive = NULL;
-
   function constructor($index)
   {
     $this->index = $index;

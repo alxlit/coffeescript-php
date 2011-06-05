@@ -6,8 +6,6 @@ class yy_Call extends yy_Base
 {
   public $children = array('variable', 'args');
 
-  public $front = NULL;
-
   function constructor($variable, $args = array(), $soak = FALSE)
   {
     $this->args = $args;

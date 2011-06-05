@@ -6,8 +6,6 @@ class yy_In extends yy_Base
 {
   public $children = array('object', 'array');
 
-  public $negated = FALSE;
-
   function constructor($object, $array)
   {
     $this->array = $array;
