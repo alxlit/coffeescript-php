@@ -9,7 +9,9 @@ class yy_Obj extends yy_Base
   function constructor($props, $generated = FALSE)
   {
     $this->generated = $generated;
-    $this->objects = $this->properties = $props ? $props : array();
+
+    $this->properties = is_array($props) && count($props) ? $props : array();
+    $this->objects = $this->properties;
 
     return $this;
   }
@@ -47,7 +49,7 @@ class yy_Obj extends yy_Base
       }
     }
 
-    $idt = $options['indent'] += TAB;
+    $idt = $options['indent'] .= TAB;
     $last_non_com = $this->last_non_comment($this->properties);
 
     foreach ($props as $i => $prop)

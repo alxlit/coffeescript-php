@@ -2,7 +2,7 @@
 # CoffeeScript PHP
 
 A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/) 
-compiler to PHP. It's incomplete, and porting is really tedious so feel free to
+compiler to PHP. It's **incomplete**, and porting is really tedious so feel free to
 contribute.
 
 ### Complete

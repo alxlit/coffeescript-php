@@ -2759,7 +2759,7 @@ static public $yy_action = array(
     function yy_r82(){ $this->_retvalue = yy('Slice', $this->yystack[$this->yyidx + 0]->minor);     }
 #line 2762 "/srv/http/coffeescript-php/grammar.php"
 #line 139 "/srv/http/coffeescript-php/grammar.y"
-    function yy_r83(){ $this->_retvalue = yy('Obj', $this->yystack[$this->yyidx + -1]->minor, isset($this->yystack[$this->yyidx + -2]->minor['generated']) ? $this->yystack[$this->yyidx + -2]->minor['generated'] : FALSE);     }
+    function yy_r83(){ $this->_retvalue = yy('Obj', $this->yystack[$this->yyidx + -2]->minor, isset($this->yystack[$this->yyidx + -3]->minor['generated']) ? $this->yystack[$this->yyidx + -3]->minor['generated'] : FALSE);     }
 #line 2765 "/srv/http/coffeescript-php/grammar.php"
 #line 144 "/srv/http/coffeescript-php/grammar.y"
     function yy_r87(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -3]->minor, array($this->yystack[$this->yyidx + 0]->minor));     }
