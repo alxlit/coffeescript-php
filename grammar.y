@@ -136,12 +136,12 @@ index(A) ::= YY_INDEX_PROTO index(B)                    . { A = extend(B, array(
 indexValue(A) ::= expression(B)   . { A = yy('Index', B); }
 indexValue(A) ::= slice(B)        . { A = yy('Slice', B); }
 
-object(A) ::= YY_OBJECT_START(B) assignList(C) optComma YY_OBJECT_END   . { A = yy('Obj', C, isset(B['generated']) ? B['generated'] : FALSE); }
+object(A) ::= YY_OBJECT_START assignList(B) optComma YY_OBJECT_END . { A = yy('Obj', B, $this->__generated_value__); }
 
 assignList(A) ::=                                                                     . { A = array(); }
 assignList(A) ::= assignObj(B)                                                        . { A = array(B); }
-assignList(A) ::= assignList(B) YY_COMMA assignObj(C)                                 . { A = array_merge(B, array(C)); }
-assignList(A) ::= assignList(B) optComma YY_TERMINATOR assignObj(C)                   . { A = array_merge(B, array(C)); }
+assignList(A) ::= assignList(B) YY_COMMA assignObj(C)                                 . { B[] = C; A = B; }
+assignList(A) ::= assignList(B) optComma YY_TERMINATOR assignObj(C)                   . { B[] = C; A = B; }
 assignList(A) ::= assignList(B) optComma YY_INDENT assignList(C) optComma YY_OUTDENT  . { A = array_merge(B, C); }
 
 class(A) ::= YY_CLASS                                                   . { A = new yy_Class; }

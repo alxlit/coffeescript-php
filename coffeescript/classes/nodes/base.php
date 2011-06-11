@@ -66,7 +66,13 @@ class yy_Base
 
     if ($options['level'] === LEVEL_TOP || ! $node->is_statement($options))
     {
-      return $node->compile_node($options);
+      $code = $node->compile_node($options);
+      if (strpos($code, 'yy_Base') !== FALSE)
+      {
+        echo 'Class: '.get_class($node).'<br />';
+      }
+
+      return $code;
     }
 
     return $node->compile_closure($options);

@@ -97,6 +97,10 @@ function lpad(str, length) {
   return str;
 }
 
+function nodes(tokens) {
+  return CoffeeScript.require['./parser'].parse(tokens).toString().trim();
+}
+
 function show(elem) {
   $(elem).style.display = 'block';
 }

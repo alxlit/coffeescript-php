@@ -210,6 +210,10 @@ class yy_Value extends yy_Base
     return count($this->properties) ? $this : $this->base;
   }
 
+  // TODO:
+  // There's a problem with how literals are being compiled; this fix seems to
+  // work, but really we should look at the node trees.
+  function to_string() { return $this->base->value; }
 }
 
 ?>

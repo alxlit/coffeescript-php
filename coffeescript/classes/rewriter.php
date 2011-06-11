@@ -114,7 +114,10 @@ class Rewriter
         $idx -= 2;
       }
 
-      // Doesn't seem to be used anywhere, and it causes problems in PHP.
+      // This doesn't really work in PHP, so we assign 'generatedValue' to the
+      // token and handle it in the actual parser (see Lempar.php\Parser\
+      // parse()). This is pretty hacky, but it works.
+      
       // $value = (object) '{';
       // $value->generated = TRUE;
 

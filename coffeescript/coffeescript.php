@@ -2,8 +2,8 @@
 
 namespace CoffeeScript;
 
-require 'classes/lexer.php';
-require 'classes/parser.php';
+require_once 'classes/lexer.php';
+require_once 'classes/parser.php';
 
 /**
  * Compile some CoffeeScript.
@@ -32,7 +32,6 @@ function compile($code, $options = array(), & $tokens = NULL)
     $parser->parse($token);
   }
 
-  // Done parsing.
   return $parser->parse(NULL)->compile($options);
 }
 

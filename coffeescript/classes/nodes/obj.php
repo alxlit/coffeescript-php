@@ -10,7 +10,7 @@ class yy_Obj extends yy_Base
   {
     $this->generated = $generated;
 
-    $this->properties = is_array($props) && count($props) ? $props : array();
+    $this->properties = is_array($props) ? $props : array();
     $this->objects = $this->properties;
 
     return $this;
@@ -69,7 +69,7 @@ class yy_Obj extends yy_Base
 
       $indent = $prop instanceof yy_Comment ? '' : $idt;
 
-      if ($prop instanceof yy_Value && $prop->this)
+      if ($prop instanceof yy_Value && (isset($prop->this) && $prop->this))
       {
         $prop = yy('Assign', $prop->properties[0]->name, $prop, 'object');
       }
