@@ -1,5 +1,7 @@
 <?
 
+ini_set('display_errors', '1');
+
 /**
  * Quick and dirty test driver for CoffeeScript PHP.
  *
@@ -68,6 +70,7 @@ if ($run)
     <a href="index.php">Back</a>
     <h1><a href="<?= $run ?>"><?= basename($run) ?></a></h1>
     <h2>Code</h2>
+    <p>Lines in <del>red</del> are in the reference code, but are missing in ours. Lines in <ins>green</ins> were generated in our code but are not present in the reference.</p>
     <div id="code">
     <? if ($error): ?>
       <p class="error"><?= $error ?></p>

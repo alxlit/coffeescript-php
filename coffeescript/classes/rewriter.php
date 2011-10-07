@@ -116,8 +116,8 @@ class Rewriter
 
       // This doesn't really work in PHP, so we assign 'generatedValue' to the
       // token and handle it in the actual parser (see Lempar.php\Parser\
-      // parse()). This is pretty hacky, but it works.
-      
+      // parse()). This is pretty hacky, but it works. (Maybe...)
+
       // $value = (object) '{';
       // $value->generated = TRUE;
 
