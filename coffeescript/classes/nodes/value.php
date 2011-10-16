@@ -33,7 +33,7 @@ class yy_Value extends yy_Base
   {
     $name = last($this->properties);
 
-    if (count($this->properties) < 2 && ! $this->base->is_complex() && ($name && $name->is_complex()))
+    if (count($this->properties) < 2 && ! $this->base->is_complex() && ! ($name && $name->is_complex()))
     {
       return array($this, $this);
     }
