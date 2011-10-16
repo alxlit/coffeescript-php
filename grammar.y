@@ -82,7 +82,7 @@ objAssignable(A) ::= thisProperty(B)  . { A = B; }
 return(A) ::= YY_RETURN expression(B) . { A = yy('Return', B); }
 return(A) ::= YY_RETURN               . { A = yy('Return'); }
 
-comment(A) ::= YY_HERECOMMENT(B)  . { A = new yy('Comment', B); }
+comment(A) ::= YY_HERECOMMENT(B)  . { A = yy('Comment', B); }
 
 code(A) ::= YY_PARAM_START paramList(B) YY_PARAM_END funcGlyph(C) block(D)  . { A = yy('Code', B, D, C); }
 code(A) ::= funcGlyph(B) block(C)                                           . { A = yy('Code', array(), C, B); }
