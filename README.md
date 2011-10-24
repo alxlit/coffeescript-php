@@ -1,8 +1,9 @@
 
 # CoffeeScript PHP
 
-A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/) 
-compiler to PHP. It's currently **incomplete**.
+A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/)
+compiler (1.1.1) to PHP. It's **really close** to being finished, there are
+just a few obscure bugs that need hunting down.
 
 ### Complete
 
@@ -16,7 +17,7 @@ compiler to PHP. It's currently **incomplete**.
 
 ### Todo
 
-* Nodes (testing compiled code & bugfixes)
+* Bugs
 * Make it `E_STRICT`
 
 ## FAQ
@@ -60,8 +61,6 @@ catch (Exception e) {}
 ```
 
 ## Development
-
-Currently porting CoffeeScript 1.1.1.
 
 To rebuild the parser run `php make.php`. Running tests is easy, just drop the
 entire folder into localhost and go to coffeescript-php/test/. 
