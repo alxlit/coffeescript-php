@@ -104,12 +104,12 @@ class yy_Assign extends yy_Base
   {
     $top = $options['level'] === LEVEL_TOP;
     $value = $this->value;
-    $objects = isset($this->variable->objects) ? $this->variable->objects : array();
-    
+    $objects = $this->variable->base->objects;
+
     if ( ! ($olen = count($objects)))
     {
       $code = $value->compile($options);
-      return $options['level'] >= LEVEL_OP ? "($code)" : $code;
+      return $options['level'] >= LEVEL_OP ? "({$code})" : $code;
     }
 
     $is_object = $this->variable->is_object();
@@ -139,96 +139,97 @@ class yy_Assign extends yy_Base
             $idx = yy('Literal', 0);
           }
         }
+      }
 
-        $acc = preg_match(IDENTIFIER, $idx->unwrap()->value);
-        $value = yy('Value', $value);
+      $acc = preg_match(IDENTIFIER, $idx->unwrap()->value);
+      $value = yy('Value', $value);
 
-        if ($acc)
+      if ($acc)
+      {
+        $value->properties[] = yy('Access', $idx);
+      }
+      else
+      {
+        $value->properties[] = yy('Index', $idx);
+      }
+
+      $tmp = yy('Assign', $obj, $value);
+
+      return $tmp->compile($options);
+    }
+
+    $vvar = $value->compile($options, LEVEL_LIST);
+    $assigns = array();
+    $splat = FALSE;
+
+    if ( ! preg_match(IDENTIFIER, $vvar) || $this->variable->assigns($vvar))
+    {
+      $assigns[] = ($ref = $options['scope']->free_variable('ref')).' = '.$vvar;
+      $vvar = $ref;
+    }
+
+    foreach ($objects as $i => $obj)
+    {
+      $idx = $i;
+
+      if ($is_object)
+      {
+        if ($obj instanceof yy_Assign)
         {
-          $value->properties[] = yy('Access', $idx);
+          $idx = $obj->variable->base;
+          $obj = $obj->value;
         }
         else
         {
-          $value->properties[] = yy('Index', $idx);
-        }
-
-        $tmp = yy('Assign', $obj, $value);
-
-        return $tmp->compile($options);
-      }
-
-      $vvar = $value->compile($options, LEVEL_LIST);
-      $assigns = array();
-      $splat = FALSE;
-
-      if ( ! preg_match(IDENTIFIER, $vvar) || $this->variable->assigns($vvar))
-      {
-        $assigns[] = ($ref = $options['scope']->free_variable('ref')).' = '.$vvar;
-        $vvar = $ref;
-      }
-
-      foreach ($objects as $i => $obj)
-      {
-        $idx = $i;
-
-        if ($is_object)
-        {
-          if ($obj instanceof yy_Assign)
+          if ($obj->base instanceof yy_Parens)
           {
-            $idx = $obj->variable->base;
-            $obj = $obj->value;
+            $tmp = yy('Value', $obj->unwrap_all());
+            list($obj, $idx) = $tmp->cache_reference($options);
           }
           else
           {
-            if ($obj->base instanceof yy_Parens)
-            {
-              $tmp = yy('Value', $obj->unwrap_all());
-              list($obj, $idx) = $tmp->cache_reference($options);
-            }
-            else
-            {
-              $idx = $obj->this ? $obj->properties[0]->name : $obj;
-            }
+            $idx = $obj->this ? $obj->properties[0]->name : $obj;
           }
         }
+      }
 
-        if ( ! $splat && ($obj instanceof yy_Splat))
+      if ( ! $splat && ($obj instanceof yy_Splat))
+      {
+        $val = "{$olen} <= {$vvar}.length ? ".utility('slice').".call({$vvar}, {$i}";
+        $ivar = 'undefined';
+
+        if (($rest = $olen - $i - 1))
         {
-          $val = "{$olen} <={$vvar}.length ? ".utility('slice').".call({$vvar}, {$i})";
-
-          if (($rest = $olen - $i - 1))
-          {
-            $ivar = $options['scope']->free_variable('i');
-            $val .= ", {$ivar} = {$vvar}.length - {$rest}) : ({$ivar} = {$i}, [])";
-          }
-          else
-          {
-            $val .= ') : []';
-          }
-
-          $val = yy('Literal', $val);
-          $splat = "{$ivar}++";
+          $ivar = $options['scope']->free_variable('i');
+          $val .= ", {$ivar} = {$vvar}.length - {$rest}) : ({$ivar} = {$i}, [])";
         }
         else
         {
-          if ($obj instanceof yy_Splat)
-          {
-            $obj = $obj->name->compile($options);
-            throw SyntaxError("multiple splats are disallowed in an assignment: {$obj} ...");
-          }
-
-          if (is_int($idx) || is_float($idx))
-          {
-            $idx = yy('Literal', $splat ? $splat : $idx);
-            $acc = FALSE;
-          }
-          else
-          {
-            $acc = $is_object ? preg_match(IDENTIFIER, $idx->unwrap()->value) : 0;
-          }
-
-          $val = yy('Value', yy('Literal', $vvar), array($acc ? yy('Access', $idx) : yy('Index', $idx)));
+          $val .= ') : []';
         }
+
+        $val = yy('Literal', $val);
+        $splat = "{$ivar}++";
+      }
+      else
+      {
+        if ($obj instanceof yy_Splat)
+        {
+          $obj = $obj->name->compile($options);
+          throw SyntaxError("multiple splats are disallowed in an assignment: {$obj} ...");
+        }
+
+        if (is_numeric($idx))
+        {
+          $idx = yy('Literal', $splat ? $splat : $idx);
+          $acc = FALSE;
+        }
+        else
+        {
+          $acc = $is_object ? preg_match(IDENTIFIER, $idx->unwrap()->value) : 0;
+        }
+
+        $val = yy('Value', yy('Literal', $vvar), array($acc ? yy('Access', $idx) : yy('Index', $idx)));
       }
 
       $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param));
@@ -259,7 +260,7 @@ class yy_Assign extends yy_Base
 
     if ($to)
     {
-      if (($from && $from->is_simple_number()) && $to->is_simple_number)
+      if (($from && $from->is_simple_number()) && $to->is_simple_number())
       {
         $to = (int) $to->compile($options) - (int) $from_ref;
 

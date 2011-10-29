@@ -139,7 +139,7 @@ class Lexer
     $options = array_merge(array(
       'indent'  => 0,
       'index'   => 0,
-      'line'    => NULL,
+      'line'    => 0,
       'rewrite' => TRUE
     ),
     $options);

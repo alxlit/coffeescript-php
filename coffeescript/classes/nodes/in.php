@@ -6,7 +6,7 @@ class yy_In extends yy_Base
 {
   public $children = array('object', 'array');
 
-  function constructor($object, $array)
+  function constructor($object = NULL, $array = NULL)
   {
     $this->array = $array;
     $this->object = $object;
@@ -43,6 +43,8 @@ class yy_In extends yy_Base
       return 'false';
     }
 
+    $tests = implode($cnj, $tests);
+
     return (isset($options['level']) && $options['level'] < LEVEL_OP) ? $tests : "({$tests})";
   }
 
@@ -70,7 +72,7 @@ class yy_In extends yy_Base
 
   function to_string($idt = '', $name = __CLASS__)
   {
-    return parent::to_string($idt, $this->constructor->name.($this->negated ? '!' : ''));
+    return parent::to_string($idt, $name.($this->negated ? '!' : ''));
   }
 }
 

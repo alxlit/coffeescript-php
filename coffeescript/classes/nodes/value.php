@@ -6,19 +6,19 @@ class yy_Value extends yy_Base
 {
   public $children = array('base', 'properties');
 
-  function constructor($base, $props = NULL, $tag = NULL)
+  function constructor($base = NULL, $props = NULL, $tag = NULL)
   {
     $this->base = $base;
-    $this->properties = is_null($props) ? array() : $props;
+    $this->properties = $props === NULL ? array() : $props;
 
     if ( ! $props && $base instanceof yy_Value)
     {
       return $base;
     }
 
-    if ( ! is_null($tag))
+    if ($tag)
     {
-      $this->{$tag} = $tag;
+      $this->{$tag} = TRUE;
     }
 
     return $this;
@@ -110,7 +110,7 @@ class yy_Value extends yy_Base
   {
     foreach (array_merge($this->properties, (array) $this->base) as $node)
     {
-      if ($node->soak || $node instanceof yy_Call)
+      if ((isset($node->soak) && $node->soak) || $node instanceof yy_Call)
       {
         return FALSE;
       }
@@ -151,8 +151,7 @@ class yy_Value extends yy_Base
 
   function jumps($options = array())
   {
-    return ! (isset($this->properties['length']) && $this->properties['length']) &&
-      $this->base->jumps($options);
+    return ! count($this->properties) && $this->base->jumps($options);
   }
 
   function make_return()
@@ -178,13 +177,15 @@ class yy_Value extends yy_Base
 
     if (($ifn = $this->base->unfold_soak($options)))
     {
-      $ifn->body->properties[] = $this->properties;
-      return $ifn;
+      // $ifn->body->properties[] = $this->properties;
+      $ifn->body->properties = array_merge($ifn->body->properties, $this->properties);
+
+      $result = $ifn;
     }
 
     foreach ($this->properties as $i => $prop)
     {
-      if ($prop->soak)
+      if (isset($prop->soak) && $prop->soak)
       {
         $prop->soak = FALSE;
 
@@ -198,22 +199,31 @@ class yy_Value extends yy_Base
           $snd->base = $ref;
         }
 
-        return yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
+        $result = yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
       }
     }
 
-    return ($this->unfolded_soak = $result);
+    $this->unfolded_soak = FALSE;
+
+    if ($result)
+    {
+      $this->unfolded_soak = $result;
+    }
+
+    return $this->unfolded_soak;
   }
 
   function unwrap()
   {
-    return count($this->properties) ? $this : $this->base;
+    return (isset($this->properties) && count($this->properties)) ? $this : $this->base;
   }
 
-  // TODO:
-  // There's a problem with how literals are being compiled; this fix seems to
-  // work, but really we should look at the node trees.
-  function to_string() { return $this->base->value; }
+  // TODO: There's a problem with how literals are being compiled; this fix seems
+  // to work, but really we should look at the node trees.
+  function to_string() 
+  {
+    return isset($this->base->value) ? $this->base->value : $this->base;
+  }
 }
 
 ?>

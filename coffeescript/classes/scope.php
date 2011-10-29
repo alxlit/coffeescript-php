@@ -12,6 +12,7 @@ class Scope
   static $root = NULL;
 
   public $shared = NULL;
+  private $has_assignments = FALSE;
 
   function __construct($parent, $expressions, $method)
   {
@@ -25,7 +26,7 @@ class Scope
 
     $this->positions = array();
 
-    if (is_null($this->parent))
+    if ($this->parent === NULL)
     {
       self::$root = $this;
     }
@@ -138,9 +139,12 @@ class Scope
 
   function has_assignments($set = NULL)
   {
-    static $val = FALSE;
+    if ($set !== NULL)
+    {
+      $this->has_assignments = !! $set;
+    }
 
-    return is_null($set) ? $val : ($val = $set);
+    return $this->has_assignments;
   }
 
   function has_declarations()

@@ -19,31 +19,33 @@ define('IS_STRING',   '/^[\'"]/');
 define('SIMPLENUM',   '/^[+-]?\d+$/');
 
 $UTILITIES = array(
-  'bind'    => 
-    'function(fn, me){ return function(){ return fn.apply(me, arguments); }; }',
-
-  'extends' =>
-    'function(child, parent) {'
-  . '  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }'
-  . '  function ctor() { this.constructor = child; }'
-  . '  ctor.prototype = parent.prototype;'
-  . '  child.prototype = new ctor;'
-  . '  child.__super__ = parent.prototype;'
-  . '  return child;'
-  . '}',
-
   'hasProp' => 'Object.prototype.hasOwnProperty',
-
-  'indexOf' =>
-    'Array.prototype.indexOf || function(item) {'
-  . '  for (var i = 0, l = this.length; i < l; i++) {'
-  . '    if (this[i] === item) return i;'
-  . '  }'
-  . '  return -1;'
-  . '}',
-
-  'slice' => 'Array.prototype.slice'
+  'slice'   => 'Array.prototype.slice'
 );
+
+$UTILITIES['bind'] = <<<'BIND'
+  function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+BIND;
+
+$UTILITIES['extends'] = <<<'EXTENDS'
+  function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  }
+EXTENDS;
+
+$UTILITIES['indexOf'] = <<<'INDEXOF'
+  Array.prototype.indexOf || function(item) {
+    for (var i = 0, l = this.length; i < l; i++) {
+      if (this[i] === item) return i;
+    }
+    return -1;
+  }
+INDEXOF;
 
 function multident($code, $tab)
 {
@@ -57,8 +59,8 @@ function unfold_soak($options, $parent, $name)
     return;
   }
 
-  $parent[$name] = $ifn->body;
-  $ifn->body = new yy_Value($parent);
+  $parent->{$name} = $ifn->body;
+  $ifn->body = yy('Value', $parent);
 
   return $ifn;
 }
@@ -70,6 +72,25 @@ function utility($name)
   Scope::$root->assign($ref = "__$name", $UTILITIES[$name]);
 
   return $ref;
+}
+
+/**
+ * Since PHP can't return values from __construct, and some of the node
+ * classes rely heavily on this feature in JavaScript, we use this function
+ * instead of the new keyword to instantiate and implicitly call the
+ * constructor.
+ */
+function yy($type)
+{
+  $args = func_get_args();
+  array_shift($args);
+
+  $type = __NAMESPACE__.'\yy_'.$type;
+
+  $inst = new $type;
+  $inst = call_user_func_array(array($inst, 'constructor'), $args);
+
+  return $inst; 
 }
 
 // Base class.

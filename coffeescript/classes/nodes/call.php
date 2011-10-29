@@ -6,7 +6,9 @@ class yy_Call extends yy_Base
 {
   public $children = array('variable', 'args');
 
-  function constructor($variable, $args = array(), $soak = FALSE)
+  private $is_new = FALSE;
+
+  function constructor($variable = NULL, $args = array(), $soak = FALSE)
   {
     $this->args = $args;
     $this->super = $variable === 'super';
@@ -27,14 +29,15 @@ class yy_Call extends yy_Base
       return $this->compile_splat($options, $code);
     }
 
-    $args = array();
+    $args = $this->filter_implicit_objects($this->args);
+    $tmp = array();
 
-    foreach ($this->filter_implicit_objects($this->args) as $arg)
+    foreach ($args as $arg)
     {
-      $args[] = $arg->compile($options, LEVEL_LIST);
+      $tmp[] = $arg->compile($options, LEVEL_LIST);
     }
 
-    $args = implode(', ', $args);
+    $args = implode(', ', $tmp);
 
     if ($this->is_super())
     {
@@ -98,9 +101,12 @@ class yy_Call extends yy_Base
 
   function is_new($set = NULL)
   {
-    static $val = FALSE;
+    if ($set !== NULL)
+    {
+      $this->is_new = !! $set;
+    }
 
-    return is_null($set) ? $val : ($val = $set);
+    return $this->is_new;
   }
 
   function is_super()
@@ -121,7 +127,6 @@ class yy_Call extends yy_Base
       }
 
       $obj = null;
-      $properties[] = array();
 
       foreach ($node->base->properties as $prop)
       {
@@ -129,7 +134,7 @@ class yy_Call extends yy_Base
         {
           if ( ! $obj)
           {
-            $nodes[] = ($obj = yy('Obj', $properties = array(), TRUE));
+            $nodes[] = ($obj = yy('Obj', $properties &= array(), TRUE));
           }
 
           $properties[] = $prop;

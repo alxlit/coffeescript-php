@@ -64,7 +64,7 @@ literal(A) ::= alphanumeric(B)  . { A = B; }
 literal(A) ::= YY_JS(B)         . { A = yy('Literal', B); }
 literal(A) ::= YY_REGEX(B)      . { A = yy('Literal', B); }
 literal(A) ::= YY_BOOL(B)       . { $val = yy('Literal', B);
-                                    $val->is_undefined(A === 'undefined');
+                                    $val->is_undefined(B === 'undefined');
                                     A = $val; }
 
 assign(A) ::= assignable(B) YY_EQUALS expression(C)                       . { A = yy('Assign', B, C); }
@@ -144,7 +144,7 @@ assignList(A) ::= assignList(B) YY_COMMA assignObj(C)                           
 assignList(A) ::= assignList(B) optComma YY_TERMINATOR assignObj(C)                   . { B[] = C; A = B; }
 assignList(A) ::= assignList(B) optComma YY_INDENT assignList(C) optComma YY_OUTDENT  . { A = array_merge(B, C); }
 
-class(A) ::= YY_CLASS                                                   . { A = new yy_Class; }
+class(A) ::= YY_CLASS                                                   . { A = yy('Class'); }
 class(A) ::= YY_CLASS block(B)                                          . { A = yy('Class', NULL, NULL, B); }
 class(A) ::= YY_CLASS YY_EXTENDS value(B)                               . { A = yy('Class', NULL, B); }
 class(A) ::= YY_CLASS YY_EXTENDS value(B) block(C)                      . { A = yy('Class', NULL, B, C); } 

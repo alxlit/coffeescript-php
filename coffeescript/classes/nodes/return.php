@@ -6,7 +6,7 @@ class yy_Return extends yy_Base
 {
   public $children = array('expression');
 
-  function constructor($expr)
+  function constructor($expr = NULL)
   {
     if ($expr && ! ($expr->unwrap()->is_undefined()))
     {

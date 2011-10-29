@@ -2,9 +2,12 @@
 
 namespace CoffeeScript;
 
-class yy_Range
+class yy_Range extends yy_Base
 {
   public $children = array('from', 'to');
+
+  public $from_num = 0;
+  public $to_num = 0;
 
   function constructor($from, $to, $tag)
   {
@@ -18,9 +21,10 @@ class yy_Range
 
   function compile_array($options)
   {
-    if ($this->from_num && $this->to_num && abs($this->from_num - $this->to_num) <= 20)
+    if ( (isset($this->from_num) && $this->from_num) && 
+         (isset($this->to_num) && $this->to_num) && abs($this->from_num - $this->to_num) <= 20)
     {
-      $range = range((int) $this->from_num, (int) $this->to_num);
+      $range = range($this->from_num, $this->to_num);
 
       if ($this->exclusive)
       {
@@ -30,12 +34,13 @@ class yy_Range
       return '['.implode(', ', $range).']';
     }
 
-    $idt = $this->tab + TAB;
+    $idt = $this->tab.TAB;
     $i = $options['scope']->free_variable('i');
     $result = $options['scope']->free_variable('result');
     $pre = "\n{$idt}{$result} = [];";
 
-    if ($this->from_num && $this->to_num)
+    if ( (isset($this->from_num) && $this->from_num) && 
+         (isset($this->to_num) && $this->to_num))
     {
       $options['index'] = $i;
       $body = $this->compile_simple($options);
@@ -56,7 +61,7 @@ class yy_Range
   {
     $this->compile_variables($options);
 
-    if ( ! ($options['index']))
+    if ( ! (isset($options['index']) && $options['index']))
     {
       return $this->compile_array($options);
     }
@@ -71,14 +76,14 @@ class yy_Range
     $vars = "{$idx} = {$this->from}".($this->to !== $this->to_var ? ", {$this->to}" : '');
     $cond = "{$this->from_var} <= {$this->to_var}";
     $compare = "{$cond} ? {$idx} <{$this->equals} {$this->to_var} : {$idx} >{$this->equals} {$this->to_var}";
-    $incr = $step ? "{$idx} += ".($step->compile($options)) : "{$cond} ? {$idx}++ : {$idx}==";
+    $incr = $step ? "{$idx} += ".($step->compile($options)) : "{$cond} ? {$idx}++ : {$idx}--";
 
     return "{$vars}; {$compare}; {$incr}";
   }
 
   function compile_simple($options)
   {
-    list($from, $to) = array((int) $this->from_num, (int) $this->to_num);
+    list($from, $to) = array($this->from_num, $this->to_num);
 
     $idx = del($options, 'index');
     $step = del($options, 'step');
@@ -105,8 +110,11 @@ class yy_Range
     list($this->from, $this->from_var) = $this->from->cache($options, LEVEL_LIST);
     list($this->to, $this->to_var) = $this->to->cache($options, LEVEL_LIST);
 
-    preg_match_all(SIMPLENUM, $this->from_var, $this->from_num);
-    preg_match_all(SIMPLENUM, $this->to_var, $this->to_num);
+    preg_match(SIMPLENUM, $this->from_var, $from_num);
+    preg_match(SIMPLENUM, $this->to_var, $to_num);
+
+    $this->from_num = isset($from_num[0]) ? intval($from_num[0]) : NULL;
+    $this->to_num = isset($to_num[0]) ? intval($to_num[0]) : NULL;
 
     $parts = array();
 

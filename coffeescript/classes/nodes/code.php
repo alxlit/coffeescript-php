@@ -9,7 +9,7 @@ class yy_Code extends yy_Base
   function constructor($params = NULL, $body = NULL, $tag = NULL)
   {
     $this->params = $params ? $params : array();
-    $this->body = $body ? $body : new yy_Block;
+    $this->body = $body ? $body : yy('Block');
     $this->bound = $tag === 'boundfunc';
     $this->context = $this->bound ? 'this' : NULL;
 

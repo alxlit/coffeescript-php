@@ -63,7 +63,7 @@ class yy_Op extends yy_Base
     $shared = $tmp[1];
 
     $fst = $this->first->compile($options, LEVEL_OP);
-    $code = "{$fst} ".($this->invert ? '&&' : '||').' '.$shared->compile($options).' '
+    $code = "{$fst} ".($this->invert() ? '&&' : '||').' '.$shared->compile($options).' '
       .$this->operator.' '.$this->second->compile($options, LEVEL_OP);
 
     return "({$code})";
@@ -128,12 +128,6 @@ class yy_Op extends yy_Base
       $this->first = yy('Parens', $this->first);
     }
 
-    if ( ! isset($this->first))
-    {
-      var_dump($this);
-      die();
-    }
-
     $parts[] = $this->first->compile($options, LEVEL_OP);
 
     if ($this->flip)
@@ -161,7 +155,7 @@ class yy_Op extends yy_Base
       $all_invertable = TRUE;
       $curr = $this;
 
-      while ($curr && $curr->operator)
+      while ($curr && (isset($curr->operator) && $curr->operator))
       {
         $all_invertable = $all_invertable && isset(self::$INVERSIONS[$curr->operator]);
         $curr = $curr->first;
@@ -175,19 +169,17 @@ class yy_Op extends yy_Base
 
       $curr = $this;
 
-      while ($curr && $curr->operator)
+      while ($curr && (isset($curr->operator) && $curr->operator))
       {
-        $curr->invert = ! $curr->invert;
+        $curr->invert = ! (isset($curr->invert) && $curr->invert);
         $curr->operator = self::$INVERSIONS[$curr->operator];
         $curr = $curr->first;
       }
 
       return $this;
     }
-    else if (isset(self::$INVERSIONS[$this->operator]))
+    else if (isset(self::$INVERSIONS[$this->operator]) && ($op = self::$INVERSIONS[$this->operator]))
     {
-      $op = self::$INVERSIONS[$this->operator];
-
       if ($first->unwrap() instanceof yy_Op)
       {
         $first->invert();
@@ -200,8 +192,8 @@ class yy_Op extends yy_Base
       $tmp = yy('Parens', $this);
       return $tmp->invert();
     }
-    else if ($this->operator === '!' && ($fst = $this->first->unwrap()) instanceof yy_Op &&
-      in_array($fst->operator, array('!', 'in', 'instanceof')))
+    else if ($this->operator === '!' && (($fst = $this->first->unwrap()) instanceof yy_Op) &&
+      in_array($fst->operator, array('!', 'in', 'instanceof'), TRUE))
     {
       return $fst;
     }
@@ -223,13 +215,17 @@ class yy_Op extends yy_Base
 
   function unfold_soak($options)
   {
-    return in_array($this->operator, array('++', '--', 'delete'), TRUE) &&
-      unfold_soak($options, $this, 'first');
+    if (in_array($this->operator, array('++', '--', 'delete'), TRUE))
+    {
+      return unfold_soak($options, $this, 'first');
+    }
+
+    return NULL;
   }
 
   function to_string($idt = '', $name = __CLASS__)
   {
-    return parent::to_string($idt, $this->constructor->name.' '.$this->operator);
+    return parent::to_string($idt, $name.' '.$this->operator);
   }
 }
 

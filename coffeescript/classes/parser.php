@@ -2665,7 +2665,7 @@ static public $yy_action = array(
 #line 2667 "/var/www/coffeescript-php/grammar.php"
 #line 66 "/var/www/coffeescript-php/grammar.y"
     function yy_r31(){ $val = yy('Literal', $this->yystack[$this->yyidx + 0]->minor);
-                                    $val->is_undefined($this->_retvalue === 'undefined');
+                                    $val->is_undefined($this->yystack[$this->yyidx + 0]->minor === 'undefined');
                                     $this->_retvalue = $val;     }
 #line 2672 "/var/www/coffeescript-php/grammar.php"
 #line 70 "/var/www/coffeescript-php/grammar.y"
@@ -2771,7 +2771,7 @@ static public $yy_action = array(
     function yy_r88(){ $this->_retvalue = array_merge($this->yystack[$this->yyidx + -5]->minor, $this->yystack[$this->yyidx + -2]->minor);     }
 #line 2774 "/var/www/coffeescript-php/grammar.php"
 #line 147 "/var/www/coffeescript-php/grammar.y"
-    function yy_r89(){ $this->_retvalue = new yy_Class;     }
+    function yy_r89(){ $this->_retvalue = yy('Class');     }
 #line 2777 "/var/www/coffeescript-php/grammar.php"
 #line 148 "/var/www/coffeescript-php/grammar.y"
     function yy_r90(){ $this->_retvalue = yy('Class', NULL, NULL, $this->yystack[$this->yyidx + 0]->minor);     }

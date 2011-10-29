@@ -77,7 +77,7 @@ class yy_Block extends yy_Base
   function compile_root($options)
   {
     $options['indent'] = $this->tab = isset($options['bare']) && $options['bare'] ? '' : TAB;
-    $options['scope'] = new Scope(null, $this, null);
+    $options['scope'] = new Scope(NULL, $this, NULL);
     $options['level'] = LEVEL_TOP;
     
     $code = $this->compile_with_declarations($options);

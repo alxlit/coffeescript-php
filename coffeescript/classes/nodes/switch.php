@@ -11,7 +11,6 @@ class yy_Switch extends yy_Base
     $this->subject = $subject;
     $this->cases = $cases;
     $this->otherwise = $otherwise;
-
     return $this;
   }
 
@@ -28,7 +27,7 @@ class yy_Switch extends yy_Base
     {
       list($conditions, $block) = $case;
 
-      foreach (flatten($conditions) as $cond)
+      foreach (flatten(array($conditions)) as $cond)
       {
         if ( ! $this->subject)
         {
@@ -48,6 +47,8 @@ class yy_Switch extends yy_Base
         break;
       }
 
+      $expr = $this->last_non_comment($block->expressions);
+
       if ($expr instanceof yy_Return || ($expr instanceof yy_Literal && $expr->jumps() && $expr->value !== 'debugger'))
       {
         continue;
@@ -58,7 +59,7 @@ class yy_Switch extends yy_Base
 
     if ($this->otherwise && count($this->otherwise->expressions))
     {
-      $code .= $idt1."default;\n".$this->otherwise->compile($options, LEVEL_TOP);
+      $code .= $idt1."default:\n".$this->otherwise->compile($options, LEVEL_TOP)."\n";
     }
 
     return $code.$this->tab.'}';

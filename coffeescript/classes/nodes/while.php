@@ -6,10 +6,12 @@ class yy_While extends yy_Base
 {
   public $children = array('condition', 'guard', 'body');
 
-  function constructor($condition, $options = NULL)
+  public $returns = FALSE;
+
+  function constructor($condition = NULL, $options = NULL)
   {
-    $this->condition = $options && $options->invert ? $condition->invert : $condition;
-    $this->guard = $options ? $options->guard : NULL;
+    $this->condition = isset($options['invert']) ? $condition->invert() : $condition;
+    $this->guard = isset($options['guard']) ? $options['guard'] : NULL;
 
     return $this;
   }
@@ -35,7 +37,7 @@ class yy_While extends yy_Base
       if ($options['level'] > LEVEL_TOP || $this->returns)
       {
         $rvar = $options['scope']->free_variable('results');
-        $set = "{$this->tab}{$this->rvar} = [];\n";
+        $set = "{$this->tab}{$rvar} = [];\n";
 
         if ($body)
         {
@@ -45,7 +47,7 @@ class yy_While extends yy_Base
 
       if ($this->guard)
       {
-        $body = Block::wrap(array(yy('If', $this->guard, $body)));
+        $body = yy_Block::wrap(array(yy('If', $this->guard, $body)));
       }
 
       $body = "\n".$body->compile($options, LEVEL_TOP)."\n{$this->tab}";
@@ -68,7 +70,7 @@ class yy_While extends yy_Base
 
   function jumps()
   {
-    $expressions = $this->body->expressions;
+    $expressions = isset($this->body->expressions) ? $this->body->expressions : array();
 
     if ( ! count($expressions))
     {

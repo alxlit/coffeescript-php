@@ -62,7 +62,7 @@ class yy_Arr extends yy_Base
 
   function filter_implicit_objects()
   {
-    return call_user_func_array(array(new yy_Call, __FUNCTION__), func_get_args());
+    return call_user_func_array(array(yy('Call'), __FUNCTION__), func_get_args());
   }
 }
 

@@ -6,6 +6,8 @@ class yy_If extends yy_Base
 {
   public $children = array('condition', 'body', 'elsebody');
 
+  private $is_chain = FALSE;
+
   function constructor($condition, $body, $options = array())
   {
     $this->condition = (isset($options['type']) && $options['type'] === 'unless') ? $condition->invert() : $condition;
@@ -95,7 +97,7 @@ class yy_If extends yy_Base
 
   function else_body_node()
   {
-    return $this->else_body ? $this->else_body->unwrap() : FALSE;
+    return isset($this->else_body) && $this->else_body ? $this->else_body->unwrap() : NULL;
   }
 
   function ensure_block($node)
@@ -105,14 +107,12 @@ class yy_If extends yy_Base
   
   function is_chain($set = NULL)
   {
-    static $value = FALSE;
-
-    if ( ! is_null($set))
+    if ($set !== NULL)
     {
-      $value = $set;
+      $this->is_chain = !! $set;
     }
 
-    return $value;
+    return $this->is_chain;
   }
 
   function is_statement($options = array())

@@ -17,7 +17,7 @@ class yy_Param extends yy_Base
 
   function as_reference($options)
   {
-    if ($this->reference)
+    if (isset($this->reference) && $this->reference)
     {
       return $this->reference;
     }
@@ -28,7 +28,7 @@ class yy_Param extends yy_Base
     {
       $node = $node->properties[0]->name;
 
-      if ($node->value->reserved)
+      if (isset($node->value->reserved) && $node->value->reserved)
       {
         $node = yy('Literal', '_'.$node->value);
       }

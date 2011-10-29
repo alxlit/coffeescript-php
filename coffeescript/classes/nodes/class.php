@@ -11,7 +11,7 @@ class yy_Class extends yy_Base
     $this->variable = $variable;
     $this->parent = $parent;
 
-    $this->body = is_null($body) ? new yy_Block : $body;
+    $this->body = $body === NULL ? yy('Block') : $body;
     $this->body->class_body = TRUE;
 
     $this->bound_funcs = array();
@@ -115,7 +115,7 @@ class yy_Class extends yy_Base
 
   function determine_name()
   {
-    if ( ! $this->variable)
+    if ( ! (isset($this->variable) && $this->variable))
     {
       return NULL;
     }
@@ -136,7 +136,7 @@ class yy_Class extends yy_Base
   {
     if ( ! (isset($this->ctor) && $this->ctor))
     {
-      $this->ctor = new yy_Code;
+      $this->ctor = yy('Code');
 
       if ($this->parent)
       {

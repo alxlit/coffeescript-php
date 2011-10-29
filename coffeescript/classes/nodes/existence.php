@@ -21,11 +21,11 @@ class yy_Existence extends yy_Base
     {
       if ($this->negated)
       {
-        $code = "typeof {$code} == \"undefined\" || {$code} == null";
+        $code = "typeof {$code} === \"undefined\" || {$code} === null";
       }
       else
       {
-        $code = "typeof {$code} != \"undefined\" && {$code} != null";
+        $code = "typeof {$code} !== \"undefined\" && {$code} !== null";
       }
     }
     else

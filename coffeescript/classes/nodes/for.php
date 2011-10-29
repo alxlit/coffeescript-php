@@ -11,11 +11,14 @@ class yy_For extends yy_Base
     $this->source = $source['source'];
     $this->guard = isset($source['guard']) ? $source['guard'] : NULL;
     $this->step = isset($source['step']) ? $source['step'] : NULL;
-    $this->name = $source['name'];
-    $this->index = $source['index'];
+    $this->name = isset($source['name']) ? $source['name'] : NULL;
+    $this->index = isset($source['index']) ? $source['index'] : NULL;
 
     $this->body = yy_Block::wrap(array($body));
-    $this->own = !! $source['own'];
+    
+    $this->own = isset($source['own']) ? $source['own'] : NULL;
+    $this->own = !! $this->own;
+
     $this->object = (isset($source['object']) && $source['object']);
 
     if ($this->object)
@@ -147,12 +150,12 @@ class yy_For extends yy_Base
 
     if ($this->pattern)
     {
-      array_unshift($body->expressions, yy('Assign', $this->name, yy('Literal', "{$var}[{$ivar}]")));
+      array_unshift($body->expressions, yy('Assign', $this->name, yy('Literal', "{$svar}[{$ivar}]")));
     }
 
     $def_part .= $this->pluck_direct_call($options, $body);
 
-    if ($name_part)
+    if (isset($name_part) && $name_part)
     {
       $var_part = "\n{$idt1}{$name_part};";
     }
@@ -188,7 +191,7 @@ class yy_For extends yy_Base
 
   function jumps()
   {
-    return call_user_func_array(array(new yy_While, __FUNCTION__), func_get_args());
+    return call_user_func_array(array(yy('While'), __FUNCTION__), func_get_args());
   }
 
   function make_return()

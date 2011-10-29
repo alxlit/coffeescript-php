@@ -16,6 +16,7 @@ class yy_Base
   public $no_return = FALSE;
   public $proto = FALSE;
   public $soak = FALSE;
+  public $this = NULL;
   public $to = NULL;
 
   function __construct() {}
@@ -24,7 +25,7 @@ class yy_Base
 
   function __toString()
   {
-    return $this->to_string();
+    return ''.$this->to_string();
   }
 
   function cache($options, $level = NULL, $reused = NULL)
@@ -66,13 +67,7 @@ class yy_Base
 
     if ($options['level'] === LEVEL_TOP || ! $node->is_statement($options))
     {
-      $code = $node->compile_node($options);
-      if (strpos($code, 'yy_Base') !== FALSE)
-      {
-        echo 'Class: '.get_class($node).'<br />';
-      }
-
-      return $code;
+      return $node->compile_node($options);
     }
 
     return $node->compile_closure($options);
@@ -80,7 +75,7 @@ class yy_Base
 
   function compile_closure($options)
   {
-    if (($tmp = $this->jumps()) || ($this instanceof yy_Throw))
+    if ($this->jumps() || ($this instanceof yy_Throw))
     {
       throw new SyntaxError('cannot use a pure statement in an expression.');
     }

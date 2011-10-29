@@ -20,7 +20,8 @@ class yy_Try extends yy_Base
   {
     $options['indent'] .= TAB;
     $error_part = $this->error ? ' ('.$this->error->compile($options).') ' : ' ';
-    
+    $catch_part = '';
+
     if ($this->recovery)
     {
       $catch_part = " catch{$error_part}{\n".$this->recovery->compile($options, LEVEL_TOP)."\n{$this->tab}}";

@@ -4,6 +4,8 @@ namespace CoffeeScript;
 
 class yy_Literal extends yy_Base
 {
+  private $is_undefined = FALSE;
+
   function constructor($value)
   {
     $this->value = $value;
@@ -28,7 +30,9 @@ class yy_Literal extends yy_Base
     }
     else
     {
-      $code = $this->value;
+      // Not sure this is correct. In the reference it seems to just return the
+      // object, uncertain when/if it gets casted to a string.
+      $code = ''.$this->value;
     }
 
     return $this->is_statement() ? $this->tab.$code : $code;
@@ -51,14 +55,12 @@ class yy_Literal extends yy_Base
 
   function is_undefined($set = NULL)
   {
-    static $val = FALSE;
-
-    if ( ! is_null($set))
+    if ($set !== NULL)
     {
-      $val = $set;
+      $this->is_undefined = !! $set;
     }
 
-    return $val;
+    return $this->is_undefined;
   }
 
   function jumps($options = array())
@@ -68,7 +70,8 @@ class yy_Literal extends yy_Base
       return FALSE;
     }
 
-    if ( ! ($options && ($options['loop'] || $options['block'] && ($this->value !== 'continue'))))
+    if ( ! ((isset($options['loop']) && $options['loop']) ||
+            (isset($options['block']) && $options['block']) && ($this->value !== 'continue')))
     {
       return $this;
     }
