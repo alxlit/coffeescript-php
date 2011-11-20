@@ -59,8 +59,8 @@ if ($run)
         'js'      => $js, 
         'rewrite' => $rewrite,
         'run'     => $run,
-        'tokens'  => $tokens)
-      ) ?>;
+        'tokens'  => $tokens
+      )) ?>;
     </script>
   <? endif; ?>
 </head>

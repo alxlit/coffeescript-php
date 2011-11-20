@@ -26,7 +26,7 @@ class yy_Class extends yy_Base
       foreach ($this->bound_funcs as $bvar)
       {
         $bname = $bvar->compile($options);
-        array_unshift($this->ctor->body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this);"));
+        array_unshift($this->ctor->body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
       }
     }
   }
@@ -34,6 +34,7 @@ class yy_Class extends yy_Base
   function add_properties($node, $name)
   {
     $props = array_slice($node->base->properties, 0);
+    $exprs = array();
 
     while ($assign = array_shift($props))
     {
@@ -79,9 +80,11 @@ class yy_Class extends yy_Base
           }
         }
       }
+
+      $exprs[] = $assign;
     }
 
-    return $assign;
+    return compact($exprs);
   }
 
   function compile_node($options)
@@ -96,7 +99,12 @@ class yy_Class extends yy_Base
 
     if ($this->parent)
     {
-      array_splice($this->body->expressions, 1, 0, array(yy('Extends', $lname, $this->parent)));
+      array_unshift($this->body->expressions, yy('Extends', $lname, $this->parent));
+    }
+
+    if ( ! ($this->ctor instanceof yy_Code))
+    {
+      array_unshift($this->body->expressions, $this->ctor);
     }
 
     $this->body->expressions[] = $lname;
@@ -129,7 +137,7 @@ class yy_Class extends yy_Base
       $decl = $this->variable->base->value;
     }
 
-    return $decl ? preg_match(IDENTIFIER, $decl) && $decl : FALSE;
+    return $decl ? ($decl = preg_match(IDENTIFIER, $decl) && $decl) : NULL;
   }
 
   function ensure_constructor($name)
@@ -140,7 +148,12 @@ class yy_Class extends yy_Base
 
       if ($this->parent)
       {
-        $this->ctor->body->push(yy('Call', 'super', array(yy('Splat', yy('Literal', 'arguments')))));
+        $this->ctor->body->push(yy('Literal', "{$name}.__super__.constructor.apply(this, arguments)"));
+      }
+
+      if (isset($this->external_ctor) && $this->external_ctor)
+      {
+        $this->ctor->body->push(yy('Literal', "{$this->external_ctor}.apply(this, arguments)"));
       }
 
       array_unshift($this->body->expressions, $this->ctor);
@@ -193,7 +206,7 @@ class yy_Class extends yy_Base
         {
           if ($node instanceof yy_Value && $node->is_object(TRUE))
           {
-            $exps[$i] = $this->add_properties($node, $name);
+            $exps[$i] = $this->add_properties($node, $name, $options);
           }
         }
 

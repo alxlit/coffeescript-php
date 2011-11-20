@@ -6,13 +6,15 @@ class yy_Call extends yy_Base
 {
   public $children = array('variable', 'args');
 
-  private $is_new = FALSE;
+  private $is_new;
+  private $is_super;
 
   function constructor($variable = NULL, $args = array(), $soak = FALSE)
   {
     $this->args = $args;
-    $this->super = $variable === 'super';
-    $this->variable = $this->super ? NULL : $variable;
+    $this->is_new = FALSE;
+    $this->is_super = $variable === 'super';
+    $this->variable = $this->is_super() ? NULL : $variable;
 
     return $this;
   }
@@ -111,7 +113,7 @@ class yy_Call extends yy_Base
 
   function is_super()
   {
-    return $this->super;
+    return $this->is_super;
   }
 
   function filter_implicit_objects($list)
@@ -198,7 +200,7 @@ class yy_Call extends yy_Base
     {
       if ($this->variable)
       {
-        if (($ifn = unfold_soak($options, $this, 'variable')))
+        if ($ifn = unfold_soak($options, $this, 'variable'))
         {
           return $ifn;
         }

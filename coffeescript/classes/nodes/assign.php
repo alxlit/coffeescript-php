@@ -52,13 +52,32 @@ class yy_Assign extends yy_Base
         return $this->compile_splice($options);
       }
 
-      if (in_array($this->context, array('||=', '&&=', '?=')))
+      if (in_array($this->context, array('||=', '&&=', '?='), TRUE))
       {
         return $this->compile_conditional($options);
       }
     }
 
     $name = $this->variable->compile($options, LEVEL_LIST);
+
+    if ( ! ($this->context || $this->variable->is_assignable()))
+    {
+      throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
+    }
+
+    if ( ! ($this->context || $is_value && 
+           ((isset($this->variable->namespaced) && $this->variable->namespaced) || 
+            $this->variable->has_properties())))
+    {
+      if ($this->param)
+      {
+        $options['scope']->add($name, 'var');
+      }
+      else
+      {
+        $options['scope']->find($name);
+      }
+    }
 
     if ($this->value instanceof yy_Code && preg_match(self::METHOD_DEF, $name, $match))
     {
@@ -75,24 +94,6 @@ class yy_Assign extends yy_Base
     if ($this->context === 'object')
     {
       return "{$name}: {$val}";
-    }
-
-    if ( ! $this->variable->is_assignable())
-    {
-      throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
-    }
-
-    if ( ! ($this->context || $is_value && 
-           ($this->variable->namespaced || $this->variable->has_properties())) )
-    {
-      if ($this->param)
-      {
-        $options['scope']->add($name, 'var');
-      }
-      else
-      {
-        $options['scope']->find($name);
-      }
     }
 
     $val = $name.' '.($this->context ? $this->context : '=').' '.$val;

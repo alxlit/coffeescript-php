@@ -11,7 +11,7 @@ class Scope
 {
   static $root = NULL;
 
-  public $shared = NULL;
+  public $shared = FALSE;
   private $has_assignments = FALSE;
 
   function __construct($parent, $expressions, $method)
@@ -26,7 +26,7 @@ class Scope
 
     $this->positions = array();
 
-    if ($this->parent === NULL)
+    if ( ! $this->parent)
     {
       self::$root = $this;
     }
@@ -53,7 +53,7 @@ class Scope
   function assign($name, $value)
   {
     $this->add($name, array('value' => $value, 'assigned' => TRUE));
-    $this->has_assignments(TRUE);
+    $this->has_assignments = TRUE;
   }
 
   function assigned_variables()
@@ -82,7 +82,7 @@ class Scope
       return $found;
     }
 
-    return $this->parent ? !! $this->parent->check($name) : FALSE;
+    return $this->parent ? $this->parent->check($name) : FALSE;
   }
 
   function declared_variables()
@@ -127,7 +127,7 @@ class Scope
   {
     $index = 0;
 
-    while ($this->check(($temp = $this->temporary($type, $index)), TRUE))
+    while ($this->check(($temp = $this->temporary($type, $index))))
     {
       $index++;
     }
@@ -137,13 +137,8 @@ class Scope
     return $temp;
   }
 
-  function has_assignments($set = NULL)
+  function has_assignments()
   {
-    if ($set !== NULL)
-    {
-      $this->has_assignments = !! $set;
-    }
-
     return $this->has_assignments;
   }
 

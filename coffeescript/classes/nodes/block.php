@@ -28,7 +28,7 @@ class yy_Block extends yy_Base
   function compile_node($options)
   {
     $this->tab = $options['indent'];
-    
+
     $top = $options['level'] === LEVEL_TOP;
     $codes = array();
 
@@ -76,10 +76,10 @@ class yy_Block extends yy_Base
 
   function compile_root($options)
   {
-    $options['indent'] = $this->tab = isset($options['bare']) && $options['bare'] ? '' : TAB;
+    $options['indent'] = ($this->tab = isset($options['bare']) && $options['bare'] ? '' : TAB);
     $options['scope'] = new Scope(NULL, $this, NULL);
     $options['level'] = LEVEL_TOP;
-    
+
     $code = $this->compile_with_declarations($options);
 
     return (isset($options['bare']) && $options['bare']) ? $code : 

@@ -125,7 +125,7 @@ class yy_Base
 
   function contains_type($type)
   {
-    return $this instanceof $type || $this->contains(function($node) use ( & $type)
+    return ($this instanceof $type) || $this->contains(function($node) use ( & $type)
     {
       return $node instanceof $type;
     });
@@ -140,11 +140,11 @@ class yy_Base
 
     foreach ($this->children as $i => $attr)
     {
-      if (isset($this->{$attr}))
+      if (isset($this->{$attr}) && $this->{$attr})
       {
         foreach (flatten(array($this->{$attr})) as $i => $child)
         {
-          if ( ! $func($child))
+          if ($func($child) === FALSE)
           {
             break 2;
           }
@@ -236,7 +236,7 @@ class yy_Base
   {
     $this->each_child(function($child) use ($cross_scope, & $func)
     {
-      if ( ! $func($child))
+      if ($func($child) === FALSE)
       {
         return FALSE;
       }
