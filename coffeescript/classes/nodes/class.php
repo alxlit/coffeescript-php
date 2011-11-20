@@ -26,12 +26,13 @@ class yy_Class extends yy_Base
       foreach ($this->bound_funcs as $bvar)
       {
         $bname = $bvar->compile($options);
-        array_unshift($this->ctor->body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
+        $body = is_array($this->ctor->body) ? $this->ctor->body : array($this->ctor->body);
+        array_unshift($body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
       }
     }
   }
 
-  function add_properties($node, $name)
+  function add_properties($node, $name, $options)
   {
     $props = array_slice($node->base->properties, 0);
     $exprs = array();
@@ -43,7 +44,7 @@ class yy_Class extends yy_Base
         $base = $assign->variable->base;
         $func = $assign->value;
 
-        unset($assign->context);
+        $assign->context = NULL;
 
         if ($base->value === 'constructor')
         {
@@ -52,7 +53,7 @@ class yy_Class extends yy_Base
             throw new Error('cannot define more than one constructor in a class');
           }
 
-          if ($func->bound)
+          if (isset($func->bound) && $func->bound)
           {
             throw new Error('cannot define a constructor as a bound functions');
           }

@@ -90,7 +90,9 @@ class yyStackEntry
     public $major;         /* The major token value.  This is the code
                      ** number for the token at this stack level */
     public $minor; /* The user-supplied minor token value.  This
-                     ** is the value of the token  */
+                   ** is the value of the token  */
+
+    public $generated = FALSE;
 };
 
 // code external to the class is included here
@@ -592,7 +594,7 @@ class yyStackEntry
      * @param int The major token to shift in
      * @param mixed the minor token to shift in
      */
-    function yy_shift($yyNewState, $yyMajor, $yypMinor)
+    function yy_shift($yyNewState, $yyMajor, $yypMinor, $generated = FALSE)
     {
         $this->yyidx++;
         if ($this->yyidx >= self::YYSTACKDEPTH) {
@@ -612,6 +614,7 @@ class yyStackEntry
         $yytos->stateno = $yyNewState;
         $yytos->major = $yyMajor;
         $yytos->minor = $yypMinor;
+        $yytos->generated = $generated;
         array_push($this->yystack, $yytos);
         if (self::$yyTraceFILE && $this->yyidx > 0) {
             fprintf(self::$yyTraceFILE, "%sShift %d\n", self::$yyTracePrompt,
@@ -809,7 +812,7 @@ class yyStackEntry
         self::$LINE = isset($token[2]) ? $token[2] : -1;
 
         // See rewriter.php\add_implicit_braces() and grammar.y.
-        $this->__generated_value__ = isset($token['generatedValue']) ? $token['generatedValue'] : FALSE;
+        $generated = isset($token['generatedValue']) ? $token['generatedValue'] : FALSE;
 
 //        $yyact;            /* The parser action. */
 //        $yyendofinput;     /* True if we are at the end of input */
@@ -823,6 +826,7 @@ class yyStackEntry
             $x = new yyStackEntry;
             $x->stateno = 0;
             $x->major = 0;
+            $x->generated = FALSE;
             $this->yystack = array();
             array_push($this->yystack, $x);
         }
@@ -846,7 +850,7 @@ class yyStackEntry
                 $yyact = self::YY_ERROR_ACTION;
             }
             if ($yyact < self::YYNSTATE) {
-                $this->yy_shift($yyact, $yymajor, $yytokenvalue);
+                $this->yy_shift($yyact, $yymajor, $yytokenvalue, $generated);
                 $this->yyerrcnt--;
                 if ($yyendofinput && $this->yyidx >= 0) {
                     $yymajor = 0;
@@ -911,7 +915,7 @@ class yyStackEntry
                             $yymajor = self::YYNOCODE;
                         } elseif ($yymx != self::YYERRORSYMBOL) {
                             $u2 = 0;
-                            $this->yy_shift($yyact, self::YYERRORSYMBOL, $u2);
+                            $this->yy_shift($yyact, self::YYERRORSYMBOL, $u2, $generated);
                         }
                     }
                     $this->yyerrcnt = 3;
