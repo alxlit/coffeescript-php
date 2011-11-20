@@ -4,6 +4,7 @@ namespace CoffeeScript;
 
 class yy_Base
 {
+  public $as_key = FALSE;
   public $assigns = FALSE;
   public $children = array();
   public $ctor = NULL;

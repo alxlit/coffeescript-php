@@ -63,7 +63,8 @@ class yy_Class extends yy_Base
           }
           else
           {
-            $assign = $this->ctor = yy('Assign', yy('Value', yy('Literal', $name)), $func);
+            $this->external_ctor = $options['scope']->free_variable('class');
+            $assign = yy('Assign', yy('Literal', $this->external_ctor), $func);
           }
         }
         else
@@ -90,11 +91,24 @@ class yy_Class extends yy_Base
   function compile_node($options)
   {
     $decl = $this->determine_name();
-    $name = $decl ? $decl : (isset($this->name) && $this->name ? $this->name : '_Class');
+
+    if ($decl)
+    {
+      $name = $decl;
+    }
+    else if (isset($this->name) && $this->name)
+    {
+      $name = $this->name;
+    }
+    else
+    {
+      $name = '_Class';
+    }
+
     $lname = yy('Literal', $name);
 
     $this->set_context($name);
-    $this->walk_body($name);
+    $this->walk_body($name, $options);
     $this->ensure_constructor($name);
 
     if ($this->parent)
@@ -130,14 +144,16 @@ class yy_Class extends yy_Base
 
     if (($tail = last($this->variable->properties)))
     {
-      $decl = ($tail instanceof yy_Access) ? $tail->name->value : NULL;
+      $decl = $tail instanceof yy_Access ? $tail->name->value : FALSE;
     }
     else
     {
       $decl = $this->variable->base->value;
     }
 
-    return $decl ? ($decl = preg_match(IDENTIFIER, $decl) && $decl) : NULL;
+    $decl = $decl ? (preg_match(IDENTIFIER, $decl) ? $decl : FALSE) : FALSE;
+
+    return $decl;
   }
 
   function ensure_constructor($name)
@@ -166,7 +182,7 @@ class yy_Class extends yy_Base
 
   function set_context($name)
   {
-    $this->body->traverse_children(FALSE, function($node)
+    $this->body->traverse_children(FALSE, function($node) use ($name)
     {
       if (isset($node->class_body) && $node->class_body)
       {
@@ -189,11 +205,11 @@ class yy_Class extends yy_Base
     });
   }
 
-  function walk_body($name)
+  function walk_body($name, $options)
   {
     $self = $this;
 
-    $this->traverse_children(FALSE, function($child) use ( & $self)
+    $this->traverse_children(FALSE, function($child) use ($name, $options, & $self)
     {
       if ($child instanceof yy_Class)
       {
@@ -206,7 +222,7 @@ class yy_Class extends yy_Base
         {
           if ($node instanceof yy_Value && $node->is_object(TRUE))
           {
-            $exps[$i] = $this->add_properties($node, $name, $options);
+            $exps[$i] = $self->add_properties($node, $name, $options);
           }
         }
 

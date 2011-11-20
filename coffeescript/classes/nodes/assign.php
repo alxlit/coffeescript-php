@@ -282,7 +282,7 @@ class yy_Assign extends yy_Base
     }
     else
     {
-      $to = "9e9";
+      $to = '9e9';
     }
 
     list($val_def, $val_ref) = $this->value->cache($options, LEVEL_LIST);

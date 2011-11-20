@@ -24,27 +24,27 @@ $UTILITIES = array(
 );
 
 $UTILITIES['bind'] = <<<'BIND'
-  function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
 BIND;
 
 $UTILITIES['extends'] = <<<'EXTENDS'
-  function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  }
+function(child, parent) {
+  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+  function ctor() { this.constructor = child; }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor;
+  child.__super__ = parent.prototype;
+  return child;
+}
 EXTENDS;
 
 $UTILITIES['indexOf'] = <<<'INDEXOF'
-  Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++) {
-      if (this[i] === item) return i;
-    }
-    return -1;
+Array.prototype.indexOf || function(item) {
+  for (var i = 0, l = this.length; i < l; i++) {
+    if (this[i] === item) return i;
   }
+  return -1;
+}
 INDEXOF;
 
 function multident($code, $tab)

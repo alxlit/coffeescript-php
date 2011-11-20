@@ -128,7 +128,7 @@ class yy_Call extends yy_Base
         continue;
       }
 
-      $obj = null;
+      $obj = NULL;
 
       foreach ($node->base->properties as $prop)
       {
@@ -136,7 +136,9 @@ class yy_Call extends yy_Base
         {
           if ( ! $obj)
           {
-            $nodes[] = ($obj = yy('Obj', $properties &= array(), TRUE));
+            $tmp = array();
+            $properties = & $tmp;
+            $nodes[] = ($obj = yy('Obj', $properties, TRUE));
           }
 
           $properties[] = $prop;
