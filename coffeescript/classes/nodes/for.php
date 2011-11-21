@@ -48,7 +48,7 @@ class yy_For extends yy_Base
       throw SyntaxError('cannot pattern match over range loops');
     }
 
-    $this->returns = false;
+    $this->returns = FALSE;
 
     return $this;
   }

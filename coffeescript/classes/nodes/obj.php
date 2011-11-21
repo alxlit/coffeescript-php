@@ -10,7 +10,7 @@ class yy_Obj extends yy_Base
   {
     $this->generated = $generated;
 
-    $this->properties = is_array($props) ? $props : array();
+    $this->properties = $props ? $props : array();
     $this->objects = $this->properties;
 
     return $this;

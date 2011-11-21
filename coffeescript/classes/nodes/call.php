@@ -68,10 +68,10 @@ class yy_Call extends yy_Base
       $idt = $this->tab.TAB;
 
       return 
-        '(function(func, args, ctor) {'
-      . "{$idt}ctor.prototype = func.prototype;"
-      . "{$idt}var child = new ctor, result = func.apply(child, args);"
-      . "{$idt}return typeof result === \"object\" ? result : child;"
+        "(function(func, args, ctor) {\n"
+      . "{$idt}ctor.prototype = func.prototype;\n"
+      . "{$idt}var child = new ctor, result = func.apply(child, args);\n"
+      . "{$idt}return typeof result === \"object\" ? result : child;\n"
       . "{$this->tab}})(".$this->variable->compile($options, LEVEL_LIST).", $splat_args, function() {})";
     }
 
@@ -128,7 +128,7 @@ class yy_Call extends yy_Base
         continue;
       }
 
-      $obj = NULL;
+      $obj = $tmp = NULL;
 
       foreach ($node->base->properties as $prop)
       {
@@ -136,12 +136,10 @@ class yy_Call extends yy_Base
         {
           if ( ! $obj)
           {
-            $tmp = array();
-            $properties = & $tmp;
-            $nodes[] = ($obj = yy('Obj', $properties, TRUE));
+            $nodes[] = ($obj = $tmp = yy('Obj', array(), TRUE));
           }
 
-          $properties[] = $prop;
+          $tmp->properties[] = $prop;
         }
         else
         {
