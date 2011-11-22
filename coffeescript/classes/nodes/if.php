@@ -6,13 +6,12 @@ class yy_If extends yy_Base
 {
   public $children = array('condition', 'body', 'elsebody');
 
-  private $is_chain = FALSE;
-
   function constructor($condition, $body, $options = array())
   {
     $this->condition = (isset($options['type']) && $options['type'] === 'unless') ? $condition->invert() : $condition;
     $this->body = $body;
     $this->else_body = NULL;
+    $this->is_chain = FALSE;
     $this->soak = isset($options['soak']) ? $options['soak'] : NULL;
 
     return $this;
@@ -26,7 +25,7 @@ class yy_If extends yy_Base
     }
     else
     {
-      $this->is_chain($else_body instanceof yy_If);
+      $this->is_chain = $else_body instanceof yy_If;
       $this->else_body = $this->ensure_block($else_body);
     }
 
@@ -35,7 +34,7 @@ class yy_If extends yy_Base
 
   function body_node() 
   {
-    return $this->body ? $this->body->unwrap() : FALSE;
+    return $this->body ? $this->body->unwrap() : NULL;
   }
 
   function compile_node($options = array())
@@ -97,7 +96,7 @@ class yy_If extends yy_Base
 
   function else_body_node()
   {
-    return isset($this->else_body) && $this->else_body ? $this->else_body->unwrap() : NULL;
+    return (isset($this->else_body) && $this->else_body) ? $this->else_body->unwrap() : NULL;
   }
 
   function ensure_block($node)
@@ -105,25 +104,22 @@ class yy_If extends yy_Base
     return $node instanceof yy_Block ? $node : yy('Block', array($node));
   }
   
-  function is_chain($set = NULL)
+  function is_chain()
   {
-    if ($set !== NULL)
-    {
-      $this->is_chain = !! $set;
-    }
-
     return $this->is_chain;
   }
 
   function is_statement($options = array())
   {
     return (isset($options['level']) && $options['level'] === LEVEL_TOP) ||
-      $this->body_node()->is_statement($options) || ( ($tmp = $this->else_body_node()) && $tmp->is_statement($options));
+      $this->body_node()->is_statement($options) || 
+      ( ($tmp = $this->else_body_node()) && $tmp && $tmp->is_statement($options));
   }
 
   function jumps($options = array())
   {
-    return $this->body->jumps($options) || ($this->else_body && $this->else_body->jumps($options));
+    return $this->body->jumps($options) || 
+      (isset($this->else_body) && $this->else_body && $this->else_body->jumps($options));
   }
 
   function make_return()

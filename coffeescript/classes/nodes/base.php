@@ -122,6 +122,8 @@ class yy_Base
         return FALSE;
       }
     });
+
+    return $contains;
   }
 
   function contains_type($type)

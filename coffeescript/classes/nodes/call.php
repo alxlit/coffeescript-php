@@ -94,7 +94,7 @@ class yy_Call extends yy_Base
       }
       else
       {
-        $ref = null;
+        $ref = NULL;
       }
     }
 

@@ -23,7 +23,7 @@ class yy_Slice extends yy_Base
     $from_str = $from ? $from->compile($options, LEVEL_PAREN) : '0';
     $compiled = $to ? $to->compile($options, LEVEL_PAREN) : '';
 
-    if ($to && ! ( ! $this->range->exclusive && ((int) $compiled) === -1))
+    if ($to && ! ( ! $this->range->exclusive && intval($compiled) === -1))
     {
       $to_str = ', ';
 
@@ -33,7 +33,7 @@ class yy_Slice extends yy_Base
       }
       else if (preg_match(SIMPLENUM, $compiled))
       {
-        $to_str .= (((int) $compiled) + 1);
+        $to_str .= (intval($compiled) + 1);
       }
       else
       {

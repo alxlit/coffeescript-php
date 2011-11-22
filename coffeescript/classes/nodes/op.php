@@ -117,8 +117,9 @@ class yy_Op extends yy_Base
   {
     $parts = array($op = $this->operator);
 
-    if (in_array($op, array('new', 'typeof', 'delete'), TRUE) || in_array($op, array('+', '-'), TRUE) &&
-      $this->first instanceof yy_Op && $this->first->operator === $op)
+    if (in_array($op, array('new', 'typeof', 'delete'), TRUE) || 
+        in_array($op, array('+', '-'), TRUE) &&
+        $this->first instanceof yy_Op && $this->first->operator === $op)
     {
       $parts[] = ' ';
     }
@@ -140,12 +141,7 @@ class yy_Op extends yy_Base
 
   function is_chainable()
   {
-    return in_array($this->operator, array('<', '>', '>=', '<=', '===', '!=='));
-  }
-
-  function is_complex()
-  {
-    return ! ($this->is_unary() && in_array($this->operator, array('+', '-'))) || $this->first->is_complex();
+    return in_array($this->operator, array('<', '>', '>=', '<=', '===', '!=='), TRUE);
   }
 
   function invert()
@@ -180,9 +176,11 @@ class yy_Op extends yy_Base
     }
     else if (isset(self::$INVERSIONS[$this->operator]) && ($op = self::$INVERSIONS[$this->operator]))
     {
-      if ($first->unwrap() instanceof yy_Op)
+      $this->operator = $op;
+
+      if ($this->first->unwrap() instanceof yy_Op)
       {
-        $first->invert();
+        $this->first->invert();
       }
 
       return $this;

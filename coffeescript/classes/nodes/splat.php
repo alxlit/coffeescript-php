@@ -8,7 +8,7 @@ class yy_Splat extends yy_Base
 
   function constructor($name)
   {
-    if (isset($name->compile))
+    if (is_object($name))
     {
       $this->name = $name;
     }
@@ -27,7 +27,7 @@ class yy_Splat extends yy_Base
 
   function compile($options)
   {
-    if (isset($this->index))
+    if (isset($this->index) && $this->index)
     {
       return $this->compile_param($options);
     }
@@ -59,7 +59,7 @@ class yy_Splat extends yy_Base
       {
         return $code;
       }
-      
+
       return utility('slice').".call({$code})";
     }
 

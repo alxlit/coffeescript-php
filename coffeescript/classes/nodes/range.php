@@ -54,7 +54,7 @@ class yy_Range extends yy_Base
 
     $post = "{ {$result}.push({$i}); }\n{$idt}return {$result};\n{$options['indent']}";
 
-    return "(function() {{$pre}\n{$idt}for ({$body}){$post}}.apply(this, arguments)";
+    return "(function() {{$pre}\n{$idt}for ({$body}){$post}}).apply(this, arguments)";
   }
 
   function compile_node($options)
@@ -73,12 +73,20 @@ class yy_Range extends yy_Base
 
     $idx = del($options, 'index');
     $step = del($options, 'step');
-    $vars = "{$idx} = {$this->from}".($this->to !== $this->to_var ? ", {$this->to}" : '');
-    $cond = "{$this->from_var} <= {$this->to_var}";
-    $compare = "{$cond} ? {$idx} <{$this->equals} {$this->to_var} : {$idx} >{$this->equals} {$this->to_var}";
-    $incr = $step ? "{$idx} += ".($step->compile($options)) : "{$cond} ? {$idx}++ : {$idx}--";
 
-    return "{$vars}; {$compare}; {$incr}";
+    if ($step)
+    {
+      $stepvar = $options['scope']->free_variable('step');
+    }
+
+    $var_part = "{$idx} = {$this->from}".($this->to !== $this->to_var ? ", {$this->to}" : '')
+      .($step ? ", {$stepvar} = ".$step->compile($options) : '');
+
+    $cond = "{$this->from_var} <= {$this->to_var}";
+    $cond_part = "{$cond} ? {$idx} <{$this->equals} {$this->to_var} : {$idx} >{$this->equals} {$this->to_var}";
+    $step_part = $step ? "{$idx} += {$stepvar}" : "{$cond} ? {$idx}++ : {$idx}--";
+
+    return "{$var_part}; {$cond_part}; {$step_part}";
   }
 
   function compile_simple($options)
@@ -90,17 +98,28 @@ class yy_Range extends yy_Base
 
     if ($step)
     {
-      $step .= "{$idx} += ".($step->compile($options));
+      $stepvar = $options['scope']->free_variable('step');
     }
 
-    if ($from <= $to)
+    $var_part = "{$idx} = {$from}";
+
+    if ($step)
     {
-      return "{$idx} = {$from}; {$idx} <{$this->equals} {$to}; ".($step ? $step : "{$idx}++");
+      $var_part .= ", {$stepvar} = ".$step->compile($options);
+    }
+
+    $cond_part = $from <= $to ? "{$idx} <{$this->equals} {$to}" : "{$idx} >{$this->equals} {$to}";
+
+    if ($step)
+    {
+      $step_part = "{$idx} += {$stepvar}";
     }
     else
     {
-      return "{$idx} = {$from}; {$idx} >{$this->equals} {$to}; ".($step ? $step : "{$idx}--");
+      $step_part = $from <= $to ? "{$idx}++" : "{$idx}--";
     }
+
+    return "{$var_part}; {$cond_part}; {$step_part}";
   }
 
   function compile_variables($options)
@@ -113,8 +132,8 @@ class yy_Range extends yy_Base
     preg_match(SIMPLENUM, $this->from_var, $from_num);
     preg_match(SIMPLENUM, $this->to_var, $to_num);
 
-    $this->from_num = isset($from_num[0]) ? intval($from_num[0]) : NULL;
-    $this->to_num = isset($to_num[0]) ? intval($to_num[0]) : NULL;
+    $this->from_num = isset($from_num[0]) ? $from_num[0] : NULL;
+    $this->to_num = isset($to_num[0]) ? $to_num[0] : NULL;
 
     $parts = array();
 
@@ -127,8 +146,6 @@ class yy_Range extends yy_Base
     {
       $parts[] = $this->to;
     }
-
-    return $parts;
   }
 }
 

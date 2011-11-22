@@ -10,7 +10,9 @@ class yy_While extends yy_Base
 
   function constructor($condition = NULL, $options = NULL)
   {
-    $this->condition = isset($options['invert']) ? $condition->invert() : $condition;
+    $this->condition = (isset($options['invert']) && $options['invert']) ? 
+      $condition->invert() : $condition;
+
     $this->guard = isset($options['guard']) ? $options['guard'] : NULL;
 
     return $this;

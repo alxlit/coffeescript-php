@@ -24,7 +24,7 @@ class yy_Param extends yy_Base
 
     $node = $this->name;
 
-    if ($node->this)
+    if (isset($node->this) && $node->this)
     {
       $node = $node->properties[0]->name;
 

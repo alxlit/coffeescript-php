@@ -31,7 +31,7 @@ class yy_Code extends yy_Base
     {
       if ($param->splat)
       {
-        if (isset($param->name->value))
+        if (isset($param->name->value) && $param->name->value)
         {
           $options['scope']->add($param->name->value, 'var');
         }
@@ -133,7 +133,7 @@ class yy_Code extends yy_Base
       return utility('bind')."({$code}, {$this->context})";
     }
 
-    return ($this->front ? $this->front : ($options['level'] >= LEVEL_ACCESS ? "({$code})" : $code));
+    return ($this->front || $options['level'] >= LEVEL_ACCESS) ? "({$code})" : $code;
   }
 
   function is_statement()
@@ -150,8 +150,10 @@ class yy_Code extends yy_Base
   {
     if ($cross_scope)
     {
-      parent::traverse_children($cross_scope, $func);
+      return parent::traverse_children($cross_scope, $func);
     }
+
+    return NULL;
   }
 }
 

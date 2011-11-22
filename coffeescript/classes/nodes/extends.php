@@ -18,7 +18,8 @@ class yy_Extends extends yy_Base
   {
     utility('hasProp');
 
-    $tmp = yy('Call', yy('Value', yy('Literal', utility('extends'))), array($this->child, $this->parent));
+    $tmp = yy('Call', yy('Value', yy('Literal', utility('extends'))), 
+      array($this->child, $this->parent));
 
     return $tmp->compile($options);
   }

@@ -16,9 +16,7 @@ class yy_For extends yy_Base
 
     $this->body = yy_Block::wrap(array($body));
     
-    $this->own = isset($source['own']) ? $source['own'] : NULL;
-    $this->own = !! $this->own;
-
+    $this->own = (isset($source['own']) && $source['own']);
     $this->object = (isset($source['object']) && $source['object']);
 
     if ($this->object)
@@ -97,6 +95,11 @@ class yy_For extends yy_Base
     $ivar = $this->range ? $name : $index;
     $ivar = $ivar ? $ivar : $scope->free_variable('i');
 
+    if ($this->step && ! $this->range)
+    {
+      $stepvar = $scope->free_variable('step');
+    }
+
     if ($this->pattern)
     {
       $name = $ivar;
@@ -131,8 +134,15 @@ class yy_For extends yy_Base
       if ( ! $this->object)
       {
         $lvar = $scope->free_variable('len');
-        $step_part = $this->step ? "{$ivar} += ".$this->step->compile($options, LEVEL_OP)." else {$ivar}++" : "{$ivar}++";
-        $for_part = "{$ivar} = 0, {$lvar} = {$svar}.length; {$ivar} < {$lvar}; {$step_part}";
+        $for_var_part = "{$ivar} = 0, {$lvar} = {$svar}.length";
+
+        if ($this->step)
+        {
+          $for_var_part .= ", {$stepvar} = ".$this->step->compile($options, LEVEL_OP);
+        }
+
+        $step_part = $this->step ? "{$ivar} += {$stepvar}" : "{$ivar}++";
+        $for_part = "{$for_var_part}; {$ivar} < {$lvar}; {$step_part}";
       }
     }
 
@@ -215,23 +225,25 @@ class yy_For extends yy_Base
 
       $val = $expr->variable->unwrap_all();
 
-      if ( ! ($val instanceof yy_Call || $val instanceof yy_Value &&
-        ( $val->base && $val->base->unwrap_all() instanceof yy_Code && count($val->properties) === 1 &&
-        isset($val->properties[0]->name) && 
-        in_array($val->properties[0]->name['value'], array('call', 'apply')))))
+      if ( ! ( ($val instanceof yy_Code) ||
+               ($val instanceof yy_Value) &&
+               (isset($val->base) && $val->base && ($val->base->unwrap_all() instanceof yy_Code) &&
+                count($val->properties) === 1 &&
+                isset($val->properties[0]->name) && 
+                in_array($val->properties[0]->name['value'], array('call', 'apply'), TRUE))))
       {
         continue;
       }
 
-      $fn = $val->base ? $val->base->unwrap_all() : $val;
+      $fn = (isset($val->base) && $val->base) ? $val->base->unwrap_all() : $val;
       $ref = yy('Literal', $options['scope']->free_variable('fn'));
       $base = yy('Value', $ref);
 
-      if ($val->base)
+      if (isset($val->base) && $val->base)
       {
         $val->base = $base;
         $base = $val;
-        //array_unshift($args, yy('Literal', 'this'));
+        array_unshift($args, yy('Literal', 'this'));
       }
 
       $body->expressions[$idx] = yy('Call', $base, $expr->args);

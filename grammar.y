@@ -28,7 +28,7 @@ root(A) ::=                         . { A = yy('Block'); }
 root(A) ::= body(B)                 . { A = B; }
 root(A) ::= block(B) YY_TERMINATOR  . { A = B; }
 
-body(A) ::= line(B)                       . { A = yy_Block::wrap(B); }
+body(A) ::= line(B)                       . { A = yy_Block::wrap(array(B)); }
 body(A) ::= body(B) YY_TERMINATOR line(C) . { A = B->push(C); }
 body(A) ::= body(B) YY_TERMINATOR         . { A = B; }
 

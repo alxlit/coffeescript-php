@@ -18,11 +18,12 @@ class yy_Return extends yy_Base
 
   function compile($options, $level = NULL)
   {
-    $expr = isset($this->expression) && $this->expression ? $this->expression->make_return() : NULL;
+    $expr = (isset($this->expression) && $this->expression) ? 
+      $this->expression->make_return() : NULL;
 
     if ($expr && ! ($expr instanceof yy_Return))
     {
-      return $expr->compile($options);
+      return $expr->compile($options, $level);
     }
     else
     {

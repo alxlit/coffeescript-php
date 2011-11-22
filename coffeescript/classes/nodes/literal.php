@@ -24,14 +24,12 @@ class yy_Literal extends yy_Base
     {
       $code = $options['level'] >= LEVEL_ACCESS ? '(void 0)' : 'void 0';
     }
-    else if (isset($value->reserved) && $value->reserved)
+    else if (isset($this->value->reserved) && $this->value->reserved)
     {
       $code = '"'.$this->value.'"';
     }
     else
     {
-      // Not sure this is correct. In the reference it seems to just return the
-      // object, uncertain when/if it gets casted to a string.
       $code = ''.$this->value;
     }
 
@@ -40,7 +38,7 @@ class yy_Literal extends yy_Base
 
   function is_assignable()
   {
-    return preg_match(IDENTIFIER, $this->value);
+    return preg_match(IDENTIFIER, ''.$this->value);
   }
 
   function is_complex()
@@ -50,7 +48,7 @@ class yy_Literal extends yy_Base
 
   function is_statement()
   {
-    return in_array($this->value, array('break', 'continue', 'debugger'), TRUE);
+    return in_array(''.$this->value, array('break', 'continue', 'debugger'), TRUE);
   }
 
   function is_undefined($set = NULL)
@@ -71,7 +69,7 @@ class yy_Literal extends yy_Base
     }
 
     if ( ! ((isset($options['loop']) && $options['loop']) ||
-            (isset($options['block']) && $options['block']) && ($this->value !== 'continue')))
+            (isset($options['block']) && $options['block']) && (''.$this->value !== 'continue')))
     {
       return $this;
     }

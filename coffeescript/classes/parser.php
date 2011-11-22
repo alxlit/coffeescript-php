@@ -2658,7 +2658,7 @@ static public $yy_action = array(
     function yy_r2(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor;     }
 #line 2661 "/var/www/coffeescript-php/grammar.php"
 #line 31 "/var/www/coffeescript-php/grammar.y"
-    function yy_r3(){ $this->_retvalue = yy_Block::wrap($this->yystack[$this->yyidx + 0]->minor);     }
+    function yy_r3(){ $this->_retvalue = yy_Block::wrap(array($this->yystack[$this->yyidx + 0]->minor));     }
 #line 2664 "/var/www/coffeescript-php/grammar.php"
 #line 32 "/var/www/coffeescript-php/grammar.y"
     function yy_r4(){ $this->_retvalue = $this->yystack[$this->yyidx + -2]->minor->push($this->yystack[$this->yyidx + 0]->minor);     }

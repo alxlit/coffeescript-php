@@ -8,13 +8,13 @@ class yy_Value extends yy_Base
 
   function constructor($base = NULL, $props = NULL, $tag = NULL)
   {
-    $this->base = $base;
-    $this->properties = $props === NULL ? array() : $props;
-
     if ( ! $props && $base instanceof yy_Value)
     {
       return $base;
     }
+
+    $this->base = $base;
+    $this->properties = $props ? $props : array();
 
     if ($tag)
     {
@@ -61,7 +61,8 @@ class yy_Value extends yy_Base
 
     $base->push($name);
 
-    return array($base, yy('Value', isset($bref) ? $bref : $base->base, array(isset($nref) ? $nref : $name)));
+    return array($base, yy('Value', isset($bref) ? $bref : $base->base, 
+      array(isset($nref) ? $nref : $name)));
   }
 
   function compile_node($options)
@@ -93,7 +94,7 @@ class yy_Value extends yy_Base
 
   function has_properties()
   {
-    return count($this->properties) > 0;
+    return !! count($this->properties);
   }
 
   function is_array()
@@ -108,7 +109,7 @@ class yy_Value extends yy_Base
 
   function is_atomic()
   {
-    foreach (array_merge($this->properties, (array) $this->base) as $node)
+    foreach (array_merge($this->properties, array($this->base)) as $node)
     {
       if ((isset($node->soak) && $node->soak) || $node instanceof yy_Call)
       {
@@ -124,7 +125,7 @@ class yy_Value extends yy_Base
     return $this->has_properties() || $this->base->is_complex();
   }
 
-  function is_object($only_generated = array())
+  function is_object($only_generated = FALSE)
   {
     if (count($this->properties))
     {
@@ -136,7 +137,7 @@ class yy_Value extends yy_Base
 
   function is_simple_number()
   {
-    return ($this->base instanceof yy_Literal) && preg_match(SIMPLENUM, $this->base->value);
+    return ($this->base instanceof yy_Literal) && preg_match(SIMPLENUM, ''.$this->base->value);
   }
 
   function is_splice()
@@ -168,7 +169,7 @@ class yy_Value extends yy_Base
 
   function unfold_soak($options)
   {
-    if (isset($this->unfolded_soak))
+    if (isset($this->unfolded_soak) && $this->unfolded_soak)
     {
       return $this->unfolded_soak;
     }
@@ -177,52 +178,40 @@ class yy_Value extends yy_Base
 
     if (($ifn = $this->base->unfold_soak($options)))
     {
-      // $ifn->body->properties[] = $this->properties;
       $ifn->body->properties = array_merge($ifn->body->properties, $this->properties);
-
       $result = $ifn;
     }
-
-    foreach ($this->properties as $i => $prop)
+    else
     {
-      if (isset($prop->soak) && $prop->soak)
+      foreach ($this->properties as $i => $prop)
       {
-        $prop->soak = FALSE;
-
-        $fst = yy('Value', $this->base, array_slice($this->properties, 0, $i));
-        $snd = yy('Value', $this->base, array_slice($this->properties, $i));
-
-        if ($fst->is_complex())
+        if (isset($prop->soak) && $prop->soak)
         {
-          $ref = yy('Literal', $options['scope']->free_variable('ref'));
-          $fst = yy('Parens', yy('Assign', $ref, $fst));
-          $snd->base = $ref;
-        }
+          $prop->soak = FALSE;
 
-        $result = yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
+          $fst = yy('Value', $this->base, array_slice($this->properties, 0, $i));
+          $snd = yy('Value', $this->base, array_slice($this->properties, $i));
+
+          if ($fst->is_complex())
+          {
+            $ref = yy('Literal', $options['scope']->free_variable('ref'));
+            $fst = yy('Parens', yy('Assign', $ref, $fst));
+            $snd->base = $ref;
+          }
+
+          $result = yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
+        }
       }
     }
 
-    $this->unfolded_soak = FALSE;
-
-    if ($result)
-    {
-      $this->unfolded_soak = $result;
-    }
+    $this->unfolded_soak = $result ? $result : FALSE;
 
     return $this->unfolded_soak;
   }
 
   function unwrap()
   {
-    return (isset($this->properties) && count($this->properties)) ? $this : $this->base;
-  }
-
-  // TODO: There's a problem with how literals are being compiled; this fix seems
-  // to work, but really we should look at the node trees.
-  function to_string() 
-  {
-    return isset($this->base->value) ? $this->base->value : $this->base;
+    return count($this->properties) ? $this : $this->base;
   }
 }
 

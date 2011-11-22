@@ -36,12 +36,12 @@ class yy_Closure
 
   static function literal_args($node)
   {
-    return $node instanceof yy_Literal && $node->value === 'arguments' && ! $node->as_key;
+    return ($node instanceof yy_Literal) && (''.$node->value === 'arguments') && ! $node->as_key;
   }
 
   static function literal_this($node)
   {
-    return ($node instanceof yy_Literal && $node->value === 'this' && ! $node->as_key) ||
+    return (($node instanceof yy_Literal) && (''.$node->value === 'this') && ! $node->as_key) ||
       ($node instanceof yy_Code && $node->bound);
   }
 }

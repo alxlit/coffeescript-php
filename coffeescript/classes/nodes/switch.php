@@ -11,6 +11,7 @@ class yy_Switch extends yy_Base
     $this->subject = $subject;
     $this->cases = $cases;
     $this->otherwise = $otherwise;
+
     return $this;
   }
 
@@ -34,7 +35,7 @@ class yy_Switch extends yy_Base
           $cond = $cond->invert();
         }
 
-        $cond .= $idt1.'case '.$cond->compile($options, LEVEL_PAREN).":\n";
+        $code .= $idt1.'case '.$cond->compile($options, LEVEL_PAREN).":\n";
       }
 
       if ($body = $block->compile($options, LEVEL_TOP))
@@ -49,7 +50,8 @@ class yy_Switch extends yy_Base
 
       $expr = $this->last_non_comment($block->expressions);
 
-      if ($expr instanceof yy_Return || ($expr instanceof yy_Literal && $expr->jumps() && $expr->value !== 'debugger'))
+      if ($expr instanceof yy_Return || 
+         ($expr instanceof yy_Literal && $expr->jumps() && ''.$expr->value !== 'debugger'))
       {
         continue;
       }
@@ -87,7 +89,7 @@ class yy_Switch extends yy_Base
       }
     }
 
-    if ($this->otherwise)
+    if (isset($this->otherwise) && $this->otherwise)
     {
       return $this->otherwise->jumps($options);
     }
@@ -102,9 +104,9 @@ class yy_Switch extends yy_Base
       $pair[1]->make_return();
     }
 
-    if ($this->otherwise)
+    if (isset($this->otherwise) && $this->otherwise)
     {
-      return $this->otherwise->make_return();
+      $this->otherwise->make_return();
     }
 
     return $this;

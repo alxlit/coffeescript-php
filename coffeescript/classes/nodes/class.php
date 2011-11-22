@@ -190,7 +190,7 @@ class yy_Class extends yy_Base
         return FALSE;
       }
 
-      if ($node instanceof yy_Literal && $node->value === 'this')
+      if ($node instanceof yy_Literal && ''.$node->value === 'this')
       {
         $node->value = $name;
       }

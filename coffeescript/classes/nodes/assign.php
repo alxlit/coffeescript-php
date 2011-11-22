@@ -263,7 +263,7 @@ class yy_Assign extends yy_Base
     {
       if (($from && $from->is_simple_number()) && $to->is_simple_number())
       {
-        $to = (int) $to->compile($options) - (int) $from_ref;
+        $to = intval($to->compile($options)) - intval($from_ref);
 
         if ( ! $exclusive)
         {
