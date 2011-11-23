@@ -33,7 +33,7 @@ class yy_Literal extends yy_Base
       $code = ''.$this->value;
     }
 
-    return $this->is_statement() ? $this->tab.$code : $code;
+    return $this->is_statement() ? "{$this->tab}{$code};" : $code;
   }
 
   function is_assignable()

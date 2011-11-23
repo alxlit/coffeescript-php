@@ -34,7 +34,7 @@ class yy_Try extends yy_Base
     return
       "{$this->tab}try {\n"
     . $this->attempt->compile($options, LEVEL_TOP)."\n"
-    . "{$this->tab}}{$catch_part}\n"
+    . "{$this->tab}}{$catch_part}"
     . ($this->ensure ? " finally {\n".$this->ensure->compile($options, LEVEL_TOP)."\n{$this->tab}}" : '');
   }
 
