@@ -18,6 +18,7 @@
 %left       YY_RELATION.
 %left       YY_SHIFT.
 %left       YY_PLUS YY_MINUS.
+%left       YY_MATH.
 %right      YY_UNARY.
 %left       YY_EXISTENTIAL.
 %nonassoc   YY_INCREMENT YY_DECREMENT.
