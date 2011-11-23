@@ -218,8 +218,13 @@ class yy_Base
     return yy('Return', $this);
   }
 
-  function to_string($idt = '', $name = __CLASS__)
+  function to_string($idt = '', $name = NULL)
   {
+    if ($name === NULL)
+    {
+      $name = get_class($this);
+    }
+
     $tree = "\n{$idt}{$name}";
 
     if ($this->soak)

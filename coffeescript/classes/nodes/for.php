@@ -15,7 +15,7 @@ class yy_For extends yy_Base
     $this->index = isset($source['index']) ? $source['index'] : NULL;
 
     $this->body = yy_Block::wrap(array($body));
-    
+
     $this->own = (isset($source['own']) && $source['own']);
     $this->object = (isset($source['object']) && $source['object']);
 
@@ -58,7 +58,7 @@ class yy_For extends yy_Base
     $last_jumps = last($body->expressions);
     $last_jumps = $last_jumps ? $last_jumps->jumps() : FALSE;
 
-    if ($last_jumps and $last_jumps instanceof yy_Return)
+    if ($last_jumps && $last_jumps instanceof yy_Return)
     {
       $this->returns = FALSE;
     }
@@ -84,7 +84,7 @@ class yy_For extends yy_Base
 
     if ($index)
     {
-      $scope->find($name, array('immediate' => TRUE));
+      $scope->find($index, array('immediate' => TRUE));
     }
 
     if ($this->returns)

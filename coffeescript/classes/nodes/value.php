@@ -169,7 +169,7 @@ class yy_Value extends yy_Base
 
   function unfold_soak($options)
   {
-    if (isset($this->unfolded_soak) && $this->unfolded_soak)
+    if (isset($this->unfolded_soak))
     {
       return $this->unfolded_soak;
     }

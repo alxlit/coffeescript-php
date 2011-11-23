@@ -14,8 +14,7 @@ function init()
 
   if (in_array($arg, array('?', 'help')))
   {
-    echo "make.php";
-    exit(1);
+    exit("make.php\n");
   }
 
   make();
@@ -34,37 +33,40 @@ function make()
   echo "Attempting to build \"{$target}\" from \"{$source}.y\".\n";
   echo "This could take a few minutes...\n";
 
+  // The -q flag doesn't seem to work but we can catch the output in a
+  // buffer (only want to display the errors).
   ob_start();
 
   $lemon = new PHP_ParserGenerator;
   $lemon->main();
 
-  $reply = ob_get_contents();
+  $reply = explode("\n", ob_get_contents());
 
   ob_end_clean();
 
-  if (substr($reply, -1) !== "\n")
-  {
-    // Sometimes the errors aren't printed with newlines.
-    $reply .= "\n";
-  }
+  $errors = array();
+  $conflicts = 0;
 
-  // Check for errors.
-  if (strpos($reply, $argv[1]) > -1)
+  foreach ($reply as $i => $line)
   {
-    $reply = explode("\n", $reply);
-
-    foreach ($reply as $i => $line)
+    // Errors are prefixed with the grammar file path.
+    if (strpos($line, $argv[1]) === 0)
     {
-      // The -q flag doesn't seem to work, but we want only the error messages
-      // to be output to the terminal.
-      if (strpos($line, $argv[1]) === 0)
-      {
-        echo str_replace($argv[1], basename($argv[1]), $line) . "\n";
-      }
+      $errors[] = str_replace($argv[1], basename($argv[1]), $line);
     }
 
-    exit(1);
+    if ($i === count($reply) - 2)
+    {
+      if (preg_match('/^(\d+).+/', $line, $m))
+      {
+        $conflicts = intval($m[1]);
+      }
+    }
+  }
+
+  if ($errors)
+  {
+    exit(implode("\n", $errors));
   }
 
   // Build was a success!
@@ -82,7 +84,15 @@ function make()
 
     // Clean up.
     unlink(ROOT.$source.'.php');
-    unlink(ROOT.$source.'.out');
+
+    if ($conflicts)
+    {
+      echo "{$conflicts} parsing conflicts occurred (see {$source}.out).\n";
+    }
+    else
+    {
+      unlink(ROOT.$source.'.out');
+    }
 
     exit(0);
   }

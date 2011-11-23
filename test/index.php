@@ -26,7 +26,13 @@ if ($run)
 
   try
   {
-    $js = CoffeeScript\compile($coffee, array('file' => $run, 'rewrite' => $rewrite), $tokens);
+    $options = array(
+      'file'    => $run,
+      'rewrite' => $rewrite,
+      // 'trace'   => realpath(__DIR__).'/trace.txt',
+    );
+
+    $js = CoffeeScript\compile($coffee, $options, $tokens);
   }
   catch (Exception $e)
   {
