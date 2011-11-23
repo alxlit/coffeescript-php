@@ -22,7 +22,7 @@ function compile($code, $options = array(), & $tokens = NULL)
 
   if (isset($options['trace']))
   {
-    Parser::Trace(fopen($options['trace'], TRUE), '> ');
+    Parser::Trace(fopen($options['trace'], 'w', TRUE), '> ');
   }
 
   $parser = new Parser();
