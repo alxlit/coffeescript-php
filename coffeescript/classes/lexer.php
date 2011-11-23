@@ -394,19 +394,19 @@ class Lexer
       }
     }
 
-    // Since data types in PHP are primitive, we can't easily attach parameters
-    // to token values, and must resort to doing so on the token array.
     $reserved = FALSE;
 
-    if (in_array($id, self::$JS_FORBIDDEN))
+    if (in_array($id, self::$JS_FORBIDDEN, TRUE))
     {
       if ($forced_identifier)
       {
-        // $id = (object) $id;
-        // $id->reserved = TRUE;
+        // TODO: Doing this seems to work just fine. Sometime in the future I 
+        // will take out the nastiness of attaching properties to the token 
+        // rather than directly to the value like below.
+        $id = wrap($id);
+        $id->reserved = $reserved = TRUE;
 
         $tag = 'IDENTIFIER';
-        $reserved = TRUE;
       }
       else if (in_array($id, self::$JS_RESERVED, TRUE))
       {

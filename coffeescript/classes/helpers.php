@@ -192,6 +192,7 @@ function t_canonical($token)
     {
       // Single token.
       $token[0] = t_canonical($token[0]);
+      $token[1] = ''.$token[1];
     }
 
     return $token;
@@ -208,6 +209,28 @@ function t_canonical($token)
   }
 
   return isset($map[$token]) ? $map[$token] : $token;
+}
+
+class Value
+{
+  function __construct($v)
+  {
+    $this->v = $v;
+  }
+
+  function __toString()
+  {
+    return $this->v;
+  }
+}
+
+/**
+ * Wrap a primitive with an object, so that properties can be attached to it
+ * like in JavaScript.
+ */
+function wrap($v)
+{
+  return new Value($v);
 }
 
 ?>

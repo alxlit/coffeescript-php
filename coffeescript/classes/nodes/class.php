@@ -70,12 +70,12 @@ class yy_Class extends yy_Base
         }
         else
         {
-          if ( ! ($assign->variable->this))
+          if ( ! (isset($assign->variable->this) && $assign->variable->this))
           {
             $assign->variable = yy('Value', yy('Literal', $name), array(yy('Access', $base, 'proto')));
           }
 
-          if ($func instanceof yy_Code && $func->bound)
+          if ($func instanceof yy_Code && isset($func->bound) && $func->bound)
           {
             $this->bound_funcs[] = $base;
             $func->bound = FALSE;

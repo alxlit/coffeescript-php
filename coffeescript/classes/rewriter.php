@@ -117,11 +117,13 @@ class Rewriter
       // This doesn't really work in PHP, so we assign 'generatedValue' to the
       // token and handle it in the actual parser (see Lempar.php\Parser\
       // parse()). This is pretty hacky, but it works. (Maybe...)
+      //
+      // TODO: In the future change this to use the wrap() function as it seems
+      // to work without any problems.
 
-      // $value = (object) '{';
-      // $value->generated = TRUE;
+      $value = wrap('{');
+      $value->generated = TRUE;
 
-      $value = '{';
       $tok = array(t('{'), $value, $token[2], 'generated' => TRUE, 'generatedValue' => TRUE);
 
       array_splice($tokens, $idx, 0, array($tok));

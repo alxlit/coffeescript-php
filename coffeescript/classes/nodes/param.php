@@ -28,7 +28,7 @@ class yy_Param extends yy_Base
     {
       $node = $node->properties[0]->name;
 
-      if (isset($node->value->reserved) && $node->value->reserved)
+      if (isset($this->value->reserved) && $this->value->reserved)
       {
         $node = yy('Literal', '_'.$node->value);
       }
