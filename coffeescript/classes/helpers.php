@@ -62,6 +62,7 @@ function flatten(array $array)
 function & last( & $array, $back = 0)
 {
   static $NULL;
+
   $i = count($array) - $back - 1;
 
   if (isset($array[$i]))
@@ -71,7 +72,7 @@ function & last( & $array, $back = 0)
   else
   {
     // Make sure $NULL is really NULL.
-    $NULL = NULL; 
+    $NULL = NULL;
 
     return $NULL;
   }
@@ -183,16 +184,30 @@ function t_canonical($token)
   {
     if (is_array($token[0]))
     {
-      for ($i = 0; $i < count($token); $i++)
+      foreach ($token as & $t)
       {
-        $token[$i] = t_canonical($token[$i]);
+        $t = t_canonical($t);
       }
     }
     else
     {
       // Single token.
       $token[0] = t_canonical($token[0]);
-      $token[1] = ''.$token[1];
+
+      if (is_object($token[1]))
+      {
+        $str = "< {$token[1]} ";
+
+        foreach ($token[1] as $k => $v)
+        {
+          if ($k !== 'v' && $v)
+          {
+            $str.= $k.' ';
+          }
+        }
+
+        $token[1] = $str.'>';
+      }
     }
 
     return $token;
