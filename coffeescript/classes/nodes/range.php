@@ -36,7 +36,7 @@ class yy_Range extends yy_Base
 
     $idt = $this->tab.TAB;
     $i = $options['scope']->free_variable('i');
-    $result = $options['scope']->free_variable('result');
+    $result = $options['scope']->free_variable('results');
     $pre = "\n{$idt}{$result} = [];";
 
     if ( (isset($this->from_num) && $this->from_num) && 
