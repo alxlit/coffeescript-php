@@ -1,7 +1,5 @@
 <?
 
-ini_set('display_errors', '1');
-
 /**
  * Quick and dirty test driver for CoffeeScript PHP.
  *
@@ -10,102 +8,108 @@ ini_set('display_errors', '1');
  * by the original compiler.
  */
 
-require '../coffeescript/coffeescript.php';
-define('CASE_DIR', 'cases/');
+ini_set('display_errors', '1');
+error_reporting(E_ALL & ~(E_NOTICE | E_STRICT));
 
-$tests    = glob(CASE_DIR.'*.coffee');
-$rewrite  = isset($_GET['rewrite']) ? !! $_GET['rewrite'] : TRUE;
-$run      = isset($_GET['run']) ? $_GET['run'] : FALSE;
+// Test case to run
+$case = isset($_GET['case']) ? $_GET['case'] : FALSE;
 
-if ($run)
+if ($case)
 {
-  $coffee = file_get_contents($run);
-  $error  = FALSE;
-  $js     = '';
-  $tokens = array();
+  $PHP = array(
+    'coffee'  => file_get_contents($case),
+    'error'   => NULL,
+    'js'      => NULL,
+    'rewrite' => ! (isset($_GET['rewrite']) && $_GET['rewrite'] === 'off'),
+    'tokens'  => array()
+  );
 
   try
   {
-    $options = array(
-      'file'    => $run,
-      'rewrite' => $rewrite,
-      // 'trace'   => realpath(__DIR__).'/trace.txt',
-    );
+    require '../coffeescript/coffeescript.php';
 
-    $js = CoffeeScript\compile($coffee, $options, $tokens);
+    $PHP['js'] = CoffeeScript\compile($PHP['coffee'], array(
+      'file'    => $case,
+      'rewrite' => $PHP['rewrite'],
+      'tokens'  =>  & $PHP['tokens'],
+    ));
   }
   catch (Exception $e)
   {
-    $error = get_class($e).': '.ucfirst($e->getMessage());
+    $PHP['error'] = get_class($e).': '.ucfirst($e->getMessage());
   }
 
-  if ($tokens)
+  if ($PHP['tokens'])
   {
-    // Change the token tags to their canonical string representations, so that
-    // we can compare them to the reference.
-    $tokens = CoffeeScript\t_canonical($tokens);
+    // Change the tokens to their canonical form so we can compare them against
+    // those produced by the reference.
+    $PHP['tokens'] = CoffeeScript\t_canonical($PHP['tokens']);
   }
 }
-
 ?>
 <!doctype html>
 <html>
 <head>
-  <title>Test<?= $run ? ' - '.basename($run) : 's' ?></title>
-  <style>@import url(css/default.css);</style>
+  <link type="text/css" href="css/style.css" rel="stylesheet" />
 
-  <? if ($run): ?>
-    <script src="js/lib/coffeescript-1.1.1.js"></script>
+  <title>Tests <?= $case ? "($case)" : '' ?></title>
+
+  <? if ($case): ?>
+    <script src="js/lib/coffeescript_1.1.1.js"></script>
     <script src="js/lib/diff.js"></script>
-    <script src="js/init.js"></script>
-    <script src="js/helpers.js"></script>
-    <script>
-      var PHP = <?= json_encode(array(
-        'error'   => $error,
-        'js'      => $js, 
-        'rewrite' => $rewrite,
-        'run'     => $run,
-        'tokens'  => $tokens
-      )) ?>;
-    </script>
+    <script src="js/main.js"></script>
+    <script>window.addEventListener('load', function() { init(<?= json_encode($PHP) ?>); }, false);</script>
   <? endif; ?>
 </head>
 <body>
   <div id="page">
-  <? if ($run): ?>
-    <a href="index.php">Back</a>
-    <h1><a href="<?= $run ?>"><?= basename($run) ?></a></h1>
-    <h2>Code</h2>
-    <p>Lines in <del>red</del> are in the reference code, but are missing in ours. Lines in <ins>green</ins> were generated in our code but are not present in the reference.</p>
-    <div id="code">
-    <? if ($error): ?>
-      <p class="error"><?= $error ?></p>
+
+    <? if ($case): ?>
+
+      <a href="index.php">Back</a>
+      <h1><a href="<?= $case ?>"><?= basename($case) ?></a></h1>
+
+      <h2>Code</h2>
+
+      <p>Lines in <del>red</del> are in the reference code, but are missing in ours. Lines in
+      <ins>green</ins> were generated in our code but are not present in the reference.</p>
+
+      <div id="code">
+        <? if ($error): ?>
+          <p class="error"><?= $error ?></p>
+        <? else: ?>
+          <p class="fail">Failed.</p>
+          <p class="pass">Passed!</p>
+
+          <pre>  <strong>JS</strong>   <strong>PHP</strong></pre>
+          <pre class="result"></pre></code>
+        <? endif; ?>
+      </div>
+
+      <h2>Lexical Tokens (rewriting <?= $PHP['rewrite'] ? 'on' : 'off' ?>)</h2>
+
+      <div id="tokens">
+        <p>Tokens in <del>red</del> are in the reference stack, but are missing in ours. Tokens in
+        <ins>green</ins> were generated in our stack but are not present in the reference.</p>
+
+        <p class="fail">Failed.</p>
+        <p class="pass">Passed!</p>
+
+        <pre>  <strong>JS</strong>   <strong>PHP</strong></pre>
+        <pre class="result"></pre>
+      </div>
+
     <? else: ?>
-      <p class="fail">Failed.</p>
-      <p class="pass">Passed!</p>
 
-      <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
-      <code class="result"></code>
-    <? endif; ?>
-    </div>
+      <h1>Tests</h1>
+      <p>Pick a test case to run. Make sure that you're using a capable browser.</p>
 
-    <h2>Lexical Tokens (rewriting <?= $rewrite ? 'on' : 'off' ?>)</h2>
-    <div id="tokens">
-      <p>Tokens in <del>red</del> are in the reference stack, but are missing in ours. Tokens in <ins>green</ins> were generated in our stack but are not present in the reference.</p>
+      <? foreach ((array) glob('cases/*.coffee') as $case): ?>
+        <a href="?case=<?= $case ?>"><?= basename($case) ?></a><br />
+      <? endforeach; ?>
 
-      <p class="fail">Failed.</p>
-      <p class="pass">Passed!</p>
+    <?endif; ?>
 
-      <code>&nbsp;&nbsp;<strong>JS</strong>&nbsp;&nbsp;&nbsp;<strong>PHP</strong></code>
-      <code class="result"></code>
-    </div>
-  <? else: ?>
-    <h1>Tests</h1>
-    <p>Pick a test case to run. Make sure that you're using a capable browser.</p>
-    <? for ($i = 0; $i < count($tests); $i++): ?>
-      <a href="?run=<?= $tests[$i] ?>"><?= basename($tests[$i]) ?></a><br />
-    <? endfor; ?>
-  <? endif; ?>
   </div>
 </body>
 </html>

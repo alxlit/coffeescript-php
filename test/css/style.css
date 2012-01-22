@@ -1,0 +1,43 @@
+body {
+  background: #fff;
+  font: 12.8px 'Helvetica Neue', 'Arial', sans-serif;
+  margin-bottom: 5em;
+}
+
+a:visited { color: blue; }
+
+code, pre {
+  display: block;
+  font: 13px 'Consolas', 'Inconsolata', 'DejaVu Sans Mono', monospace;
+  overflow: auto;
+}
+
+h1, h2 { clear: both; }
+
+ins {
+  background: rgba(0, 255, 0, 0.25);
+  text-decoration: none;
+}
+
+del {
+  background: rgba(255, 0, 0, 0.25);
+  text-decoration: none;
+}
+
+.error {
+  background: rgba(255, 0, 0, 0.25);
+  border: 1px solid #800000;
+  padding: 1em;
+}
+
+.fail {
+  color: red;
+  display: none;
+  font-weight: bold;
+}
+
+.pass {
+  color: green;
+  display: none;
+  font-weight: bold;
+}
