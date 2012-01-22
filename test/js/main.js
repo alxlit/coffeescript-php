@@ -100,5 +100,5 @@ function lpad(str, length) {
 }
 
 // Remove writespace from both sides
-function trim(str) { return str.replace(/^\s+|\s+$/g,''); }
+function trim(str) { return str.replace(/^\n+|\n+$/g,''); }
 
