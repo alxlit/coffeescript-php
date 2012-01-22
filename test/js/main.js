@@ -58,25 +58,33 @@ function formatTokens(tokens) {
     var token = [];
 
     for (var j = 0; j < props.length; j++) {
-      var k = props[j], v = tokens[i][k];
+      var key = props[j], value = tokens[i][key];
 
-      if (typeof v == 'string') {
-        v = v.replace(/\n/g, '\\n');
+      if (typeof value == 'string') {
+        value = value.replace(/\n/g, '\\n');
       }
 
-      if (typeof k == 'string') {
-        if ( !! v) {
+      if (typeof key == 'string') {
+        if ( !! value) {
           token.push(k);
         }
       }
       else {
-        if (k === 1) {
-          if (v.generated) {
-            v = '< ' + v + ' generated >';
+        if (key === 1) {
+          var tmp = '', _props = ['generated', 'reserved'];
+
+          for (var k = 0; k < _props.length; k++) {
+            if (value[ _props[k] ]) {
+              tmp += ' ' + _props[k];
+            }
+          }
+
+          if (tmp) {
+            value = '< ' + value + tmp + ' >';
           }
         }
 
-        token.push('"' + v + '"');
+        token.push('"' + value + '"');
       }
     }
 
