@@ -8,8 +8,6 @@ function init(PHP) {
   // Tokens diff
   d = JsDiff.diffLines(formatTokens(JS.tokens), formatTokens(PHP.tokens));
 
-  console.log(d);
-
   $('#tokens .result').innerHTML = formatDiffLines(d);
   $('#tokens .' + (d.length > 1 || d[0].removed ? 'fail' : 'pass')).style.display = 'block';
 
@@ -54,14 +52,13 @@ function formatDiffLines(diff) {
 }
 
 function formatTokens(tokens) {
-  var properties = [0, 1, 2, 'call', 'fromThen', 'generated', 'newLine', 'spaced'];
-  var result = [], html = '';
+  var html = [], props = [0, 1, 2, 'call', 'fromThen', 'generated', 'newLine', 'spaced'];
 
-  for (var i = 0; i < tokens.length - 1; i++) {
+  for (var i = 0; i < tokens.length; i++) {
     var token = [];
 
-    for (var j = 0; j < properties.length; j++) {
-      var k = properties[j], v = tokens[i][k];
+    for (var j = 0; j < props.length; j++) {
+      var k = props[j], v = tokens[i][k];
 
       if (typeof v == 'string') {
         v = v.replace(/\n/g, '\\n');
@@ -73,14 +70,20 @@ function formatTokens(tokens) {
         }
       }
       else {
+        if (k === 1) {
+          if (v.generated) {
+            v = '< ' + v + ' generated >';
+          }
+        }
+
         token.push('"' + v + '"');
       }
     }
 
-    result.push('[' + token.join(', ') + ']');
+    html.push('[' + token.join(', ') + ']');
   }
 
-  return result.join('\n');
+  return html.join('\n');
 }
 
 // Add padding to the left of str until str.length is length.
