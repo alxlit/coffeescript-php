@@ -2,14 +2,14 @@
 # CoffeeScript PHP
 
 A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/)
-compiler (1.1.1) to PHP. It's **really close** to being finished, there are
-just a few obscure bugs that need hunting down.
+compiler (version 1.1.1) to PHP. It's **really close** to being finished, there
+are just a few obscure bugs that need hunting down.
 
 ### Complete
 
-* Grammar for the parser generator (we're using a PHP port of 
+* Grammar for the parser generator (a PHP port of
   [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
-  port of Bison to PHP as far as I know)
+  port of Bison to PHP afaik)
 * Lexer
 * Lexical scope regulator
 * Rewriter
@@ -18,7 +18,7 @@ just a few obscure bugs that need hunting down.
 ### Todo
 
 * Bugs
-* Make it `E_STRICT`
+* Make it `E_STRICT`?
 
 ## FAQ
 
@@ -63,5 +63,5 @@ catch (Exception e) {}
 ## Development
 
 To rebuild the parser run `php make.php`. Running tests is easy, just drop the
-entire folder into localhost and go to coffeescript-php/test/. 
+entire folder into localhost and go to coffeescript-php/test/.
 
