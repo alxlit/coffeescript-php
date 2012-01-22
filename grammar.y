@@ -137,7 +137,12 @@ index(A) ::= YY_INDEX_PROTO index(B)                    . { A = extend(B, array(
 indexValue(A) ::= expression(B)   . { A = yy('Index', B); }
 indexValue(A) ::= slice(B)        . { A = yy('Slice', B); }
 
-object(A) ::= YY_OBJECT_START assignList(B) optComma YY_OBJECT_END . { A = yy('Obj', B, $this->yystack[$this->yyidx - 3]->generated); }
+object(A) ::= YY_OBJECT_START assignList(B) optComma YY_OBJECT_END . {
+  $object_start = $this->yystack[$this->yyidx - 3]->minor;
+  $generated = isset($object_start->generated) ? $object_start->generated : FALSE;
+
+  A = yy('Obj', B, $generated);
+}
 
 assignList(A) ::=                                                                     . { A = array(); }
 assignList(A) ::= assignObj(B)                                                        . { A = array(B); }

@@ -394,17 +394,12 @@ class Lexer
       }
     }
 
-    $reserved = FALSE;
-
     if (in_array($id, self::$JS_FORBIDDEN, TRUE))
     {
       if ($forced_identifier)
       {
-        // TODO: Doing this seems to work just fine. Sometime in the future I 
-        // will take out the nastiness of attaching properties to the token 
-        // rather than directly to the value like below.
         $id = wrap($id);
-        $id->reserved = $reserved = TRUE;
+        $id->reserved = TRUE;
 
         $tag = 'IDENTIFIER';
       }
@@ -439,7 +434,7 @@ class Lexer
       }
     }
 
-    $this->token($tag, $id, array('reserved' => $reserved));
+    $this->token($tag, $id);
 
     if ($colon)
     {
@@ -839,12 +834,7 @@ class Lexer
 
     if (preg_match(self::$HEREGEX, $this->chunk, $match))
     {
-      $length = $this->heregex_token($match);
-
-      // This seems to be broken in the JavaScript compiler...
-      // $this->line += substr_count($match[0], "\n");
-
-      return $length;
+      return $this->heregex_token($match);
     }
 
     $prev = last($this->tokens);
@@ -882,7 +872,7 @@ class Lexer
         throw new Error('block comment cannot contain \"*/\", starting on line '.($line + 1));
       }
 
-      if (strpos($doc, "\n") == 0) // No match or 0
+      if ( ! strpos($doc, "\n"))
       {
         return $doc;
       }
@@ -945,7 +935,7 @@ class Lexer
       }
 
       break;
-    
+
     default:
       return 0;
     }
@@ -1011,7 +1001,7 @@ class Lexer
     return $this;
   }
 
-  function token($tag, $value = NULL, $props = array())
+  function token($tag, $value = NULL)
   {
     if ( ! is_numeric($tag))
     {
@@ -1020,14 +1010,6 @@ class Lexer
 
     $token = array($tag, $value, $this->line);
 
-    if ($props)
-    {
-      foreach ($props as $k => $v)
-      {
-        $token[$k] = $v;
-      }
-    }
-    
     return ($this->tokens[] = $token);
   }
 
@@ -1075,14 +1057,10 @@ class Lexer
   {
     return
       preg_match(self::$LINE_CONTINUER, $this->chunk) ||
-      ($prev = last($this->tokens, 1)) &&
-      ($prev[0] !== t('.')) &&
-      ($value = $this->value()) &&
-      // ( ! (isset($value->reserved) && $value->reserved)) &&
-      ( ! (isset($prev['reserved']) && $prev['reserved'])) &&
-      preg_match(self::$NO_NEWLINE, $value) &&
-      ( ! preg_match(self::$CODE, $value)) &&
-      ( ! preg_match(self::$ASSIGNED, $this->chunk));
+      ($prev = last($this->tokens, 1)) && ($prev[0] !== t('.')) &&
+      ($value = $this->value()) && ! (isset($value->reserved) && $value->reserved) &&
+      preg_match(self::$NO_NEWLINE, $value) && ( ! preg_match(self::$CODE, $value)) 
+      && ( ! preg_match(self::$ASSIGNED, $this->chunk));
   }
 
   function whitespace_token()

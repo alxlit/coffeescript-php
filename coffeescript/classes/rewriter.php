@@ -114,17 +114,10 @@ class Rewriter
         $idx -= 2;
       }
 
-      // This doesn't really work in PHP, so we assign 'generatedValue' to the
-      // token and handle it in the actual parser (see Lempar.php\Parser\
-      // parse()). This is pretty hacky, but it works. (Maybe...)
-      //
-      // TODO: In the future change this to use the wrap() function as it seems
-      // to work without any problems.
-
       $value = wrap('{');
       $value->generated = TRUE;
 
-      $tok = array(t('{'), $value, $token[2], 'generated' => TRUE, 'generatedValue' => TRUE);
+      $tok = array(t('{'), $value, $token[2], 'generated' => TRUE);
 
       array_splice($tokens, $idx, 0, array($tok));
 
@@ -221,7 +214,7 @@ class Rewriter
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $no_call, & $self )
     {
       $tag = $token[0];
-      
+
       if (in_array($tag, t('CLASS', 'IF')))
       {
         $no_call = TRUE;
@@ -243,7 +236,7 @@ class Rewriter
 
       $seen_single = FALSE;
       $seen_control = FALSE;
-      
+
       if (in_array($tag, t(Rewriter::$LINEBREAKS)))
       {
         $no_call = FALSE;
@@ -509,7 +502,7 @@ class Rewriter
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
     $this->add_implicit_parentheses();
-    //$this->ensure_balance(self::$BALANCED_PAIRS);
+    $this->ensure_balance(self::$BALANCED_PAIRS);
     $this->rewrite_closing_parens();
 
     return $this->tokens;
@@ -524,7 +517,7 @@ class Rewriter
     // than the string names.
     $inverses = array();
 
-    foreach (Rewriter::$INVERSES as $k => $v)
+    foreach (self::$INVERSES as $k => $v)
     {
       $inverses[t($k)] = $v;
     }
@@ -533,7 +526,7 @@ class Rewriter
     {
       $debt[$k] = 0;
     }
-    
+
     $self = $this;
 
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $debt, $inverses)
@@ -568,11 +561,6 @@ class Rewriter
       $debt[$mtag]++;
 
       $val = array(t($oppos), $mtag === t('INDENT') ? $match[1] : $oppos);
-
-      //if ($oppos === 'INDEX_END')
-      //{
-      //  $val[1] = ']';
-      //}
 
       if ($self->tag($i + 2) === $mtag)
       {
