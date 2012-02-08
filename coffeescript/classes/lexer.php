@@ -740,7 +740,7 @@ class Lexer
 
   function make_string($body, $quote, $heredoc = NULL)
   {
-    if ( ! $body)
+    if (!strlen($body))
     {
       return $quote.$quote;
     }
