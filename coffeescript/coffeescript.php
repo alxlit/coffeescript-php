@@ -8,8 +8,16 @@ require_once 'classes/parser.php';
 /**
  * Compile some CoffeeScript.
  *
+ * Available options:
+ *
+ *  'file'    => The source file, for debugging (formatted into error messages)
+ *  'tokens'  => Reference to token stream
+ *  'trace'   => File to write parser trace to
+ *
  * @param  string  The source CoffeeScript code
- * @param  array   Compiler options
+ * @param  array   Options (see above)
+ *
+ * @return string  The resulting JavaScript (if there were no errors)
  */
 function compile($code, $options = array())
 {
@@ -17,7 +25,6 @@ function compile($code, $options = array())
 
   if (isset($options['file']))
   {
-    // Set the source filename for debugging messages
     Parser::$FILE = $options['file'];
   }
 
@@ -28,7 +35,6 @@ function compile($code, $options = array())
 
   if (isset($options['trace']))
   {
-    // Parser tracing
     Parser::Trace(fopen($options['trace'], 'w', TRUE), '> ');
   }
 

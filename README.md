@@ -5,6 +5,8 @@ A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/)
 compiler (version 1.1.1) to PHP. It's **really close** to being finished, there
 are just a few obscure bugs that need hunting down.
 
+## Status
+
 ### Complete
 
 * Grammar for the parser generator (a PHP port of
@@ -18,7 +20,7 @@ are just a few obscure bugs that need hunting down.
 ### Todo
 
 * Bugs
-* Make it `E_STRICT`?
+* Make it `E_STRICT`
 
 ## FAQ
 
