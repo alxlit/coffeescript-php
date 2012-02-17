@@ -5,7 +5,6 @@ namespace CoffeeScript;
 class yy_Base
 {
   public $as_key = FALSE;
-  public $assigns = FALSE;
   public $children = array();
   public $ctor = NULL;
   public $exclusive = NULL;
@@ -91,7 +90,7 @@ class yy_Base
   {
     $src = $tmp = $this->compile($options, LEVEL_LIST);
 
-    if ( ! (abs($src) < INF || preg_match(IDENTIFIER, $src) && 
+    if ( ! ( ($src === 0 || $src === '') || preg_match(IDENTIFIER, $src) && 
       $options['scope']->check($src, TRUE)))
     {
       $src = ($tmp = $options['scope']->free_variable($name)).' = '.$src;
@@ -163,6 +162,11 @@ class yy_Base
     return yy('Op', '!', $this);
   }
 
+  function assigns()
+  {
+    return FALSE;
+  }
+
   function is_assignable()
   {
     return FALSE;
@@ -170,7 +174,7 @@ class yy_Base
 
   function is_complex()
   {
-    return FALSE;
+    return TRUE;
   }
 
   function is_chainable()

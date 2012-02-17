@@ -65,7 +65,7 @@ class yy_Assign extends yy_Base
       throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
     }
 
-    if ( ! ($this->context || $is_value && 
+    if ( ! ($this->context || $is_value &&
            ((isset($this->variable->namespaced) && $this->variable->namespaced) || 
             $this->variable->has_properties())))
     {
