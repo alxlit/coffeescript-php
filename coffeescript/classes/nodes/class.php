@@ -21,13 +21,12 @@ class yy_Class extends yy_Base
 
   function add_bound_functions($options)
   {
-    if (count($this->bound_funcs))
+    if ($this->bound_funcs)
     {
       foreach ($this->bound_funcs as $bvar)
       {
         $bname = $bvar->compile($options);
-        $body = is_array($this->ctor->body) ? $this->ctor->body : array($this->ctor->body);
-        array_unshift($body, yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
+        $this->ctor->body->unshift(yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
       }
     }
   }
