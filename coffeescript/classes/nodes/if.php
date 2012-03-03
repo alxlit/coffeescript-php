@@ -4,7 +4,7 @@ namespace CoffeeScript;
 
 class yy_If extends yy_Base
 {
-  public $children = array('condition', 'body', 'elsebody');
+  public $children = array('condition', 'body', 'else_body');
 
   function constructor($condition, $body, $options = array())
   {
