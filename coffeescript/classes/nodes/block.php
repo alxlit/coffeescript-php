@@ -82,15 +82,14 @@ class yy_Block extends yy_Base
 
     $code = $this->compile_with_declarations($options);
 
-    return (isset($options['bare']) && $options['bare']) ? $code : 
-      "(function() {\n{$code}\n}).call(this);\n";
+    return (isset($options['bare']) && $options['bare']) ? $code : "(function() {\n{$code}\n}).call(this);\n";
   }
 
   function compile_with_declarations($options)
   {
     $code = $post = '';
 
-    foreach ($this->expressions as $i => $expr)
+    foreach ($this->expressions as $i => & $expr)
     {
       $expr = $expr->unwrap();
 
@@ -105,7 +104,10 @@ class yy_Block extends yy_Base
     if ($i)
     {
       $rest = array_splice($this->expressions, $i, count($this->expressions));
-      $code = $this->compile_node($options);
+
+      // TODO: Figure out why there end up being missing newlines sometimes 
+      // (not important). The fix below isn't correct.
+      $code = $this->compile_node($options)."\n";
 
       $this->expressions = $rest;
     }
