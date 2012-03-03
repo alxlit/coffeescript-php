@@ -98,6 +98,8 @@ class yy_Call extends yy_Base
       }
     }
 
+    $ref = $ref === NULL ? 'null' : $ref;
+
     return "{$fun}.apply({$ref}, {$splat_args})";
   }
 
