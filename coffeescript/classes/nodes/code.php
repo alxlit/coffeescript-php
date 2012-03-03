@@ -88,9 +88,12 @@ class yy_Code extends yy_Base
       array_unshift($exprs, $splats);
     }
 
-    if (count($exprs))
+    if ($exprs)
     {
-      $this->body->expressions = array_merge($this->body->expressions, $exprs);
+      foreach (array_reverse($exprs) as $expr)
+      {
+        array_unshift($this->body->expressions, $expr);
+      }
     }
 
     if ( ! (isset($splats) && $splats))
