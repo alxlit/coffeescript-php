@@ -2983,18 +2983,26 @@ static public $yy_action = array(
 #line 279 "/var/www/coffeescript-php/grammar.y"
     function yy_r184(){ $this->_retvalue = yy('Op', $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
 #line 2987 "/var/www/coffeescript-php/grammar.php"
-#line 285 "/var/www/coffeescript-php/grammar.y"
-    function yy_r190(){ if ($this->yystack[$this->yyidx + -1]->minor{0} === '!') { $this->_retvalue = yy('Op', substr($this->yystack[$this->yyidx + -1]->minor, 1), $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor); $this->_retvalue->invert(); } else { $this->_retvalue = yy('Op', $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor); }     }
-#line 2990 "/var/www/coffeescript-php/grammar.php"
 #line 286 "/var/www/coffeescript-php/grammar.y"
+    function yy_r190(){
+  if ($this->yystack[$this->yyidx + -1]->minor{0} === '!') {
+    $this->_retvalue = yy('Op', substr($this->yystack[$this->yyidx + -1]->minor, 1), $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);
+    $this->_retvalue = $this->_retvalue->invert();
+  }
+  else {
+    $this->_retvalue = yy('Op', $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);
+  }
+    }
+#line 2998 "/var/www/coffeescript-php/grammar.php"
+#line 296 "/var/www/coffeescript-php/grammar.y"
     function yy_r191(){ $this->_retvalue = yy('Assign', $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor, $this->yystack[$this->yyidx + -1]->minor);     }
-#line 2993 "/var/www/coffeescript-php/grammar.php"
-#line 287 "/var/www/coffeescript-php/grammar.y"
+#line 3001 "/var/www/coffeescript-php/grammar.php"
+#line 297 "/var/www/coffeescript-php/grammar.y"
     function yy_r192(){ $this->_retvalue = yy('Assign', $this->yystack[$this->yyidx + -4]->minor, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + -3]->minor);     }
-#line 2996 "/var/www/coffeescript-php/grammar.php"
-#line 288 "/var/www/coffeescript-php/grammar.y"
+#line 3004 "/var/www/coffeescript-php/grammar.php"
+#line 298 "/var/www/coffeescript-php/grammar.y"
     function yy_r193(){ $this->_retvalue = yy('Extends', $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + 0]->minor);     }
-#line 2999 "/var/www/coffeescript-php/grammar.php"
+#line 3007 "/var/www/coffeescript-php/grammar.php"
 
     /**
      * placeholder for the left hand side in a reduce operation.
@@ -3112,7 +3120,7 @@ static public $yy_action = array(
     'unexpected '.$this->tokenName($yymajor).' in '.self::$FILE.':'
   . (self::$LINE + 1).'.'
   );
-#line 3118 "/var/www/coffeescript-php/grammar.php"
+#line 3126 "/var/www/coffeescript-php/grammar.php"
     }
 
     /**

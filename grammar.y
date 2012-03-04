@@ -282,7 +282,17 @@ operation(A) ::= expression(B) YY_MATH(C) expression(D)                         
 operation(A) ::= expression(B) YY_SHIFT(C) expression(D)                                      . { A = yy('Op', C, B, D); }
 operation(A) ::= expression(B) YY_COMPARE(C) expression(D)                                    . { A = yy('Op', C, B, D); }
 operation(A) ::= expression(B) YY_LOGIC(C) expression(D)                                      . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_RELATION(C) expression(D)                                   . { if (C{0} === '!') { A = yy('Op', substr(C, 1), B, D); A->invert(); } else { A = yy('Op', C, B, D); } }
+
+operation(A) ::= expression(B) YY_RELATION(C) expression(D) . {
+  if (C{0} === '!') {
+    A = yy('Op', substr(C, 1), B, D);
+    A = A->invert();
+  }
+  else {
+    A = yy('Op', C, B, D);
+  }
+}
+
 operation(A) ::= simpleAssignable(B) YY_COMPOUND_ASSIGN(C) expression(D)                      . { A = yy('Assign', B, D, C); }
 operation(A) ::= simpleAssignable(B) YY_COMPOUND_ASSIGN(C) YY_INDENT expression(D) YY_OUTDENT . { A = yy('Assign', B, D, C); }
 operation(A) ::= simpleAssignable(B) YY_EXTENDS expression(C)                                 . { A = yy('Extends', B, C); }
