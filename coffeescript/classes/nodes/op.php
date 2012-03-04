@@ -19,6 +19,10 @@ class yy_Op extends yy_Base
 
   public $operator = NULL;
 
+  // I *think* this is correct, since there is no separation in JavaScript between
+  // object functions/data, i.e. invert = function() {} will evaluate to true first.
+  public $invert = TRUE;
+
   function constructor($op, $first, $second = NULL, $flip = NULL)
   {
     if ($op === 'in')
@@ -63,7 +67,8 @@ class yy_Op extends yy_Base
     $shared = $tmp[1];
 
     $fst = $this->first->compile($options, LEVEL_OP);
-    $code = "{$fst} ".($this->invert() ? '&&' : '||').' '.$shared->compile($options).' '
+
+    $code = "{$fst} ".($this->invert ? '&&' : '||').' '.$shared->compile($options).' '
       .$this->operator.' '.$this->second->compile($options, LEVEL_OP);
 
     return "({$code})";
@@ -153,21 +158,24 @@ class yy_Op extends yy_Base
 
       while ($curr && (isset($curr->operator) && $curr->operator))
       {
-        $all_invertable = $all_invertable && isset(self::$INVERSIONS[$curr->operator]);
+        if ($all_invertable)
+        {
+          $all_invertable = isset(self::$INVERSIONS[$curr->operator]);
+        }
+
         $curr = $curr->first;
       }
 
       if ( ! $all_invertable)
       {
-        $tmp = yy('Parens', $this);
-        return $tmp->invert();
+        return yy('Parens', $this)->invert();
       }
 
       $curr = $this;
 
       while ($curr && (isset($curr->operator) && $curr->operator))
       {
-        $curr->invert = ! (isset($curr->invert) && $curr->invert);
+        $curr->invert = ! $curr->invert;
         $curr->operator = self::$INVERSIONS[$curr->operator];
         $curr = $curr->first;
       }
@@ -187,8 +195,7 @@ class yy_Op extends yy_Base
     }
     else if ($this->second)
     {
-      $tmp = yy('Parens', $this);
-      return $tmp->invert();
+      return yy('Parens', $this)->invert();
     }
     else if ($this->operator === '!' && (($fst = $this->first->unwrap()) instanceof yy_Op) &&
       in_array($fst->operator, array('!', 'in', 'instanceof'), TRUE))
