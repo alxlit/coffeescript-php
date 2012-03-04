@@ -54,7 +54,7 @@ class yy_For extends yy_Base
   function compile_node($options)
   {
     $body = yy_Block::wrap(array($this->body));
-    
+
     $last_jumps = last($body->expressions);
     $last_jumps = $last_jumps ? $last_jumps->jumps() : FALSE;
 

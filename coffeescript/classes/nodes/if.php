@@ -118,8 +118,14 @@ class yy_If extends yy_Base
 
   function jumps($options = array())
   {
-    return $this->body->jumps($options) || 
-      (isset($this->else_body) && $this->else_body && $this->else_body->jumps($options));
+    $tmp = $this->body->jumps($options);
+
+    if ( ! $tmp && isset($this->else_body))
+    {
+      $tmp = $this->else_body->jumps($options);
+    }
+
+    return $tmp;
   }
 
   function make_return()
