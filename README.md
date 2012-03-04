@@ -2,25 +2,12 @@
 # CoffeeScript PHP
 
 A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/)
-compiler (version 1.1.1) to PHP. It's **really close** to being finished, there
-are just a few obscure bugs that need hunting down.
+compiler to PHP.
 
 ## Status
 
-### Complete
-
-* Grammar for the parser generator (a PHP port of
-  [Lemon](http://pear.php.net/package/PHP_ParserGenerator/), since there's no 
-  port of Bison to PHP afaik)
-* Lexer
-* Lexical scope regulator
-* Rewriter
-* Parser
-
-### Todo
-
-* Bugs
-* Make it `E_STRICT`
+CoffeeScript version **1.1.1** has been fully ported over. Compiled code nearly
+matches the reference 100%, except for the occasional extra newline.
 
 ## FAQ
 
@@ -33,11 +20,14 @@ model, core classes/libraries, etc), I imagine. There's also much less incentive
 to do all that work server side, where the choice to not use one language is,
 if not easy, at least available.
 
-#### Why is ParserGenerator included locally?
+#### What parser generator are you using?
 
-The PEAR package is unmaintained and seems to be broken. In addition, some 
-minor (undocumented) changes have been made to the parser template (Lempar.php)
-and the actual generator.
+Since there's no PHP port of Bison (which the reference compiler uses), we're
+using a port of Lemon called [ParserGenerator](http://pear.php.net/package/PHP_ParserGenerator).
+
+It's included locally since the PEAR package is unmaintained and seems to be
+broken. In addition, some minor changes have been made to the parser template 
+(Lempar.php) and the actual generator.
 
 ## Requirements
 
