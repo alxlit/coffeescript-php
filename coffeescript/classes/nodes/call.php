@@ -15,6 +15,7 @@ class yy_Call extends yy_Base
     $this->is_new = FALSE;
     $this->is_super = $variable === 'super';
     $this->variable = $this->is_super() ? NULL : $variable;
+    $this->soak = $soak;
 
     return $this;
   }
@@ -225,7 +226,7 @@ class yy_Call extends yy_Base
 
     $call = $this;
     $list = array();
-  
+
     while (TRUE)
     {
       if ($call->variable instanceof yy_Call)
