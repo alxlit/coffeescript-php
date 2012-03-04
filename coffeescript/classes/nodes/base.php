@@ -53,7 +53,7 @@ class yy_Base
 
   function compile($options, $level = NULL)
   {
-    if ($level)
+    if (isset($level))
     {
       $options['level'] = $level;
     }

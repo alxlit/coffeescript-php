@@ -4,7 +4,7 @@ namespace CoffeeScript;
 
 class yy_Literal extends yy_Base
 {
-  private $is_undefined = FALSE;
+  public $is_undefined = FALSE;
 
   function constructor($value)
   {
@@ -51,13 +51,8 @@ class yy_Literal extends yy_Base
     return in_array(''.$this->value, array('break', 'continue', 'debugger'), TRUE);
   }
 
-  function is_undefined($set = NULL)
+  function is_undefined()
   {
-    if ($set !== NULL)
-    {
-      $this->is_undefined = !! $set;
-    }
-
     return $this->is_undefined;
   }
 

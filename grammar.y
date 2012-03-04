@@ -268,20 +268,23 @@ if(A) ::= ifBlock(B) YY_ELSE block(C)               . { A = B->add_else(C); }
 if(A) ::= statement(B) YY_POST_IF(C) expression(D)  . { A = yy('If', D, yy_Block::wrap(array(B)), array('type' => C, 'statement' => TRUE)); }
 if(A) ::= expression(B) YY_POST_IF(C) expression(D) . { A = yy('If', D, yy_Block::wrap(array(B)), array('type' => C, 'statement' => TRUE)); }
 
-operation(A) ::= YY_UNARY(B) expression(C)                                                    . { A = yy('Op', B, C); }
-operation(A) ::= YY_MINUS(B) expression(C)                                                    . { A = yy('Op', B, C); /* prec: 'UNARY'; */ }
-operation(A) ::= YY_PLUS(B) expression(C)                                                     . { A = yy('Op', B, C); /* prec: 'UNARY'; */ }
-operation(A) ::= YY_DECREMENT(B) simpleAssignable(C)                                          . { A = yy('Op', B, C); }
-operation(A) ::= YY_INCREMENT(B) simpleAssignable(C)                                          . { A = yy('Op', B, C); }
-operation(A) ::= simpleAssignable(B) YY_DECREMENT(C)                                          . { A = yy('Op', C, B, NULL, TRUE); }
-operation(A) ::= simpleAssignable(B) YY_INCREMENT(C)                                          . { A = yy('Op', C, B, NULL, TRUE); }
-operation(A) ::= expression(B) YY_EXISTENTIAL                                                 . { A = yy('Existence', B); }
-operation(A) ::= expression(B) YY_PLUS(C) expression(D)                                       . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_MINUS(C) expression(D)                                      . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_MATH(C) expression(D)                                       . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_SHIFT(C) expression(D)                                      . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_COMPARE(C) expression(D)                                    . { A = yy('Op', C, B, D); }
-operation(A) ::= expression(B) YY_LOGIC(C) expression(D)                                      . { A = yy('Op', C, B, D); }
+operation(A) ::= YY_UNARY(B) expression(C)                  . { A = yy('Op', B, C); }
+operation(A) ::= YY_MINUS(B) expression(C)                  . { A = yy('Op', B, C); /* prec: 'UNARY'; */ }
+operation(A) ::= YY_PLUS(B) expression(C)                   . { A = yy('Op', B, C); /* prec: 'UNARY'; */ }
+
+operation(A) ::= YY_DECREMENT(B) simpleAssignable(C)        . { A = yy('Op', B, C); }
+operation(A) ::= YY_INCREMENT(B) simpleAssignable(C)        . { A = yy('Op', B, C); }
+operation(A) ::= simpleAssignable(B) YY_DECREMENT(C)        . { A = yy('Op', C, B, NULL, TRUE); }
+operation(A) ::= simpleAssignable(B) YY_INCREMENT(C)        . { A = yy('Op', C, B, NULL, TRUE); }
+
+operation(A) ::= expression(B) YY_EXISTENTIAL               . { A = yy('Existence', B); }
+
+operation(A) ::= expression(B) YY_PLUS(C) expression(D)     . { A = yy('Op', C, B, D); }
+operation(A) ::= expression(B) YY_MINUS(C) expression(D)    . { A = yy('Op', C, B, D); }
+operation(A) ::= expression(B) YY_MATH(C) expression(D)     . { A = yy('Op', C, B, D); }
+operation(A) ::= expression(B) YY_SHIFT(C) expression(D)    . { A = yy('Op', C, B, D); }
+operation(A) ::= expression(B) YY_COMPARE(C) expression(D)  . { A = yy('Op', C, B, D); }
+operation(A) ::= expression(B) YY_LOGIC(C) expression(D)    . { A = yy('Op', C, B, D); }
 
 operation(A) ::= expression(B) YY_RELATION(C) expression(D) . {
   if (C{0} === '!') {

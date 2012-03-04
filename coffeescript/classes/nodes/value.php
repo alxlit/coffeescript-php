@@ -174,8 +174,6 @@ class yy_Value extends yy_Base
       return $this->unfolded_soak;
     }
 
-    $result = NULL;
-
     if (($ifn = $this->base->unfold_soak($options)))
     {
       $ifn->body->properties = array_merge($ifn->body->properties, $this->properties);
@@ -200,11 +198,13 @@ class yy_Value extends yy_Base
           }
 
           $result = yy('If', yy('Existence', $fst), $snd, array('soak' => TRUE));
+
+          break;
         }
       }
     }
 
-    $this->unfolded_soak = $result ? $result : FALSE;
+    $this->unfolded_soak = isset($result) ? $result : FALSE;
 
     return $this->unfolded_soak;
   }

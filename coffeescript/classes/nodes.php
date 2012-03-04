@@ -56,7 +56,7 @@ function unfold_soak($options, $parent, $name)
 {
   if ( ! (isset($parent->{$name}) && $parent->{$name} && $ifn = $parent->{$name}->unfold_soak($options)))
   {
-    return;
+    return NULL;
   }
 
   $parent->{$name} = $ifn->body;

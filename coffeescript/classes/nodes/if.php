@@ -112,8 +112,8 @@ class yy_If extends yy_Base
   function is_statement($options = array())
   {
     return (isset($options['level']) && $options['level'] === LEVEL_TOP) ||
-      $this->body_node()->is_statement($options) || 
-      ( ($tmp = $this->else_body_node()) && $tmp && $tmp->is_statement($options));
+      $this->body_node()->is_statement($options) ||
+      (($tmp = $this->else_body_node()) && $tmp->is_statement($options));
   }
 
   function jumps($options = array())
