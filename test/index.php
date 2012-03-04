@@ -9,7 +9,7 @@
  */
 
 ini_set('display_errors', '1');
-error_reporting(E_ALL & ~(E_NOTICE | E_STRICT));
+error_reporting(E_ALL);
 
 // Test case to run
 $case = isset($_GET['case']) ? $_GET['case'] : FALSE;
@@ -75,7 +75,7 @@ if ($case)
       <ins>green</ins> were generated in our code but are not present in the reference.</p>
 
       <div id="code">
-        <? if ($error): ?>
+        <? if (isset($error)): ?>
           <p class="error"><?= $error ?></p>
         <? else: ?>
           <p class="fail">Failed.</p>
