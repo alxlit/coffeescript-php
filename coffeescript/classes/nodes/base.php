@@ -80,7 +80,7 @@ class yy_Base
       throw new SyntaxError('cannot use a pure statement in an expression.');
     }
 
-    $options['shared_scope'] = TRUE;
+    $options['sharedScope'] = TRUE;
 
     $closure = yy_Closure::wrap($this);
     return $closure->compile_node($options);
