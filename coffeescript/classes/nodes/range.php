@@ -9,6 +9,12 @@ class yy_Range extends yy_Base
   public $from_num = 0;
   public $to_num = 0;
 
+  private static function check($num)
+  {
+    // '0' evaluates fo FALSE in PHP, but TRUE in JavaScript. Explicit conditions here.
+    return ! in_array($num, array(0, NULL, FALSE, ''), TRUE);
+  }
+
   function constructor($from, $to, $tag)
   {
     $this->from = $from;
@@ -21,7 +27,7 @@ class yy_Range extends yy_Base
 
   function compile_array($options)
   {
-    if ( isset($this->from_num) && isset($this->to_num) && abs($this->from_num - $this->to_num) <= 20)
+    if (self::check($this->from_num) && self::check($this->to_num) && abs($this->from_num - $this->to_num) <= 20)
     {
       $range = range($this->from_num, $this->to_num);
 
@@ -38,8 +44,7 @@ class yy_Range extends yy_Base
     $result = $options['scope']->free_variable('results');
     $pre = "\n{$idt}{$result} = [];";
 
-    if ( (isset($this->from_num) && $this->from_num) && 
-         (isset($this->to_num) && $this->to_num))
+    if (self::check($this->from_num) && self::check($this->to_num))
     {
       $options['index'] = $i;
       $body = $this->compile_simple($options);
@@ -65,7 +70,7 @@ class yy_Range extends yy_Base
       return $this->compile_array($options);
     }
 
-    if ($this->from_num && $this->to_num)
+    if (self::check($this->from_num) && self::check($this->to_num))
     {
       return $this->compile_simple($options);
     }
