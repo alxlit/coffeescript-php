@@ -21,8 +21,7 @@ class yy_Range extends yy_Base
 
   function compile_array($options)
   {
-    if ( (isset($this->from_num) && $this->from_num) && 
-         (isset($this->to_num) && $this->to_num) && abs($this->from_num - $this->to_num) <= 20)
+    if ( isset($this->from_num) && isset($this->to_num) && abs($this->from_num - $this->to_num) <= 20)
     {
       $range = range($this->from_num, $this->to_num);
 
