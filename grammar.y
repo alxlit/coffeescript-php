@@ -65,7 +65,7 @@ literal(A) ::= alphanumeric(B)  . { A = B; }
 literal(A) ::= YY_JS(B)         . { A = yy('Literal', B); }
 literal(A) ::= YY_REGEX(B)      . { A = yy('Literal', B); }
 literal(A) ::= YY_BOOL(B)       . { $val = yy('Literal', B);
-                                    $val->is_undefined(B === 'undefined');
+                                    $val->is_undefined = B === 'undefined';
                                     A = $val; }
 
 assign(A) ::= assignable(B) YY_EQUALS expression(C)                       . { A = yy('Assign', B, C); }

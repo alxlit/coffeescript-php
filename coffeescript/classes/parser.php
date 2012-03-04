@@ -2663,7 +2663,7 @@ static public $yy_action = array(
 #line 2665 "/var/www/coffeescript-php/grammar.php"
 #line 67 "/var/www/coffeescript-php/grammar.y"
     function yy_r31(){ $val = yy('Literal', $this->yystack[$this->yyidx + 0]->minor);
-                                    $val->is_undefined($this->yystack[$this->yyidx + 0]->minor === 'undefined');
+                                    $val->is_undefined = $this->yystack[$this->yyidx + 0]->minor === 'undefined';
                                     $this->_retvalue = $val;     }
 #line 2670 "/var/www/coffeescript-php/grammar.php"
 #line 71 "/var/www/coffeescript-php/grammar.y"
