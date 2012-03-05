@@ -7,7 +7,8 @@ compiler to PHP.
 ## Status
 
 CoffeeScript version **1.1.1** has been fully ported over. Compiled code nearly
-matches the reference 100%, except for the occasional extra newline.
+matches the reference 100%, except for the occasional extra newline. Tons of
+`E_STRICT` problems.
 
 ## FAQ
 
