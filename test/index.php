@@ -9,7 +9,7 @@
  */
 
 ini_set('display_errors', '1');
-error_reporting(E_ALL);
+error_reporting(E_STRICT);
 
 // Test case to run
 $case = isset($_GET['case']) ? $_GET['case'] : FALSE;
@@ -55,7 +55,7 @@ if ($case)
   <title>Tests <?= $case ? "($case)" : '' ?></title>
 
   <? if ($case): ?>
-    <script src="js/lib/coffeescript_1.1.1.js"></script>
+    <script src="js/lib/coffeescript_1.2.0.js"></script>
     <script src="js/lib/diff.js"></script>
     <script src="js/main.js"></script>
     <script>window.addEventListener('load', function() { init(<?= json_encode($PHP) ?>); }, false);</script>
