@@ -116,11 +116,6 @@ function t($name)
     '..'  => 'RANGE_INCLUSIVE',
   );
 
-  if (func_num_args() > 1)
-  {
-    $name = func_get_args();
-  }
-
   if (is_array($name) || (func_num_args() > 1 && $name = func_get_args()))
   {
     $tags = array();
