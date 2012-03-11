@@ -18,35 +18,6 @@ define('IDENTIFIER',  '/^[$A-Za-z_\x7f-\x{ffff}][$\w\x7f-\x{ffff}]*$/u');
 define('IS_STRING',   '/^[\'"]/');
 define('SIMPLENUM',   '/^[+-]?\d+$/');
 
-$UTILITIES = array(
-  'hasProp' => 'Object.prototype.hasOwnProperty',
-  'slice'   => 'Array.prototype.slice'
-);
-
-$UTILITIES['bind'] = <<<'BIND'
-function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-BIND;
-
-$UTILITIES['extends'] = <<<'EXTENDS'
-function(child, parent) {
-  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-  function ctor() { this.constructor = child; }
-  ctor.prototype = parent.prototype;
-  child.prototype = new ctor;
-  child.__super__ = parent.prototype;
-  return child;
-}
-EXTENDS;
-
-$UTILITIES['indexOf'] = <<<'INDEXOF'
-Array.prototype.indexOf || function(item) {
-  for (var i = 0, l = this.length; i < l; i++) {
-    if (this[i] === item) return i;
-  }
-  return -1;
-}
-INDEXOF;
-
 function multident($code, $tab)
 {
   return preg_replace('/\n/', "\n{$tab}", $code);
@@ -65,11 +36,50 @@ function unfold_soak($options, $parent, $name)
   return $ifn;
 }
 
+function utilities()
+{
+  $utilities = array(
+    'hasProp' => 'Object.prototype.hasOwnProperty',
+    'slice'   => 'Array.prototype.slice'
+  );
+
+  $utilities['bind'] = <<<'BIND'
+function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+BIND;
+
+  $utilities['extends'] = <<<'EXTENDS'
+function(child, parent) {
+  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+  function ctor() { this.constructor = child; }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor;
+  child.__super__ = parent.prototype;
+  return child;
+}
+EXTENDS;
+
+  $utilities['indexOf'] = <<<'INDEXOF'
+Array.prototype.indexOf || function(item) {
+  for (var i = 0, l = this.length; i < l; i++) {
+    if (this[i] === item) return i;
+  }
+  return -1;
+}
+INDEXOF;
+
+  return $utilities;
+}
+
 function utility($name)
 {
-  global $UTILITIES;
+  static $utilities;
 
-  Scope::$root->assign($ref = "__$name", $UTILITIES[$name]);
+  if ( ! isset($utilities))
+  {
+    $utilities = utilities();
+  }
+
+  Scope::$root->assign($ref = "__$name", $utilities[$name]);
 
   return $ref;
 }
@@ -89,7 +99,7 @@ function yy($type)
   $inst = new $type;
   $inst = call_user_func_array(array($inst, 'constructor'), $args);
 
-  return $inst; 
+  return $inst;
 }
 
 // Base class.
