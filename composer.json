@@ -1,0 +1,23 @@
+{
+    "name": "coffeescript/coffeescript",
+    "type": "library",
+    "description": "A port of the CoffeeScript compiler to PHP."
+    "keywords": ["coffee", "coffeescript", "js", "javascript"],
+    "homepage": "http://github.com/alxlit/coffeescript-php",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Little",
+            "email": "alxlit@gmail.com",
+            "homepage": "http://alxlit.name"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "CoffeeScript": "src/"
+        }
+    }
+}

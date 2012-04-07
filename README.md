@@ -1,4 +1,3 @@
-
 # CoffeeScript PHP
 
 A port of the [CoffeeScript](http://jashkenas.github.com/coffee-script/)
@@ -12,6 +11,53 @@ Tons of `E_STRICT` problems.
 
 Work towards porting version 1.2 and making it `E_STRICT` will continue on the
 master branch, so it'll probably be unstable.
+
+## Requirements
+
+PHP 5.3+ (uses namespaces, anonymous functions).
+
+## Install
+
+It's recommended that you use [Composer](http://getcomposer.org) to install
+and autoload CoffeeScript. Alternatively you can:
+
+```php
+<?php
+
+require 'vendor/CoffeeScript/Init.php';
+
+// Load manually
+CoffeeScript\Init::requirements();
+
+?>
+```
+
+## Usage
+
+At the moment the API is pretty basic. It'll probably be expanded a bit in the
+future.
+
+```php
+<?php
+
+$coffee = file_get_contents('path/to/source.coffee');
+
+try
+{
+  $js = CoffeeScript\Compiler::compile($coffee);
+}
+catch (Exception e)
+{
+  echo $e->getMessage();
+}
+
+?>
+```
+
+## Development
+
+To rebuild the parser run `php make.php`. Tests are run in the browser; simply
+clone the repository somewhere Apache can see it and navigate to tests/.
 
 ## FAQ
 
@@ -32,32 +78,4 @@ using a port of Lemon called [ParserGenerator](http://pear.php.net/package/PHP_P
 It's included locally since the PEAR package is unmaintained and seems to be
 broken. In addition, some minor changes have been made to the parser template 
 (Lempar.php) and the actual generator.
-
-## Requirements
-
-PHP 5.3+ (uses namespaces, anonymous functions).
-
-## Usage
-
-At the moment the API is pretty basic. It'll probably be expanded a bit in the 
-future.
-
-```php
-<?php
-
-$coffee = file_get_contents('path/to/source.coffee');
-
-try
-{
-  $js = CoffeeScript\compile($coffee);
-}
-catch (Exception e) {}
-
-?>
-```
-
-## Development
-
-To rebuild the parser run `php make.php`. Running tests is easy, just drop the
-entire folder into localhost and go to coffeescript-php/test/.
 
