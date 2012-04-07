@@ -26,9 +26,11 @@ if ($case)
 
   try
   {
-    require '../coffeescript/coffeescript.php';
+    require '../src/CoffeeScript/Init.php';
 
-    $PHP['js'] = CoffeeScript\compile($PHP['coffee'], array(
+    CoffeeScript\Init::requirements();
+
+    $PHP['js'] = CoffeeScript\Compiler::compile($PHP['coffee'], array(
       'file'    => $case,
       'rewrite' => $PHP['rewrite'],
       'tokens'  =>  & $PHP['tokens'],
@@ -43,7 +45,7 @@ if ($case)
   {
     // Change the tokens to their canonical form so we can compare them against
     // those produced by the reference.
-    $PHP['tokens'] = CoffeeScript\t_canonical($PHP['tokens']);
+    $PHP['tokens'] = CoffeeScript\Lexer::t_canonical($PHP['tokens']);
   }
 }
 ?>
