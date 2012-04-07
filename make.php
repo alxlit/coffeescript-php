@@ -5,8 +5,6 @@ define('ROOT', realpath(dirname(__FILE__)).'/');
 // Disable output.
 ini_set('implicit_flush', false);
 
-function clean() {}
-
 function init()
 {
   $arg = array_slice($_SERVER['argv'], 1);
@@ -25,7 +23,7 @@ function make()
   require 'vendor/ParserGenerator/ParserGenerator.php';
 
   $source = 'grammar';
-  $target = 'coffeescript/classes/parser.php';
+  $target = 'src/CoffeeScript/Parser.php';
 
   // Lemon takes arguments on the command line.
   $_SERVER['argv'] = $argv = array('-s', ROOT.$source.'.y');
@@ -75,7 +73,13 @@ function make()
     $content = file_get_contents(ROOT.$source.'.php');
 
     // Add namespace declaration.
-    $content = str_replace('<?php', "<?php\nnamespace CoffeeScript;\nuse \ArrayAccess as ArrayAccess;", $content);
+    $content = strtr($content, array(
+      '<?php' =>
+          "<?php\n"
+        . "namespace CoffeeScript;\n"
+        . "use \ArrayAccess as ArrayAccess;\n"
+        . "Init::init();\n"
+    ));
 
     // Write.
     file_put_contents(ROOT.$target, $content);
