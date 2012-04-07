@@ -1,7 +1,7 @@
 {
     "name": "coffeescript/coffeescript",
     "type": "library",
-    "description": "A port of the CoffeeScript compiler to PHP."
+    "description": "A port of the CoffeeScript compiler to PHP.",
     "keywords": ["coffee", "coffeescript", "js", "javascript"],
     "homepage": "http://github.com/alxlit/coffeescript-php",
     "license": "MIT",
