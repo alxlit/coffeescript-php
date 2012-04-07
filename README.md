@@ -5,9 +5,10 @@ compiler to PHP.
 
 ## Status
 
-CoffeeScript version **1.1.1** has been fully ported over (see tags). Compiled
-code nearly matches the reference 100%, except for the occasional extra newline.
-Tons of `E_STRICT` problems.
+CoffeeScript version **1.1.1** has been fully ported over (see
+[tags](http://github.com/alxlit/coffeescript-php/tags)). Compiled code nearly
+matches the reference 100%, except for the occasional extra newline. Tons of
+`E_STRICT` problems.
 
 Work towards porting version 1.2 and making it `E_STRICT` will continue on the
 master branch, so it'll probably be unstable.
@@ -19,7 +20,8 @@ PHP 5.3+ (uses namespaces, anonymous functions).
 ## Install
 
 It's recommended that you use [Composer](http://getcomposer.org) to install
-and autoload CoffeeScript. Alternatively you can:
+and autoload CoffeeScript. Alternatively you can load it manually:
+
 
 ```php
 <?php
