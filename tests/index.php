@@ -28,7 +28,7 @@ if ($case)
   {
     require '../src/CoffeeScript/Init.php';
 
-    CoffeeScript\Init::requirements();
+    CoffeeScript\Init::load();
 
     $PHP['js'] = CoffeeScript\Compiler::compile($PHP['coffee'], array(
       'file'    => $case,
@@ -57,7 +57,7 @@ if ($case)
   <title>Tests <?= $case ? "($case)" : '' ?></title>
 
   <? if ($case): ?>
-    <script src="js/lib/coffeescript_1.2.0.js"></script>
+    <script src="js/lib/coffeescript_1.3.0.js"></script>
     <script src="js/lib/diff.js"></script>
     <script src="js/main.js"></script>
     <script>window.addEventListener('load', function() { init(<?= json_encode($PHP) ?>); }, false);</script>
