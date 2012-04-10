@@ -9,7 +9,7 @@
 }
 
 %right      YY_POST_IF.
-%right      YY_IF YY_ELSE YY_FOR YY_DO YY_WHILE YY_UNTIL YY_LOOP YY_SUPER YY_CLASS.
+%right      YY_IF YY_ELSE YY_FOR YY_WHILE YY_UNTIL YY_LOOP YY_SUPER YY_CLASS.
 %right      YY_FORIN YY_FOROF YY_BY YY_WHEN.
 %right      YY_EQUALS YY_COLON YY_COMPOUND_ASSIGN YY_RETURN YY_THROW YY_EXTENDS.
 %nonassoc   YY_INDENT YY_OUTDENT.
@@ -37,7 +37,6 @@ line(A) ::= expression(B) . { A = B; }
 line(A) ::= statement(B)  . { A = B; }
 
 statement(A) ::= return(B)        . { A = B; }
-statement(A) ::= throw(B)         . { A = B; }
 statement(A) ::= comment(B)       . { A = B; }
 statement(A) ::= YY_STATEMENT(B)  . { A = yy('Literal', B); }
 
@@ -52,6 +51,7 @@ expression(A) ::= while(B)        . { A = B; }
 expression(A) ::= for(B)          . { A = B; }
 expression(A) ::= switch(B)       . { A = B; }
 expression(A) ::= class(B)        . { A = B; }
+expression(A) ::= throw(B)        . { A = B; }
 
 block(A) ::= YY_INDENT YY_OUTDENT         . { A = yy('Block'); }
 block(A) ::= YY_INDENT body(B) YY_OUTDENT . { A = B; }
@@ -61,14 +61,19 @@ identifier(A) ::= YY_IDENTIFIER(B)  . { A = yy('Literal', B); }
 alphanumeric(A) ::= YY_NUMBER(B)  . { A = yy('Literal', B); }
 alphanumeric(A) ::= YY_STRING(B)  . { A = yy('Literal', B); }
 
-literal(A) ::= alphanumeric(B)  . { A = B; } 
+literal(A) ::= alphanumeric(B)  . { A = B; }
 literal(A) ::= YY_JS(B)         . { A = yy('Literal', B); }
 literal(A) ::= YY_REGEX(B)      . { A = yy('Literal', B); }
-literal(A) ::= YY_BOOL(B)       . { $val = yy('Literal', B);
-                                    $val->is_undefined = B === 'undefined';
-                                    A = $val; }
+literal(A) ::= YY_DEBUGGER(B)   . { A = yy('Literal', B); }
+
+literal(A) ::= YY_BOOL(B) . {
+  $val = yy('Literal', B);
+  $val->is_undefined = B === 'undefined';
+  A = $val;
+}
 
 assign(A) ::= assignable(B) YY_EQUALS expression(C)                       . { A = yy('Assign', B, C); }
+assign(A) ::= assignable(B) YY_EQUALS YY_TERMINATOR expression(C)         . { A = yy('Assign', B, C); }
 assign(A) ::= assignable(B) YY_EQUALS YY_INDENT expression(C) YY_OUTDENT  . { A = yy('Assign', B, C); }
 
 assignObj(A) ::= objAssignable(B)                                             . { A = yy('Value', B); }
@@ -110,8 +115,8 @@ paramVar(A) ::= object(B)       . { A = B; }
 splat(A) ::= expression(B) YY_RANGE_EXCLUSIVE . { A = yy('Splat', B); }
 
 simpleAssignable(A) ::= identifier(B)             . { A = yy('Value', B); }
-simpleAssignable(A) ::= value(B) accessor(C)      . { A = B->push(C); }
-simpleAssignable(A) ::= invocation(B) accessor(C) . { A = yy('Value', B, array(C)); }
+simpleAssignable(A) ::= value(B) accessor(C)      . { A = B->add(C); }
+simpleAssignable(A) ::= invocation(B) accessor(C) . { A = yy('Value', B, (array) C); }
 simpleAssignable(A) ::= thisProperty(B)           . { A = B; }
 
 assignable(A) ::= simpleAssignable(B) . { A = B; }
@@ -126,13 +131,12 @@ value(A) ::= this(B)          . { A = B; }
 
 accessor(A) ::= YY_ACCESSOR identifier(B)             . { A = yy('Access', B); }
 accessor(A) ::= YY_EXISTENTIAL_ACCESSOR identifier(B) . { A = yy('Access', B, 'soak'); }
-accessor(A) ::= YY_PROTOTYPE identifier(B)            . { A = yy('Access', B, 'proto'); }
+accessor(A) ::= YY_PROTOTYPE identifier(B)            . { A = array( yy('Access', yy('Literal', 'prototype')), yy('Access', B) ); }
 accessor(A) ::= YY_PROTOTYPE                          . { A = yy('Access', yy('Literal', 'prototype')); }
 accessor(A) ::= index(B)                              . { A = B; }
 
 index(A) ::= YY_INDEX_START indexValue(B) YY_INDEX_END  . { A = B; }
 index(A) ::= YY_INDEX_SOAK index(B)                     . { A = extend(B, array('soak' => TRUE)); }
-index(A) ::= YY_INDEX_PROTO index(B)                    . { A = extend(B, array('proto' => TRUE)); }
 
 indexValue(A) ::= expression(B)   . { A = yy('Index', B); }
 indexValue(A) ::= slice(B)        . { A = yy('Slice', B); }
@@ -152,12 +156,12 @@ assignList(A) ::= assignList(B) optComma YY_INDENT assignList(C) optComma YY_OUT
 
 class(A) ::= YY_CLASS                                                   . { A = yy('Class'); }
 class(A) ::= YY_CLASS block(B)                                          . { A = yy('Class', NULL, NULL, B); }
-class(A) ::= YY_CLASS YY_EXTENDS value(B)                               . { A = yy('Class', NULL, B); }
-class(A) ::= YY_CLASS YY_EXTENDS value(B) block(C)                      . { A = yy('Class', NULL, B, C); } 
+class(A) ::= YY_CLASS YY_EXTENDS expression(B)                          . { A = yy('Class', NULL, B); }
+class(A) ::= YY_CLASS YY_EXTENDS expression(B) block(C)                 . { A = yy('Class', NULL, B, C); } 
 class(A) ::= YY_CLASS simpleAssignable(B)                               . { A = yy('Class', B); }
 class(A) ::= YY_CLASS simpleAssignable(B) block(C)                      . { A = yy('Class', B, NULL, C); }
-class(A) ::= YY_CLASS simpleAssignable(B) YY_EXTENDS value(C)           . { A = yy('Class', B, C); }
-class(A) ::= YY_CLASS simpleAssignable(B) YY_EXTENDS value(C) block(D)  . { A = yy('Class', B, C, D); }
+class(A) ::= YY_CLASS simpleAssignable(B) YY_EXTENDS expression(C)      . { A = yy('Class', B, C); }
+class(A) ::= YY_CLASS simpleAssignable(B) YY_EXTENDS expression(C) block(D)  . { A = yy('Class', B, C, D); }
 
 invocation(A) ::= value(B) optFuncExist(C) arguments(D)       . { A = yy('Call', B, D, C); }
 invocation(A) ::= invocation(B) optFuncExist(C) arguments(D)  . { A = yy('Call', B, D, C); }
@@ -186,6 +190,7 @@ range(A) ::= YY_ARRAY_START expression(B) rangeDots(C) expression(D) YY_ARRAY_EN
 slice(A) ::= expression(B) rangeDots(C) expression(D)   . { A = yy('Range', B, D, C); }
 slice(A) ::= expression(B) rangeDots(C)                 . { A = yy('Range', B, NULL, C); }
 slice(A) ::= rangeDots(B) expression(C)                 . { A = yy('Range', NULL, C, B); }
+slice(A) ::= rangeDots(B)                               . { A = yy('Range', NULL, NULL, A); }
 
 argList(A) ::= arg(B)                                                       . { A = array(B); }
 argList(A) ::= argList(B) YY_COMMA arg(C)                                   . { A = array_merge(B, array(C)); }
