@@ -29,7 +29,7 @@ and autoload CoffeeScript. Alternatively you can load it manually:
 require 'vendor/CoffeeScript/Init.php';
 
 // Load manually
-CoffeeScript\Init::requirements();
+CoffeeScript\Init::load();
 
 ?>
 ```

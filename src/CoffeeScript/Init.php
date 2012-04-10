@@ -13,7 +13,7 @@ class Init {
   /**
    * This function may be used in lieu of an autoloader.
    */
-  static function requirements($root = NULL)
+  static function load($root = NULL)
   {
     if ($root === NULL)
     {
@@ -73,9 +73,10 @@ class Init {
 
 }
 
-/**
- * Function shortcuts. These are all used internally.
- */
+//
+// Function shortcuts. These are all used internally.
+//
+
 function compact(array $array) { return Helpers::compact($array); }
 function del( & $obj, $key) { return Helpers::del($obj, $key); }
 function extend($obj, $properties) { return Helpers::extend($obj, $properties); }
