@@ -42,8 +42,29 @@ class Rewriter
 
   static $LINEBREAKS = array('TERMINATOR', 'INDENT', 'OUTDENT');
 
+  static $initialized = FALSE;
+
+  static function init()
+  {
+    if (self::$initialized) return;
+
+    self::$initialized = TRUE;
+
+    foreach (self::$BALANCED_PAIRS as $pair)
+    {
+      list($left, $rite) = $pair;
+
+      self::$EXPRESSION_START[] = self::$INVERSES[$rite] = $left;
+      self::$EXPRESSION_END[] = self::$INVERSES[$left] = $rite;
+    }
+
+    self::$EXPRESSION_CLOSE = array_merge(self::$EXPRESSION_CLOSE, self::$EXPRESSION_END);
+  }
+
   function __construct($tokens)
   {
+    self::init();
+
     $this->tokens = $tokens;
   }
 
@@ -444,19 +465,6 @@ class Rewriter
     return array( array(t('INDENT'), 2, $token[2]), array(t('OUTDENT'), 2, $token[2]) );
   }
 
-  static function init()
-  {
-    foreach (self::$BALANCED_PAIRS as $pair)
-    {
-      list($left, $rite) = $pair;
-
-      self::$EXPRESSION_START[] = self::$INVERSES[$rite] = $left;
-      self::$EXPRESSION_END[] = self::$INVERSES[$left] = $rite;
-    }
-
-    self::$EXPRESSION_CLOSE = array_merge(self::$EXPRESSION_CLOSE, self::$EXPRESSION_END);
-  }
-
   function remove_leading_newlines()
   {
     $key = 0;
@@ -625,7 +633,5 @@ class Rewriter
     });
   }
 }
-
-Rewriter::init();
 
 ?>

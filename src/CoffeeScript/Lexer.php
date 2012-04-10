@@ -134,11 +134,17 @@ class Lexer
 
   static $INVERSES          = array();
 
+  static $initialized = FALSE;
+
   /**
    * Initialize some static variables (called at the end of this file).
    */
   static function init()
   {
+    if (self::$initialized) return;
+
+    self::$initialized = TRUE;
+
     self::$COFFEE_KEYWORDS  = array_merge(self::$COFFEE_KEYWORDS, array_keys(self::$COFFEE_ALIASES));
     self::$COFFEE_RESERVED  = array_merge(self::$JS_RESERVED, self::$JS_KEYWORDS, self::$COFFEE_KEYWORDS, self::$STRICT_PROSCRIBED);
     self::$JS_FORBIDDEN     = array_merge(self::$JS_KEYWORDS, self::$JS_RESERVED, self::$STRICT_PROSCRIBED);
@@ -294,6 +300,8 @@ class Lexer
 
   function __construct($code, $options)
   {
+    self::init();
+
     if (preg_match(self::$WHITESPACE, $code))
     {
       $code = "\n{$code}";
@@ -1342,7 +1350,5 @@ class Lexer
     return $match ? strlen($match[0]) : 0;
   }
 }
-
-Lexer::init();
 
 ?>
