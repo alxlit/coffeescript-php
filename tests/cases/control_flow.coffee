@@ -8,6 +8,7 @@
 #   * Until
 #   * Loop
 # * Switch
+# * Throw
 
 # TODO: make sure postfix forms and expression coercion are properly tested
 
@@ -404,7 +405,7 @@ test "Switch with break as the return value of a loop.", ->
       when 1 then i
       when 0 then break
 
-  eq results.join(', '), '9, , 7, , 5, , 3, , 1, '
+  eq results.join(', '), '9, 7, 5, 3, 1'
 
 
 test "Issue #997. Switch doesn't fallthrough.", ->
@@ -418,3 +419,12 @@ test "Issue #997. Switch doesn't fallthrough.", ->
       val = 2
 
   eq val, 1
+
+
+test "Throw should be usable as an expression.", ->
+
+  try
+    false or throw 'up'
+    throw new Error 'failed'
+  catch e
+    ok e is 'up'

@@ -157,7 +157,7 @@ test "invoking functions with implicit object literals", ->
     b:1
   eq undefined, result
 
-  result = getA b:1
+  result = getA b:1,
   a:43
   eq 43, result
 
@@ -215,3 +215,57 @@ test "#1274: `{} = a()` compiles to `false` instead of `a()`", ->
   fn = -> a = true
   {} = fn()
   ok a
+
+test "#1436: `for` etc. work as normal property names", ->
+  obj = {}
+  eq no, obj.hasOwnProperty 'for'
+  obj.for = 'foo' of obj
+  eq yes, obj.hasOwnProperty 'for'
+
+test "#1322: implicit call against implicit object with block comments", ->
+  ((obj, arg) ->
+    eq obj.x * obj.y, 6
+    ok not arg
+  )
+    ###
+    x
+    ###
+    x: 2
+    ### y ###
+    y: 3
+
+test "#1513: Top level bare objs need to be wrapped in parens for unary and existence ops", ->
+  doesNotThrow -> CoffeeScript.run "{}?", bare: true
+  doesNotThrow -> CoffeeScript.run "{}.a++", bare: true
+
+test "#1871: Special case for IMPLICIT_END in the middle of an implicit object", ->
+  result = 'result'
+  ident = (x) -> x
+
+  result = ident one: 1 if false
+
+  eq result, 'result'
+
+  result = ident
+    one: 1
+    two: 2 for i in [1..3]
+
+  eq result.two.join(' '), '2 2 2'
+
+test "#1961, #1974, regression with compound assigning to an implicit object", ->
+
+  obj = null
+
+  obj ?=
+    one: 1
+    two: 2
+
+  eq obj.two, 2
+
+  obj = null
+
+  obj or=
+    three: 3
+    four: 4
+
+  eq obj.four, 4

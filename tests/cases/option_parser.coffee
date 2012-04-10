@@ -5,7 +5,7 @@
 
 # Ensure that the OptionParser handles arguments correctly.
 return unless require?
-{OptionParser} = require './../lib/optparse'
+{OptionParser} = require './../lib/coffee-script/optparse'
 
 opt = new OptionParser [
   ['-r', '--required [DIR]',  'desc required']
@@ -13,20 +13,31 @@ opt = new OptionParser [
   ['-l', '--list [FILES*]',   'desc list']
 ]
 
-result = opt.parse ['one', 'two', 'three', '-r', 'dir']
+test "basic arguments", ->
+  args = ['one', 'two', 'three', '-r', 'dir']
+  result = opt.parse args
+  arrayEq args, result.arguments
+  eq undefined, result.required
 
-ok result.arguments.length is 5
-ok result.arguments[3] is '-r'
+test "boolean and parameterised options", ->
+  result = opt.parse ['--optional', '-r', 'folder', 'one', 'two']
+  ok result.optional
+  eq 'folder', result.required
+  arrayEq ['one', 'two'], result.arguments
 
-result = opt.parse ['--optional', '-r', 'folder', 'one', 'two']
+test "list options", ->
+  result = opt.parse ['-l', 'one.txt', '-l', 'two.txt', 'three']
+  arrayEq ['one.txt', 'two.txt'], result.list
+  arrayEq ['three'], result.arguments
 
-ok result.optional is true
-ok result.required is 'folder'
-ok result.arguments.join(' ') is 'one two'
+test "-- and interesting combinations", ->
+  result = opt.parse ['-o','-r','a','-r','b','-o','--','-a','b','--c','d']
+  arrayEq ['-a', 'b', '--c', 'd'], result.arguments
+  ok result.optional
+  eq 'b', result.required
 
-result = opt.parse ['-l', 'one.txt', '-l', 'two.txt', 'three']
-
-ok result.list instanceof Array
-ok result.list.join(' ') is 'one.txt two.txt'
-ok result.arguments.join(' ') is 'three'
-
+  args = ['--','-o','a','-r','c','-o','--','-a','arg0','-b','arg1']
+  result = opt.parse args
+  eq undefined, result.optional
+  eq undefined, result.required
+  arrayEq args[1..], result.arguments
