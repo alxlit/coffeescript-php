@@ -79,17 +79,26 @@ class Lexer
     'enum',
     'export',
     'function',
+    'implements',
     'import',
+    'interface',
     'let',
     'native',
+    'package',
+    'protected',
+    'private',
+    'public',
+    'static',
     'var',
     'void',
     'with',
+    'yield',
   );
+
+  static $STRICT_PROSCRIBED = array('arguments', 'eval');
 
   static $JS_FORBIDDEN = array();
 
-  static $ASSIGNED          = '/^\s*@?([$A-Za-z_][$\w\x7f-\x{ffff}]*|[\'"].*[\'"])[^\n\S]*?[:=][^:=>]/u';
   static $CODE              = '/^[-=]>/';
   static $COMMENT           = '/^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/';
   static $HEREDOC           = '/^("""|\'\'\')([\s\S]*?)(?:\n[^\n\S]*)?\1/';
@@ -102,10 +111,9 @@ class Lexer
   static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NO_NEWLINE        = '#^(?:[-+*&|/%=<>!.\\\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$#';
-  static $NUMBER            = '/^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
+  static $NUMBER            = '/^0b[01]+|^0o[0-7]+|?\d+)?-]^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
   static $OPERATOR          = '#^(?:[-=]>|[-+*/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})#';
-  static $REGEX             = '%^/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/[imgy]{0,4}(?!\w)%';
+  static $REGEX             = '%^(/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/)([imgy]{0,4})(?!\w)%';
   static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/';
   static $TRAILING_SPACES   = '/\s+$/';
   static $WHITESPACE        = '/^[^\n\S]+/';
@@ -124,16 +132,20 @@ class Lexer
   static $SHIFT             = array('<<', '>>', '>>>');
   static $UNARY             = array('!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO');
 
+  static $INVERSES          = array();
+
   /**
    * Initialize some static variables (called at the end of this file).
    */
   static function init()
   {
     self::$COFFEE_KEYWORDS  = array_merge(self::$COFFEE_KEYWORDS, array_keys(self::$COFFEE_ALIASES));
-    self::$COFFEE_RESERVED  = array_merge(array_merge(self::$JS_RESERVED, self::$JS_KEYWORDS), self::$COFFEE_KEYWORDS);
-    self::$JS_FORBIDDEN     = array_merge(self::$JS_KEYWORDS, self::$JS_RESERVED);
+    self::$COFFEE_RESERVED  = array_merge(self::$JS_RESERVED, self::$JS_KEYWORDS, self::$COFFEE_KEYWORDS, self::$STRICT_PROSCRIBED);
+    self::$JS_FORBIDDEN     = array_merge(self::$JS_KEYWORDS, self::$JS_RESERVED, self::$STRICT_PROSCRIBED);
     self::$INDEXABLE        = array_merge(self::$CALLABLE, self::$INDEXABLE);
     self::$NOT_SPACED_REGEX = array_merge(self::$NOT_REGEX, self::$NOT_SPACED_REGEX);
+
+    self::$INVERSES         = Rewriter::$INVERSES;
   }
 
   /**
@@ -299,6 +311,7 @@ class Lexer
 
     $this->code     = $code;
     $this->chunk    = $code;
+    $this->ends     = array();
     $this->indent   = 0;
     $this->indents  = array();
     $this->indebt   = 0;
@@ -310,22 +323,25 @@ class Lexer
     $this->tokens   = array();
   }
 
-  function assignment_error()
-  {
-    throw new SyntaxError('Reserved word "'.$this->value().'" on line '.($this->line + 1).' can\'t be assigned');
-  }
-
   function balanced_string($str, $end)
   {
+    $continue_count = 0;
+
     $stack = array($end);
     $prev = NULL;
 
     for ($i = 1; $i < strlen($str); $i++)
     {
+      if ($continue_count)
+      {
+        --$continue_count;
+        continue;
+      }
+
       switch ($letter = $str{$i})
       {
       case '\\':
-        $i++;
+        ++$continue_count;
         continue 2;
 
       case $end:
@@ -344,6 +360,10 @@ class Lexer
       {
         $stack[] = $end = $letter;
       }
+      else if ($end === '}' && $letter === '/' && preg_match(self::$HEREGEX, substr($str, $i), $match) || preg_match(self::$REGEX, substr($str, $i), $match))
+      {
+        $continue_count += strlen($match[0]) - 1;
+      }
       else if ($end === '}' && $letter === '{')
       {
         $stack[] = $end = '}';
@@ -356,7 +376,7 @@ class Lexer
       $prev = $letter;
     }
 
-    throw new Error('missing '.array_pop($stack).' starting on line '.($this->line + 1));
+    $this->error('missing '.array_pop($stack).', starting');
   }
 
   function close_indentation()
@@ -379,13 +399,16 @@ class Lexer
         'herecomment' =>  TRUE,
         'indent'      =>  str_pad('', $this->indent)
       )));
-
-      $this->token('TERMINATOR', "\n");
     }
 
     $this->line += substr_count($comment, "\n");
 
     return strlen($comment);
+  }
+
+  function error($message)
+  {
+    throw new SyntaxError($message.' on line '.($this->line + 1));
   }
 
   function escape_lines($str, $heredoc = NULL)
@@ -426,6 +449,11 @@ class Lexer
     {
       $re = preg_replace(self::$HEREGEX_OMIT, '', $body);
       $re = preg_replace('/\//', '\\/', $re);
+
+      if (preg_match('/^\*/', $re))
+      {
+        $this->error('regular expressions cannot begin with `*`');
+      }
 
       $this->token('REGEX', '/'.($re ? $re : '(?:)').'/'.$flags);
 
@@ -478,11 +506,6 @@ class Lexer
     return strlen($heregex);
   }
 
-  function identifier_error($word)
-  {
-    throw new SyntaxError('Reserved word "'.$word.'" on line '.($this->line + 1));
-  }
-
   function identifier_token()
   {
     if ( ! preg_match(self::$IDENTIFIER, $this->chunk, $match))
@@ -501,13 +524,13 @@ class Lexer
       return strlen($id);
     }
 
-    $forced_identifier = $colon || ($prev = last($this->tokens)) && 
-      (in_array($prev[0], t('.', '?.', '::')) || 
+    $forced_identifier = $colon || ($prev = last($this->tokens)) &&
+      (in_array($prev[0], t('.', '?.', '::')) ||
       ( ! (isset($prev['spaced']) && $prev['spaced']) && $prev[0] === t('@')));
 
     $tag = 'IDENTIFIER';
 
-    if (in_array($id, self::$JS_KEYWORDS) || ! $forced_identifier && in_array($id, self::$COFFEE_KEYWORDS))
+    if ( ! $forced_identifier and (in_array($id, self::$JS_KEYWORDS) || in_array($id, self::$COFFEE_KEYWORDS)))
     {
       $tag = strtoupper($id);
 
@@ -558,7 +581,7 @@ class Lexer
       }
       else if (in_array($id, self::$JS_RESERVED, TRUE))
       {
-        $this->identifier_error($id);
+        $this->error("reserved word $id");
       }
     }
 
@@ -574,7 +597,7 @@ class Lexer
         'COMPARE'   => array('==', '!='),
         'LOGIC'     => array('&&', '||'),
         'BOOL'      => array('true', 'false', 'null', 'undefined'),
-        'STATEMENT' => array('break', 'continue', 'debugger')
+        'STATEMENT' => array('break', 'continue')
       );
 
       foreach ($map as $k => $v)
@@ -652,8 +675,8 @@ class Lexer
         {
           if ($length > 1)
           {
-            array_unshift($nested, array(t('('), '('));
-            $nested[] = array(t(')'), ')');
+            array_unshift($nested, array(t('('), '(', $this->line));
+            $nested[] = array(t(')'), ')', $this->line);
           }
 
           $tokens[] = array('TOKENS', $nested);
@@ -737,6 +760,7 @@ class Lexer
 
     $indent = $match[0];
     $this->line += substr_count($indent, "\n");
+    $this->seen_for = FALSE;
 
     // $prev = & last($this->tokens, 1);
     $size = strlen($indent) - 1 - strrpos($indent, "\n");
@@ -771,6 +795,7 @@ class Lexer
 
       $this->token('INDENT', $diff);
       $this->indents[] = $diff;
+      $this->ends[] = 'OUTDENT';
       $this->outdebt = $this->indebt = 0;
     }
     else
@@ -807,7 +832,7 @@ class Lexer
     {
       if (isset($prev['reserved']) && $prev['reserved'] && in_array($prev[1], t(self::$JS_FORBIDDEN)))
       {
-        $this->assignment_error();
+        $this->error('reserved word "'.$this->value().'" can\'t be assigned');
       }
 
       if (in_array($prev[1], array('||', '&&')))
@@ -834,6 +859,11 @@ class Lexer
     {
       if (in_array($value, $v))
       {
+        if ($value === ';')
+        {
+          $this->seen_for = FALSE;
+        }
+
         $tag = $k;
         $mapped = TRUE;
 
@@ -874,6 +904,15 @@ class Lexer
       }
     }
 
+    if (in_array($value, array('(', '{', '[')))
+    {
+      $this->ends[] = self::$INVERSES[$value];
+    }
+    else if (in_array($value, array(')', '}', ']')))
+    {
+      $this->pair($value);
+    }
+
     $this->token($tag, $value);
 
     return strlen($value);
@@ -906,6 +945,11 @@ class Lexer
 
   function newline_token()
   {
+    while ($this->value() === ';')
+    {
+      array_pop($this->tokens);
+    }
+
     if ($this->tag() !== t('TERMINATOR'))
     {
       $this->token('TERMINATOR', "\n");
@@ -919,12 +963,43 @@ class Lexer
       return 0;
     }
 
-    $this->token('NUMBER', $number = $match[0]);
+    $number = $match[0];
 
-    return strlen($number);
+    if (preg_match('/^0[BOX]/', $number))
+    {
+      $this->error("radix prefix '$number' must be lowercase");
+    }
+    else if (preg_match('/E/', $number) && ! preg_match('/^0x/', $number))
+    {
+      $this->error("exponential notation '$number' must be indicated with a lowercase 'e'");
+    }
+    else if (preg_match('/^0\d*[89]/', $number))
+    {
+      $this->error("decimal literal '$number' must not be prefixed with '0'");
+    }
+    else if (preg_match('/^0\d+/', $number))
+    {
+      $this->error("octal literal '$number' must be prefixed with 0o");
+    }
+
+    $lexed_length = strlen($number);
+
+    if (preg_match('/^0o([0-7]+)/', $number, $octal_literal))
+    {
+      $number = '0x'.base_convert(intval($octal_literal[1], 8), 8, 16);
+    }
+
+    if (preg_match('/^0b([01]+)/', $number, $binary_literal))
+    {
+      $number = '0x'.base_convert(intval($binary_literal[1], 2), 2, 16);
+    }
+
+    $this->token('NUMBER', $number);
+
+    return $lexed_length;
   }
 
-  function outdent_token($move_out, $no_newlines = FALSE, $close = NULL)
+  function outdent_token($move_out, $no_newlines = FALSE)
   {
     while ($move_out > 0)
     {
@@ -949,6 +1024,7 @@ class Lexer
         $dent = array_pop($this->indents) - $this->outdebt;
         $move_out -= $dent;
         $this->outdebt = 0;
+        $this->pair('OUTDENT');
         $this->token('OUTDENT', $dent);
       }
     }
@@ -958,12 +1034,35 @@ class Lexer
       $this->outdebt -= $move_out;
     }
 
+    while ($this->value() == ';')
+    {
+      array_pop($this->tokens);
+    }
+
     if ( ! ($this->tag() === t('TERMINATOR') || $no_newlines))
     {
       $this->token('TERMINATOR', "\n");
     }
 
     return $this;
+  }
+
+  function pair($tag)
+  {
+    if ( ! ($tag === ($wanted = last($this->ends))))
+    {
+      if ($wanted !== 'OUTDENT')
+      {
+        $this->error("unmateched $tag");
+      }
+
+      $this->indent -= $size = last($this->indents);
+      $this->outdent_token($size, TRUE);
+
+      return $this->pair($tag);
+    }
+
+    return array_pop($this->ends);
   }
 
   function regex_token()
@@ -975,7 +1074,10 @@ class Lexer
 
     if (preg_match(self::$HEREGEX, $this->chunk, $match))
     {
-      return $this->heregex_token($match);
+      $length = $this->heregex_token($match);
+      $this->line += substr_count($match[0], "\n");
+
+      return $length;
     }
 
     $prev = last($this->tokens);
@@ -994,11 +1096,18 @@ class Lexer
       return 0;
     }
 
-    $regex = $match[0];
+    list($match, $regex, $flags) = $match;
 
-    $this->token('REGEX', $regex === '//' ? '/(?:)/' : $regex);
+    if (substr($regex, 0, -1) === '/*')
+    {
+      $this->error('regular expressions cannot begin with `*`');
+    }
 
-    return strlen($regex);
+    $regex = $regex === '//' ? '/(?:)/' : $regex;
+
+    $this->token('REGEX', "{$regex}{$flags}");
+
+    return strlen($match);
   }
 
   function sanitize_heredoc($doc, array $options)
@@ -1010,7 +1119,7 @@ class Lexer
     {
       if (preg_match(self::$HEREDOC_ILLEGAL, $doc))
       {
-        throw new Error('block comment cannot contain \"*/\", starting on line '.($line + 1));
+        $this->error('block comment cannot contain "*/*, starting');
       }
 
       if ( ! strpos($doc, "\n"))
@@ -1081,6 +1190,11 @@ class Lexer
       return 0;
     }
 
+    if (preg_match('/^(?:\\.|[^\\])*\\[0-7]/', $string, $octal_esc))
+    {
+      $this->error("octal escape sequences $string are not allowed");
+    }
+
     $this->line += substr_count($string, "\n");
 
     return strlen($string);
@@ -1136,6 +1250,10 @@ class Lexer
           $tok[0] = t('PARAM_START');
           return $this;
         }
+        else
+        {
+          return $this;
+        }
       }
     }
 
@@ -1173,6 +1291,11 @@ class Lexer
 
     $this->close_indentation();
 
+    if (($tag = array_pop($this->ends)) !== NULL)
+    {
+      $this->error('missing '.t_canonical($tag));
+    }
+
     if ($this->options['rewrite'])
     {
       $rewriter = new Rewriter($this->tokens);
@@ -1198,10 +1321,8 @@ class Lexer
   {
     return
       preg_match(self::$LINE_CONTINUER, $this->chunk) ||
-      ($prev = last($this->tokens, 1)) && ($prev[0] !== t('.')) &&
-      ($value = $this->value()) && ! (isset($value->reserved) && $value->reserved) &&
-      preg_match(self::$NO_NEWLINE, $value) && ( ! preg_match(self::$CODE, $value)) 
-      && ( ! preg_match(self::$ASSIGNED, $this->chunk));
+      in_array($this->tag(), t('\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION',
+          'COMPARE', 'LOGIC', 'THROW', 'EXTENDS'));
   }
 
   function whitespace_token()
