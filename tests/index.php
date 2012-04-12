@@ -9,7 +9,7 @@
  */
 
 ini_set('display_errors', '1');
-error_reporting(E_STRICT);
+error_reporting(E_ALL);
 
 // Test case to run
 $case = isset($_GET['case']) ? $_GET['case'] : FALSE;
