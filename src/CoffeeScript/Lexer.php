@@ -111,7 +111,7 @@ class Lexer
   static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NUMBER            = '/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^ \d*\.?\d+(?:e[+-]?\d+)?/i';
+  static $NUMBER            = '/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i';
   static $OPERATOR          = '#^(?:[-=]>|[-+*/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})#';
   static $REGEX             = '%^(/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/)([imgy]{0,4})(?!\w)%';
   static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/';
@@ -295,8 +295,6 @@ class Lexer
       // string to use instead.
       $token = substr($token, strlen('CoffeeScript\Parser::YY_'));
     }
-
-
 
     return isset($map[$token]) ? $map[$token] : $token;
   }
@@ -919,11 +917,6 @@ class Lexer
     if (in_array($value, array('(', '{', '[')))
     {
       $this->ends[] = self::$INVERSES[$value];
-
-      if ( ! isset(self::$INVERSES[$value]))
-      {
-        var_dump(self::$INVERSES);
-      }
     }
     else if (in_array($value, array(')', '}', ']')))
     {
