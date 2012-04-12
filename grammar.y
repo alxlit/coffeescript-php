@@ -190,7 +190,7 @@ range(A) ::= YY_ARRAY_START expression(B) rangeDots(C) expression(D) YY_ARRAY_EN
 slice(A) ::= expression(B) rangeDots(C) expression(D)   . { A = yy('Range', B, D, C); }
 slice(A) ::= expression(B) rangeDots(C)                 . { A = yy('Range', B, NULL, C); }
 slice(A) ::= rangeDots(B) expression(C)                 . { A = yy('Range', NULL, C, B); }
-slice(A) ::= rangeDots(B)                               . { A = yy('Range', NULL, NULL, A); }
+slice(A) ::= rangeDots(B)                               . { A = yy('Range', NULL, NULL, B); }
 
 argList(A) ::= arg(B)                                                       . { A = array(B); }
 argList(A) ::= argList(B) YY_COMMA arg(C)                                   . { A = array_merge(B, array(C)); }

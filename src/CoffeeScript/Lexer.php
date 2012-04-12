@@ -296,6 +296,8 @@ class Lexer
       $token = substr($token, strlen('CoffeeScript\Parser::YY_'));
     }
 
+
+
     return isset($map[$token]) ? $map[$token] : $token;
   }
 
