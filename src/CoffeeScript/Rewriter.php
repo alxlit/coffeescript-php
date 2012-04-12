@@ -174,10 +174,13 @@ class Rewriter
 
     $action = function($token, $i) use ( & $self, & $outdent)
     {
-      array_splice($self->tokens, $self->tag($i - 1) === t(',') ? $i - 1 : $i, 0, array($outdent));
+      if ($outdent !== NULL)
+      {
+        array_splice($self->tokens, $self->tag($i - 1) === t(',') ? $i - 1 : $i, 0, array($outdent));
+      }
     };
 
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $condition, & $self)
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $condition, & $self, & $indent, & $outdent)
     {
       $tag = $token[0];
 
