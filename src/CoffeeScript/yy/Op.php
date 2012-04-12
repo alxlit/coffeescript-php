@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Op extends yy_Base
 {
   static $CONVERSIONS = array(
@@ -34,15 +32,12 @@ class yy_Op extends yy_Base
 
     if ($op === 'do')
     {
-      $call = yy('Call', $first, isset($first->params) ? $first->params : array());
-      $call->do = TRUE;
-
-      return $call;
+      return $this->generate_do($first);
     }
 
     if ($op === 'new')
     {
-      if ($first instanceof yy_Call && ! (isset($first->do) && $first->do))
+      if ($first instanceof yy_Call && ! (isset($first->do) && $first->do) && ! (isset($first->is_new) && $first->is_new))
       {
         return $first->new_instance();
       }
@@ -78,7 +73,7 @@ class yy_Op extends yy_Base
 
   function compile_existence($options)
   {
-    if ($this->first->is_complex())
+    if ($this->first->is_complex() && $options['level'] > LEVEL_TOP)
     {
       $ref = yy('Literal', $options['scope']->free_variable('ref'));
       $fst = yy('Parens', yy('Assign', $ref, $this->first));
@@ -97,12 +92,29 @@ class yy_Op extends yy_Base
 
   function compile_node($options, $level = NULL)
   {
+    $is_chain = $this->is_chainable() && $this->first->is_chainable();
+
+    if ( ! $is_chain)
+    {
+      $this->first->front = $this->front;
+    }
+
+    if ($this->operator === 'delete' && $options['scope']->check($this->first->unwrap_all()->value))
+    {
+      throw new SyntaxError('delete operand may not be argument or var');
+    }
+
+    if (in_array($this->operator, array('--', '++')) && in_array($this->first->unwrap_all()->value, Lexer::$STRICT_PROSCRIBED))
+    {
+      throw new SyntaxError('prefix increment/decrement may not have eval or arguments operand');
+    }
+
     if ($this->is_unary())
     {
       return $this->compile_unary($options);
     }
 
-    if ($this->is_chainable() && $this->first->is_chainable())
+    if ($is_chain)
     {
       return $this->compile_chain($options);
     }
@@ -122,16 +134,22 @@ class yy_Op extends yy_Base
 
   function compile_unary($options)
   {
+    if ($options['level'] >= LEVEL_ACCESS)
+    {
+      return yy('Parens', $this)->compile($options);
+    }
+
     $parts = array($op = $this->operator);
+    $plus_minus = in_array($op, array('+', '-'), TRUE);
 
     if (in_array($op, array('new', 'typeof', 'delete'), TRUE) || 
-        in_array($op, array('+', '-'), TRUE) &&
+        $plus_minus &&
         $this->first instanceof yy_Op && $this->first->operator === $op)
     {
       $parts[] = ' ';
     }
 
-    if ($op === 'new' && $this->first->is_statement($options))
+    if (($plus_minus && $this->first instanceof yy_Op) || ($op === 'new' && $this->first->is_statement($options)))
     {
       $this->first = yy('Parens', $this->first);
     }
@@ -149,6 +167,11 @@ class yy_Op extends yy_Base
   function is_chainable()
   {
     return in_array($this->operator, array('<', '>', '>=', '<=', '===', '!=='), TRUE);
+  }
+
+  function is_complex()
+  {
+    return ! ($this->is_unary() && ! in_array($this->operator, array('+', '-'))) || $this->first->is_complex();
   }
 
   function invert()
@@ -208,6 +231,35 @@ class yy_Op extends yy_Base
     {
       return yy('Op', '!', $this);
     }
+  }
+
+  function generate_do($exp)
+  {
+    $passed_params = array();
+    $func = $exp;
+
+    if ($exp instanceof yy_Assign && ($ref = $exp->value->unwrap()) instanceof yy_Code)
+    {
+      $func = $ref;
+    }
+
+    foreach ((isset($func->params) && $func->params ? $func->params : array()) as $param)
+    {
+      if (isset($param->value) && $param->value)
+      {
+        $passed_params[] = $param->value;
+        unset($param->value);
+      }
+      else
+      {
+        $passed_params[] = $param;
+      }
+    }
+
+    $call = yy('Call', $exp, $passed_params);
+    $call->do = TRUE;
+
+    return $call;
   }
 
   function is_simple_number()

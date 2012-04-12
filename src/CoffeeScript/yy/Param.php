@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Param extends yy_Base
 {
   public $children = array('name', 'value');
@@ -13,6 +11,11 @@ class yy_Param extends yy_Base
     $this->name = $name;
     $this->value = $value;
     $this->splat = $splat;
+
+    if (in_array($name = $this->name->unwrap_all()->value, Lexer::$STRICT_PROSCRIBED))
+    {
+      throw new SyntaxError("parameter name \"$name\" is not allowed");
+    }
 
     return $this;
   }
@@ -32,7 +35,7 @@ class yy_Param extends yy_Base
 
       if (isset($this->value->reserved) && $this->value->reserved)
       {
-        $node = yy('Literal', '_'.$node->value);
+        $node = yy('Literal', $options['scope']->free_variable($node->value));
       }
     }
     else if ($node->is_complex())
@@ -58,6 +61,55 @@ class yy_Param extends yy_Base
   function is_complex()
   {
     return $this->name->is_complex();
+  }
+
+  function names($name = NULL)
+  {
+    if ($name === NULL)
+    {
+      $name = $this->name;
+    }
+
+    $at_param = function($obj)
+    {
+      $value = $obj->properties[0]->name;
+
+      return isset($value->reserved) && $value->reserved ? array() : array($value);
+    };
+
+    if ($name instanceof yy_Literal)
+    {
+      return array($name->value);
+    }
+
+    if ($name instanceof yy_Value)
+    {
+      return $at_param($name);
+    }
+
+    $names = array();
+
+    foreach ($name->objects as $obj)
+    {
+      if ($obj instanceof yy_Assign)
+      {
+        $names[] = $obj->variable->base->value;
+      }
+      else if ($obj->is_array() || $obj->is_object())
+      {
+        $names = array_merge($names, $this->names($obj->base));
+      }
+      else if (isset($obj->this) && $obj->this)
+      {
+        $names = array_merge($names, $at_param($obj));
+      }
+      else
+      {
+        $names[] = $obj->base->value;
+      }
+    }
+
+    return $names;
   }
 }
 

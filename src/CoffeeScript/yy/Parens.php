@@ -2,20 +2,18 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Parens extends yy_Base
 {
   public $children = array('body');
 
-  public function constructor($body)
+  function constructor($body)
   {
     $this->body = $body;
 
     return $this;
   }
 
-  public function compile_node($options = array())
+  function compile_node($options = array())
   {
     $expr = $this->body->unwrap();
 
@@ -33,17 +31,12 @@ class yy_Parens extends yy_Base
     return $bare ? $code : "({$code})";
   }
 
-  public function is_complex()
+  function is_complex()
   {
     return $this->body->is_complex();
   }
 
-  public function make_return()
-  {
-    return $this->body->make_return();
-  }
-
-  public function unwrap()
+  function unwrap()
   {
     return $this->body;
   }

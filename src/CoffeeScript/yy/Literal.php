@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Literal extends yy_Base
 {
   public $is_undefined = FALSE;
@@ -25,6 +23,17 @@ class yy_Literal extends yy_Base
     if ($this->is_undefined())
     {
       $code = $options['level'] >= LEVEL_ACCESS ? '(void 0)' : 'void 0';
+    }
+    else if ($this->value === 'this')
+    {
+      if ( (isset($options['scope']->method->bound) && $options['scope']->method->bound) )
+      {
+        $code = $options['scope']->method->context;
+      }
+      else
+      {
+        $code = $this->value;
+      }
     }
     else if (isset($this->value->reserved) && $this->value->reserved)
     {
@@ -60,25 +69,22 @@ class yy_Literal extends yy_Base
 
   function jumps($options = array())
   {
-    if ( ! $this->is_statement())
-    {
-      return FALSE;
-    }
-
-    if ( ! ((isset($options['loop']) && $options['loop']) ||
-            (isset($options['block']) && $options['block']) && (''.$this->value !== 'continue')))
+    if ($this->value === 'break' && ! ( (isset($options['loop']) && $options['loop']) || (isset($options['block']) && $options['block']) ))
     {
       return $this;
     }
-    else
+
+    if ($this->value === 'continue' && ! (isset($options['loop']) && $options['loop']))
     {
-      return FALSE;
+      return $this;
     }
+
+    return FALSE;
   }
 
   function make_return()
   {
-    return $this->is_statement() ? $this : yy('Return', $this);
+    return $this->is_statement() ? $this : parent::make_return();
   }
 
   function to_string($idt = '', $name = __CLASS__)

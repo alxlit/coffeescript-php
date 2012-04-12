@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Extends extends yy_Base
 {
   public $children = array('child', 'parent');
@@ -18,9 +16,7 @@ class yy_Extends extends yy_Base
 
   function compile($options)
   {
-    utility('hasProp');
-
-    $tmp = yy('Call', yy('Value', yy('Literal', utility('extends'))), 
+    $tmp = yy('Call', yy('Value', yy('Literal', utility('extends'))),
       array($this->child, $this->parent));
 
     return $tmp->compile($options);

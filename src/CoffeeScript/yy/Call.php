@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Call extends yy_Base
 {
   public $children = array('variable', 'args');
@@ -73,9 +71,9 @@ class yy_Call extends yy_Base
       return 
         "(function(func, args, ctor) {\n"
       . "{$idt}ctor.prototype = func.prototype;\n"
-      . "{$idt}var child = new ctor, result = func.apply(child, args);\n"
-      . "{$idt}return typeof result === \"object\" ? result : child;\n"
-      . "{$this->tab}})(".$this->variable->compile($options, LEVEL_LIST).", $splat_args, function() {})";
+      . "{$idt}var child = new ctor, result = func.apply(child, args), t = typeof result;\n"
+      . "{$idt}return t === \"object\" || t == \"function\" ? result || child : child;\n"
+      . "{$this->tab}})(".$this->variable->compile($options, LEVEL_LIST).", $splat_args, function(){})";
     }
 
     $base = yy('Value', $this->variable);
@@ -137,7 +135,7 @@ class yy_Call extends yy_Base
 
       foreach ($node->base->properties as $prop)
       {
-        if ($prop instanceof yy_Assign)
+        if (($prop instanceof yy_Assign) || $prop instanceof yy_Comment)
         {
           if ( ! $obj)
           {
@@ -161,7 +159,7 @@ class yy_Call extends yy_Base
   {
     $base = isset($this->variable->base) ? $this->variable->base : $this->variable;
 
-    if ($base instanceof yy_Call)
+    if (($base instanceof yy_Call) && ! $base->is_new())
     {
       $base->new_instance();
     }
@@ -191,7 +189,16 @@ class yy_Call extends yy_Base
 
     if (isset($method->klass) && $method->klass)
     {
-      return $method->klass.'.__super__.'.$name;
+      $accesses = array(yy('Access', yy('Literal', '__super__')));
+
+      if (isset($method->static) && $method->static)
+      {
+        $accesses[] = yy('Access', yy('Literal', 'constructor'));
+      }
+
+      $accesses[] = yy('Access', yy('Literal', $name));
+
+      return yy('Value', yy('Literal', $method->klass), $accesses)->compile($options);
     }
     else
     {

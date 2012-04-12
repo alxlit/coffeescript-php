@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_If extends yy_Base
 {
   public $children = array('condition', 'body', 'else_body');
@@ -58,23 +56,24 @@ class yy_If extends yy_Base
   function compile_statement($options)
   {
     $child = del($options, 'chainChild');
-    $cond = $this->condition->compile($options, LEVEL_PAREN);
-    $options['indent'] .= TAB;
-    $body = $this->ensure_block($this->body)->compile($options);
+    $exeq = del($options, 'isExistentialEquals');
 
-    if ($body)
+    if ($exeq)
     {
-      $body = "\n{$body}\n{$this->tab}";
+      return yy('If', $this->condition->invert(), $this->else_body_node(), array('type' => 'if'))->compile($options);
     }
 
-    $if_part = "if ({$cond}) {{$body}}";
+    $cond = $this->condition->compile($options, LEVEL_PAREN);
+    $options['indent'] .= TAB;
+    $body = $this->ensure_block($this->body);
+    $if_part = "if ({$cond}) {\n".$body->compile($options)."\n{$this->tab}";
 
     if ( ! $child)
     {
       $if_part = $this->tab.$if_part;
     }
 
-    if ( ! $this->else_body) 
+    if ( ! $this->else_body)
     {
       return $if_part;
     }
@@ -130,16 +129,24 @@ class yy_If extends yy_Base
     return $tmp;
   }
 
-  function make_return()
+  function make_return($res = NULL)
   {
+    if ( ! (isset($this->else_body) && $this->else_body))
+    {
+      if ($res)
+      {
+        $this->else_body = yy('Block', array(yy('Literal', 'void 0')));
+      }
+    }
+
     if ($this->body)
     {
-      $this->body = yy('Block', array($this->body->make_return()));
+      $this->body = yy('Block', array($this->body->make_return($res)));
     }
 
     if ($this->else_body)
     {
-      $this->else_body = yy('Block', array($this->else_body->make_return()));
+      $this->else_body = yy('Block', array($this->else_body->make_return($res)));
     }
 
     return $this;

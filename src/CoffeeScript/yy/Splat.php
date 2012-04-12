@@ -2,42 +2,9 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Splat extends yy_Base
 {
   public $children = array('name');
-
-  function constructor($name)
-  {
-    if (is_object($name))
-    {
-      $this->name = $name;
-    }
-    else
-    {
-      $this->name = yy('Literal', $name);
-    }
-
-    return $this;
-  }
-
-  function assigns($name)
-  {
-    return $this->name->assigns($name);
-  }
-
-  function compile($options)
-  {
-    if (isset($this->index) && $this->index)
-    {
-      return $this->compile_param($options);
-    }
-    else
-    {
-      return $this->name->compile($options);
-    }
-  }
 
   static function compile_splatted_array($options, $list, $apply = FALSE)
   {
@@ -88,9 +55,45 @@ class yy_Splat extends yy_Base
     return '['.implode(', ', $base).'].concat('.implode(', ', $args).')';
   }
 
+  function constructor($name)
+  {
+    if (is_object($name))
+    {
+      $this->name = $name;
+    }
+    else
+    {
+      $this->name = yy('Literal', $name);
+    }
+
+    return $this;
+  }
+
+  function assigns($name)
+  {
+    return $this->name->assigns($name);
+  }
+
+  function compile($options)
+  {
+    if (isset($this->index) && $this->index)
+    {
+      return $this->compile_param($options);
+    }
+    else
+    {
+      return $this->name->compile($options);
+    }
+  }
+
   function is_assignable()
   {
     return TRUE;
+  }
+
+  function unwrap()
+  {
+    return $this->name;
   }
 }
 

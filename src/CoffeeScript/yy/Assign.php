@@ -2,13 +2,9 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Assign extends yy_Base
 {
   public $children = array('variable', 'value');
-
-  const METHOD_DEF = '/^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\x{ffff}]*)$/u';
 
   function constructor($variable, $value, $context = '', $options = NULL)
   {
@@ -16,6 +12,15 @@ class yy_Assign extends yy_Base
     $this->value = $value;
     $this->context = $context;
     $this->param = $options ? $options['param'] : NULL;
+
+    $this->subpattern = isset($options['subpattern']) ? $options['subpattern'] : NULL;
+
+    $forbidden = in_array(($name = $this->variable->unwrap_all()->value), Lexer::$STRICT_PROSCRIBED);
+
+    if ($forbidden && $this->context !== 'object')
+    {
+      throw new SyntaxError("variable name may not be $name");
+    }
 
     return $this;
   }
@@ -34,8 +39,19 @@ class yy_Assign extends yy_Base
 
   function compile_conditional($options)
   {
-    list($left, $rite) = $this->variable->cache_reference($options);
-    $tmp = yy('Op', substr($this->context, 0, -1), $left, yy('Assign', $rite, $this->value, '='));
+    list($left, $right) = $this->variable->cache_reference($options);
+
+    if ( ! count($left->properties) && $left->base instanceof yy_Literal && $left->base->value !== 'this' && ! $options['scope']->check($left->base->value))
+    {
+      throw new Error('the variable "'.$this->left->base->value.'" can\'t be assigned with '.$this->context.' because it has not been defined.');
+    }
+
+    if (in_array('?', $this->context))
+    {
+      $options['isExistentialEquals'] = TRUE;
+    }
+
+    $tmp = yy('Op', substr($this->context, 0, -1), $left, yy('Assign', $right, $this->value, '='));
 
     return $tmp->compile($options);
   }
@@ -62,32 +78,39 @@ class yy_Assign extends yy_Base
 
     $name = $this->variable->compile($options, LEVEL_LIST);
 
-    if ( ! ($this->context || $this->variable->is_assignable()))
+    if ( ! $this->context)
     {
-      throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
+      if ( ! ( ($var_base = $this->variable->unwrap_all()) && $var_base->is_assignable()))
+      {
+        throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
+      }
+
+      if ( ! $var_base->has_properties())
+      {
+        if ($this->param)
+        {
+          $options['scope']->add($name, 'var');
+        }
+        else
+        {
+          $options['scope']->find($name);
+        }
+      }
     }
 
-    if ( ! ($this->context || $is_value &&
-           ((isset($this->variable->namespaced) && $this->variable->namespaced) || 
-            $this->variable->has_properties())))
+    if ($this->value instanceof yy_Code && preg_match(METHOD_DEF, $name, $match))
     {
-      if ($this->param)
-      {
-        $options['scope']->add($name, 'var');
-      }
-      else
-      {
-        $options['scope']->find($name);
-      }
-    }
-
-    if ($this->value instanceof yy_Code && preg_match(self::METHOD_DEF, $name, $match))
-    {
-      $this->value->name = $match[2];
-
       if (isset($match[1]) && $match[1])
       {
         $this->value->klass = $match[1];
+      }
+
+      foreach (range(2, 5) as $i)
+      {
+        if (isset($match[$i]) && $match[$i])
+        {
+          $this->value->name = $match[$i];
+        }
       }
     }
 
@@ -156,9 +179,12 @@ class yy_Assign extends yy_Base
         $value->properties[] = yy('Index', $idx);
       }
 
-      $tmp = yy('Assign', $obj, $value);
+      if (in_array($obj->unwrap()->value, Lexer::$COFFEE_RESERVED))
+      {
+        throw new SyntaxError('assignment to a reserved word: '.$obj->compile($options).' = '.$value->compile($options));
+      }
 
-      return $tmp->compile($options);
+      return yy('Assign', $obj, $value, NULL, array('param' => $this->param))->compile($options, LEVEL_TOP);
     }
 
     $vvar = $value->compile($options, LEVEL_LIST);
@@ -198,6 +224,9 @@ class yy_Assign extends yy_Base
 
       if ( ! $splat && ($obj instanceof yy_Splat))
       {
+        $name = $obj->name->unwrap()->value;
+        $obj = $obj->unwrap();
+
         $val = "{$olen} <= {$vvar}.length ? ".utility('slice').".call({$vvar}, {$i}";
         $ivar = 'undefined';
 
@@ -216,10 +245,12 @@ class yy_Assign extends yy_Base
       }
       else
       {
+        $name = $obj->unwrap()->value;
+
         if ($obj instanceof yy_Splat)
         {
           $obj = $obj->name->compile($options);
-          throw SyntaxError("multiple splats are disallowed in an assignment: {$obj} ...");
+          throw new SyntaxError("multiple splats are disallowed in an assignment: {$obj}...");
         }
 
         if (is_numeric($idx))
@@ -235,11 +266,16 @@ class yy_Assign extends yy_Base
         $val = yy('Value', yy('Literal', $vvar), array($acc ? yy('Access', $idx) : yy('Index', $idx)));
       }
 
-      $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param));
+      if (isset($name) && $name && in_array($name, Lexer::$COFFEE_RESERVED))
+      {
+        throw new SyntaxError("assignment to a reserved word: ".$obj->compile($options).' = '.$val->compile($options));
+      }
+
+      $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param, 'subpattern' => TRUE));
       $assigns[] = $tmp->compile($options, LEVEL_TOP);
     }
 
-    if ( ! $top)
+    if ( ! ($top || $this->subpattern))
     {
       $assigns[] = $vvar;
     }
@@ -274,7 +310,7 @@ class yy_Assign extends yy_Base
       }
       else
       {
-        $to = $to->compile($options).' - '. $from_ref;
+        $to = $to->compile($options, LEVEL_ACCESS).' - '. $from_ref;
 
         if ( ! $exclusive)
         {
@@ -291,6 +327,11 @@ class yy_Assign extends yy_Base
 
     $code = "[].splice.apply({$name}, [{$from_decl}, {$to}].concat({$val_def})), {$val_ref}";
     return $options['level'] > LEVEL_TOP ? "({$code})" : $code;
+  }
+
+  function is_statement($options)
+  {
+    return isset($options['level']) && $options['level'] === LEVEL_TOP && $this->context && in_array('?', $this->context);
   }
 
   function unfold_soak($options)

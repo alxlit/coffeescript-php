@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Existence extends yy_Base
 {
   public $children = array('expression');
@@ -17,23 +15,18 @@ class yy_Existence extends yy_Base
 
   function compile_node($options = array())
   {
+    $this->expression->front = $this->front;
     $code = $this->expression->compile($options, LEVEL_OP);
 
     if (preg_match(IDENTIFIER, $code) && ! $options['scope']->check($code))
     {
-      if ($this->negated)
-      {
-        $code = "typeof {$code} === \"undefined\" || {$code} === null";
-      }
-      else
-      {
-        $code = "typeof {$code} !== \"undefined\" && {$code} !== null";
-      }
+      list($cmp, $cnj) = $this->negated ? array('===', '||') : array('!==', '&&');
+
+      $code = "typeof {$code} {$cmp} \"undefined\" {$cnj} {$code} {$cmp} null";
     }
     else
     {
-      $sym = $this->negated ? '==' : '!=';
-      $code = "{$code} {$sym} null";
+      $code = "{$code} ".($this->negated ? '==' : '!=').' null';
     }
 
     return (isset($options['level']) && $options['level'] <= LEVEL_COND) ? $code : "({$code})";

@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Range extends yy_Base
 {
   public $children = array('from', 'to');
@@ -13,7 +11,7 @@ class yy_Range extends yy_Base
 
   private static function check($num)
   {
-    // '0' evaluates fo FALSE in PHP, but TRUE in JavaScript. Explicit conditions here.
+    // '0' evaluates to FALSE in PHP, but TRUE in JavaScript. Explicit conditions here.
     return ! in_array($num, array(0, NULL, FALSE, ''), TRUE);
   }
 
@@ -49,48 +47,113 @@ class yy_Range extends yy_Base
     if (self::check($this->from_num) && self::check($this->to_num))
     {
       $options['index'] = $i;
-      $body = $this->compile_simple($options);
+      $body = $this->compile_node($options);
     }
     else
     {
-      $vars = "{$i} = {$this->from}".($this->to !== $this->to_var ? ", {$this->to}" : '');
+      $vars = "{$i} = {$this->from_c}".($this->to_c !== $this->to_var ? ", {$this->to_c}" : '');
       $cond = "{$this->from_var} <= {$this->to_var}";
       $body = "var {$vars}; {$cond} ? {$i} <{$this->equals} {$this->to_var} : {$i} >{$this->equals} {$this->to_var}; {$cond} ? {$i}++ : {$i}--";
     }
 
     $post = "{ {$result}.push({$i}); }\n{$idt}return {$result};\n{$options['indent']}";
 
-    return "(function() {{$pre}\n{$idt}for ({$body}){$post}}).apply(this, arguments)";
+    $has_args = function($node)
+    {
+      return isset($node->contains) && $node->contains(function($n)
+      {
+        return $n instanceof yy_Literal && $n->value === 'arguments' && ! $n->as_key();
+      });
+    };
+
+    $args = '';
+
+    if ($has_args($this->from) || $has_args($this->to))
+    {
+      $args = ', arguments';
+    }
+
+    return "(function() {{$pre}\n{$idt}for ({$body}){$post}}).apply(this{$args})";
   }
 
   function compile_node($options)
   {
-    $this->compile_variables($options);
+    if ( ! $this->from_var)
+    {
+      $this->compile_variables($options);
+    }
 
     if ( ! (isset($options['index']) && $options['index']))
     {
       return $this->compile_array($options);
     }
 
-    if (self::check($this->from_num) && self::check($this->to_num))
-    {
-      return $this->compile_simple($options);
-    }
-
+    $known = self::check($this->from_num) && self::check($this->to_num);
     $idx = del($options, 'index');
-    $step = del($options, 'step');
+    $idx_name = del($options, 'name');
+    $named_index = $idx_name && $idx_name !== $idx;
 
-    if ($step)
+    $var_part = "{$idx} = {$this->from_c}";
+
+    if ($this->to_c !== $this->to_var)
     {
-      $stepvar = $options['scope']->free_variable('step');
+      $var_part .= ", {$this->to_c}";
     }
 
-    $var_part = "{$idx} = {$this->from}".($this->to !== $this->to_var ? ", {$this->to}" : '')
-      .($step ? ", {$stepvar} = ".$step->compile($options) : '');
+    if ($this->step !== $this->step_var)
+    {
+      $var_part .= ", {$this->step}";
+    }
 
-    $cond = "{$this->from_var} <= {$this->to_var}";
-    $cond_part = "{$cond} ? {$idx} <{$this->equals} {$this->to_var} : {$idx} >{$this->equals} {$this->to_var}";
-    $step_part = $step ? "{$idx} += {$stepvar}" : "{$cond} ? {$idx}++ : {$idx}--";
+    list($lt, $gt) = array("{$idx} <{$this->equals}", "{$idx} >{$this->equals}");
+
+    if (self::check($this->step_num))
+    {
+      $cond_part = intval($this->step_num) > 0 ? "{$lt} {$this->to_var}" : "{$gt} {$this->to_var}";
+    }
+    else if ($known)
+    {
+      list($from, $to) = array(intval($this->from_num), intval($this->to_num));
+      $cond_part = $from <= $to ? "{$lt} {$to}" : "{$gt} {$to}";
+    }
+    else
+    {
+      $cond = "{$this->from_var} <= {$this->to_var}";
+      $cond_part = "{$cond} ? {$lt} {$this->to_var} : {$gt} {$this->to_var}";
+    }
+
+    if ($this->step_var)
+    {
+      $step_part = "{$idx} += {$this->step_var}";
+    }
+    else if ($known)
+    {
+      if ($named_index)
+      {
+        $step_part = $from <= $to ? "++{$idx}" : "--{$idx}";
+      }
+      else
+      {
+        $step_part = $from <= $to ? "{$idx}++" : "{$idx}--";
+      }
+    }
+    else
+    {
+      if ($named_index)
+      {
+        $step_part = "{$cond} ? ++{$idx} : --{$idx}";
+      }
+      else
+      {
+        $step_part = "{$cond} ? {$idx}++ : {$idx}--";
+      }
+    }
+
+    if ($named_index)
+    {
+      $var_part = "{$idx_name} = {$var_part}";
+      $step_part = "{$idx_name} = {$step_part}";
+    }
 
     return "{$var_part}; {$cond_part}; {$step_part}";
   }
@@ -132,25 +195,19 @@ class yy_Range extends yy_Base
   {
     $options = array_merge($options, array('top' => TRUE));
 
-    list($this->from, $this->from_var) = $this->from->cache($options, LEVEL_LIST);
-    list($this->to, $this->to_var) = $this->to->cache($options, LEVEL_LIST);
+    list($this->from_c, $this->from_var) = $this->from->cache($options, LEVEL_LIST);
+    list($this->to_c, $this->to_var) = $this->to->cache($options, LEVEL_LIST);
 
-    preg_match(SIMPLENUM, $this->from_var, $from_num);
-    preg_match(SIMPLENUM, $this->to_var, $to_num);
-
-    $this->from_num = isset($from_num[0]) ? $from_num[0] : NULL;
-    $this->to_num = isset($to_num[0]) ? $to_num[0] : NULL;
-
-    $parts = array();
-
-    if ($this->from !== $this->from_var)
+    if ($step = del($options, 'step'))
     {
-      $parts[] = $this->from;
+      list($this->step, $this->step_var) = $step->cache($options, LEVEL_LIST);
     }
 
-    if ($this->to !== $this->to_var)
+    list($this->from_num, $this->to_num) = array(preg_match(SIMPLENUM, $this->from_var), preg_match(SIMPLENUM, $this->to_var));
+
+    if ($this->step_var)
     {
-      $parts[] = $this->to;
+      $this->step_num = preg_match(SIMPLENUM, $this->step_var);
     }
   }
 }

@@ -2,9 +2,7 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
-class yy_For extends yy_Base
+class yy_For extends yy_While
 {
   public $children = array('body', 'source', 'guard', 'step');
 
@@ -94,8 +92,9 @@ class yy_For extends yy_Base
       $rvar = $scope->free_variable('results');
     }
 
-    $ivar = $this->range ? $name : $index;
-    $ivar = $ivar ? $ivar : $scope->free_variable('i');
+    $ivar = $this->object ? $index : $scope->free_variable('i');
+    $kvar = $this->range ? ($name ? $name : ($index ? $index : $ivar)) : ($index ? $index : $ivar);
+    $kvar_assign = $kvar !== $ivar ? "{$kvar} = " : '';
 
     if ($this->step && ! $this->range)
     {
@@ -115,7 +114,7 @@ class yy_For extends yy_Base
 
     if ($this->range)
     {
-      $for_part = $source->compile(array_merge($options, array('index' => $ivar, 'step' => $this->step)));
+      $for_part = $source->compile(array_merge($options, array('index' => $ivar, $name, $this->step)));
     }
     else
     {
@@ -130,20 +129,20 @@ class yy_For extends yy_Base
 
       if ($name && ! $this->pattern)
       {
-        $name_part = "{$name} = {$svar}[{$ivar}]";
+        $name_part = "{$name} = {$svar}[{$kvar}]";
       }
 
       if ( ! $this->object)
       {
         $lvar = $scope->free_variable('len');
-        $for_var_part = "{$ivar} = 0, {$lvar} = {$svar}.length";
+        $for_var_part = "{$kvar_assign}{$ivar} = 0, {$lvar} = {$svar}.length";
 
         if ($this->step)
         {
           $for_var_part .= ", {$stepvar} = ".$this->step->compile($options, LEVEL_OP);
         }
 
-        $step_part = $this->step ? "{$ivar} += {$stepvar}" : "{$ivar}++";
+        $step_part = $kvar_assign.($this->step ? "{$ivar} += {$stepvar}" : ($kvar !== $ivar ? "++{$ivar}" : "{$ivar}++"));
         $for_part = "{$for_var_part}; {$ivar} < {$lvar}; {$step_part}";
       }
     }
@@ -152,17 +151,24 @@ class yy_For extends yy_Base
     {
       $result_part = "{$this->tab}{$rvar} = [];\n";
       $return_result = "\n{$this->tab}return {$rvar};";
-      $body = yy_Push::wrap($rvar, $body);
+      $body->make_return($rvar);
     }
 
     if ($this->guard)
     {
-      $body = yy_Block::wrap(array(yy('If', $this->guard, $body)));
+      if ($body->expressions)
+      {
+        array_unshift($body->expressions, yy('If', yy('Parens', $this->guard)->invert(), yy('Literal', 'continue')));
+      }
+      else
+      {
+        $body = yy_Block::wrap(array(yy('If', $this->guard, $body)));
+      }
     }
 
     if ($this->pattern)
     {
-      array_unshift($body->expressions, yy('Assign', $this->name, yy('Literal', "{$svar}[{$ivar}]")));
+      array_unshift($body->expressions, yy('Assign', $this->name, yy('Literal', "{$svar}[{$kvar}]")));
     }
 
     $def_part .= $this->pluck_direct_call($options, $body);
@@ -174,11 +180,11 @@ class yy_For extends yy_Base
 
     if ($this->object)
     {
-      $for_part = "{$ivar} in {$svar}";
+      $for_part = "{$kvar} in {$svar}";
 
       if ($this->own)
       {
-        $guard_part = "\n{$idt1}if (!".utility('hasProp').".call({$svar}, {$ivar})) continue;";
+        $guard_part = "\n{$idt1}if (!".utility('hasProp').".call({$svar}, {$kvar})) continue;";
       }
     }
 
@@ -189,27 +195,11 @@ class yy_For extends yy_Base
       $body = "\n{$body}\n";
     }
 
-    return 
+    return
         "{$def_part}"
       . (isset($result_part) ? $result_part : '')
       . "{$this->tab}for ({$for_part}) {{$guard_part}{$var_part}{$body}{$this->tab}}"
       . (isset($return_result) ? $return_result : '');
-  }
-
-  function is_statement()
-  {
-    return TRUE;
-  }
-
-  function jumps()
-  {
-    return call_user_func_array(array(yy('While'), __FUNCTION__), func_get_args());
-  }
-
-  function make_return()
-  {
-    $this->returns = TRUE;
-    return $this;
   }
 
   function pluck_direct_call($options, $body)
@@ -243,9 +233,7 @@ class yy_For extends yy_Base
 
       if (isset($val->base) && $val->base)
       {
-        $val->base = $base;
-        $base = $val;
-        array_unshift($args, yy('Literal', 'this'));
+        list($val->base, $base) = array($base, $val);
       }
 
       $body->expressions[$idx] = yy('Call', $base, $expr->args);

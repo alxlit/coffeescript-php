@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_While extends yy_Base
 {
   public $children = array('condition', 'guard', 'body');
@@ -38,20 +36,22 @@ class yy_While extends yy_Base
     }
     else
     {
-      if ($options['level'] > LEVEL_TOP || $this->returns)
+      if ($this->returns)
       {
-        $rvar = $options['scope']->free_variable('results');
+        $body->make_return($rvar = $options['scope']->free_variable('results'));
         $set = "{$this->tab}{$rvar} = [];\n";
-
-        if ($body)
-        {
-          $body = yy_Push::wrap($rvar, $body);
-        }
       }
 
       if ($this->guard)
       {
-        $body = yy_Block::wrap(array(yy('If', $this->guard, $body)));
+        if ($body->expressions)
+        {
+          array_unshift($body->expressions, yy('If', yy('Parens', $this->guard)->invert(), yy('Literal', 'continue')));
+        }
+        else
+        {
+          $body = yy_Block::wrap(array(yy('If', $this->guard, $body)));
+        }
       }
 
       $body = "\n".$body->compile($options, LEVEL_TOP)."\n{$this->tab}";
@@ -92,9 +92,16 @@ class yy_While extends yy_Base
     return FALSE;
   }
 
-  function make_return()
+  function make_return($res = NULL)
   {
-    $this->returns = TRUE;
+    if ($res)
+    {
+      return parent::make_return($res);
+    }
+    else
+    {
+      $this->returns = ! $this->jumps(array('loop' => TRUE));
+    }
 
     return $this;
   }

@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Access extends yy_Base
 {
   public $children = array('name');
@@ -13,7 +11,6 @@ class yy_Access extends yy_Base
     $this->name = $name;
     $this->name->as_key = TRUE;
 
-    $this->proto = $tag === 'proto' ? '.prototype' : '';
     $this->soak = $tag === 'soak';
 
     return $this;
@@ -22,7 +19,7 @@ class yy_Access extends yy_Base
   function compile($options, $level = NULL)
   {
     $name = $this->name->compile($options);
-    return $this->proto.(preg_match(IS_STRING, $name) ? "[{$name}]" : ".{$name}");
+    return preg_match(IDENTIFIER, $name) ? ".{$name}" : "[{$name}]";
   }
 
   function is_complex()

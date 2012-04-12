@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Throw extends yy_Base
 {
   public $children = array('expression');

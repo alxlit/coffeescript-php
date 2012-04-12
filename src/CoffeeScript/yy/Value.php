@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Value extends yy_Base
 {
   public $children = array('base', 'properties');
@@ -22,6 +20,13 @@ class yy_Value extends yy_Base
     {
       $this->{$tag} = TRUE;
     }
+
+    return $this;
+  }
+
+  function add($prop)
+  {
+    $this->properties = array_merge($this->properties, (array) $prop);
 
     return $this;
   }
@@ -61,9 +66,9 @@ class yy_Value extends yy_Base
       $nref = yy('Index', $nref);
     }
 
-    $base->push($name);
+    $base->add($name);
 
-    return array($base, yy('Value', isset($bref) ? $bref : $base->base, 
+    return array($base, yy('Value', isset($bref) ? $bref : $base->base,
       array(isset($nref) ? $nref : $name)));
   }
 
@@ -74,9 +79,9 @@ class yy_Value extends yy_Base
 
     $code = $this->base->compile($options, count($props) ? LEVEL_ACCESS : NULL);
 
-    if ($props && $props[0] instanceof yy_Access && $this->is_simple_number())
+    if ( (($this->base instanceof yy_Parens) || count($props)) && preg_match(SIMPLENUM, $code))
     {
-      $code = "($code)";
+      $code = $code.'.';
     }
 
     foreach ($props as $prop)
@@ -85,13 +90,6 @@ class yy_Value extends yy_Base
     }
 
     return $code;
-  }
-
-  function push($prop)
-  {
-    $this->properties[] = $prop;
-
-    return $this;
   }
 
   function has_properties()
@@ -147,6 +145,11 @@ class yy_Value extends yy_Base
     return last($this->properties) instanceof yy_Slice;
   }
 
+  function is_string()
+  {
+    return ($this->base instanceof yy_Literal) && preg_match(IS_STRING, ''.$this->base->value);
+  }
+
   function is_statement($options)
   {
     return ! count($this->properties) && $this->base->is_statement($options);
@@ -155,18 +158,6 @@ class yy_Value extends yy_Base
   function jumps($options = array())
   {
     return ! count($this->properties) && $this->base->jumps($options);
-  }
-
-  function make_return()
-  {
-    if (count($this->properties))
-    {
-      return parent::make_return();
-    }
-    else
-    {
-      return $this->base->make_return();
-    }
   }
 
   function unfold_soak($options)

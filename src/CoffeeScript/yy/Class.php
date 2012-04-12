@@ -2,8 +2,6 @@
 
 namespace CoffeeScript;
 
-Init::init();
-
 class yy_Class extends yy_Base
 {
   public $children = array('variable', 'parent', 'body');
@@ -27,8 +25,8 @@ class yy_Class extends yy_Base
     {
       foreach ($this->bound_funcs as $bvar)
       {
-        $bname = $bvar->compile($options);
-        $this->ctor->body->unshift(yy('Literal', "this.{$bname} = ".utility('bind')."(this.{$bname}, this)"));
+        $lhs = yy('Value', yy('Literal', 'this'), array(yy('Access', $bvar)))->compile($options);
+        $this->ctor->body->unshift(yy('Literal', "{$lhs} = ".utility('bind')."({$lhs}, this)"));
       }
     }
   }
@@ -71,15 +69,24 @@ class yy_Class extends yy_Base
         }
         else
         {
-          if ( ! (isset($assign->variable->this) && $assign->variable->this))
+          if (isset($assign->variable->this) && $assign->variable->this)
           {
-            $assign->variable = yy('Value', yy('Literal', $name), array(yy('Access', $base, 'proto')));
-          }
+            $func->static = TRUE;
 
-          if ($func instanceof yy_Code && isset($func->bound) && $func->bound)
-          {
-            $this->bound_funcs[] = $base;
-            $func->bound = FALSE;
+            if ($func->bound)
+            {
+              $func->context = $name;
+            }
+            else
+            {
+              $assign->variable = yy('Value', yy('Literal', $name), array(yy('Access', $base, 'proto')));
+
+              if ($func instanceof yy_Code && isset($func->bound) && $func->bound)
+              {
+                $this->bound_funcs[] = $base;
+                $func->bound = FALSE;
+              }
+            }
           }
         }
       }
@@ -94,40 +101,43 @@ class yy_Class extends yy_Base
   {
     $decl = $this->determine_name();
 
-    if ($decl)
-    {
-      $name = $decl;
-    }
-    else if (isset($this->name) && $this->name)
-    {
-      $name = $this->name;
-    }
-    else
-    {
-      $name = '_Class';
-    }
+    $name = $decl ? $decl : '_Class';
 
     $lname = yy('Literal', $name);
 
+    $this->hoist_directive_prologue();
     $this->set_context($name);
     $this->walk_body($name, $options);
     $this->ensure_constructor($name);
-
-    if ($this->parent)
-    {
-      array_unshift($this->body->expressions, yy('Extends', $lname, $this->parent));
-    }
+    $this->body->spaced = TRUE;
 
     if ( ! ($this->ctor instanceof yy_Code))
     {
       array_unshift($this->body->expressions, $this->ctor);
     }
 
+    if ($decl)
+    {
+      array_unshift($this->body->expressions, yy('Assign', yy('Value', yy('Literal', $name), array(yy('Access', yy('Literal', $name)))), yy('Literal', "'{$name}'")));
+    }
+
     $this->body->expressions[] = $lname;
+    $this->body->expressions = array_merge($this->directives, $this->body->expressions);
 
     $this->add_bound_functions($options);
 
-    $klass = yy('Parens', yy_Closure::wrap($this->body), TRUE);
+    $call = yy_Closure::wrap($this->body);
+
+    if ($this->parent)
+    {
+      $this->super_class = yy('Literal', $options['scope']->free_variable('super', FALSE));
+      array_unshift($this->body->expressions, yy('Extends', $lname, $this->super_class));
+      $call->args[] = $this->parent;
+      $params = isset($call->variables->params) ? $call->variables->params : $call->variables->base->params;
+      $params->push(yy('Param', $this->super_class));
+    }
+
+    $klass = yy('Parens', $call, TRUE);
 
     if ($this->variable)
     {
@@ -153,6 +163,11 @@ class yy_Class extends yy_Base
       $decl = $this->variable->base->value;
     }
 
+    if (in_array($decl, Lexer::$STRICT_PROSCRIBED))
+    {
+      throw new SyntaxError("variable name may not be $decl");
+    }
+
     $decl = $decl ? (preg_match(IDENTIFIER, $decl) ? $decl : FALSE) : FALSE;
 
     return $decl;
@@ -174,12 +189,27 @@ class yy_Class extends yy_Base
         $this->ctor->body->push(yy('Literal', "{$this->external_ctor}.apply(this, arguments)"));
       }
 
+      $this->ctor->body->make_return();
+
       array_unshift($this->body->expressions, $this->ctor);
     }
 
     $this->ctor->ctor = $this->ctor->name = $name;
     $this->ctor->klass = NULL;
     $this->ctor->no_return = TRUE;
+  }
+
+  function hoist_directive_prologue()
+  {
+    $index = 0;
+    $expressions = $this->body->expressions;
+
+    while ((isset($expressions[$index]) && $node = $expressions[$index]) && $node instanceof yy_Comment || $node instanceof yy_Value && $node->is_string())
+    {
+      $index++;
+    }
+
+    $this->directives = array_slice($expressions, 0, $index);
   }
 
   function set_context($name)

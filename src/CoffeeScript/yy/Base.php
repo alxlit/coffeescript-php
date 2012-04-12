@@ -77,7 +77,7 @@ class yy_Base
 
   function compile_closure($options)
   {
-    if ($this->jumps() || ($this instanceof yy_Throw))
+    if ($this->jumps())
     {
       throw new SyntaxError('cannot use a pure statement in an expression.');
     }
@@ -219,9 +219,18 @@ class yy_Base
     return NULL;
   }
 
-  function make_return()
+  function make_return($res = NULL)
   {
-    return yy('Return', $this);
+    $me = $this->unwrap_all();
+
+    if ($res)
+    {
+      return yy('Call', yy('Literal', "{$res}.push"), array($me));
+    }
+    else
+    {
+      return yy('Return', $me);
+    }
   }
 
   function to_string($idt = '', $name = NULL)
