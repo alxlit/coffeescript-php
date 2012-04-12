@@ -32,7 +32,9 @@ class Init {
       'SyntaxError',
       'Value',
 
-      'yy/Base', // load the base class first
+      'yy/Base',  // load the base class first
+      'yy/While', // For extends While
+
       'yy/Access',
       'yy/Arr',
       'yy/Assign',
@@ -53,7 +55,6 @@ class Init {
       'yy/Op',
       'yy/Param',
       'yy/Parens',
-      'yy/Push',
       'yy/Range',
       'yy/Return',
       'yy/Slice',
@@ -62,7 +63,6 @@ class Init {
       'yy/Throw',
       'yy/Try',
       'yy/Value',
-      'yy/While',
     );
 
     foreach ($files as $file)

@@ -39,9 +39,9 @@ class Scope
       return $this->parent->add($name, $type, $immediate);
     }
 
-    if (isset($this->positions[$name]) && is_numeric($pos = $this->positions[$name]))
+    if (isset($this->positions[$name]))
     {
-      $this->variables[$pos]['type'] = $type;
+      $this->variables[$this->positions[$name]]['type'] = $type;
     }
     else
     {
@@ -52,7 +52,7 @@ class Scope
 
   function assign($name, $value)
   {
-    $this->add($name, array('value' => $value, 'assigned' => TRUE));
+    $this->add($name, array($value, 'assigned' => TRUE), TRUE);
     $this->has_assignments = TRUE;
   }
 
@@ -123,16 +123,16 @@ class Scope
     return FALSE;
   }
 
-  function free_variable($type)
+  function free_variable($name, $reserve=TRUE)
   {
     $index = 0;
 
-    while ($this->check(($temp = $this->temporary($type, $index))))
+    while ($this->check(($temp = $this->temporary($name, $index))))
     {
       $index++;
     }
 
-    $this->add($temp, 'var', TRUE);
+    $this->add($temp, 'var', $reserve);
 
     return $temp;
   }
@@ -161,7 +161,7 @@ class Scope
   {
     if (strlen($name) > 1)
     {
-      return '_'.$name.($index > 1 ? $index : '');
+      return '_'.$name.($index > 1 ? $index - 1 : '');
     }
     else
     {

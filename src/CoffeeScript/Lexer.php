@@ -111,7 +111,7 @@ class Lexer
   static $LINE_CONTINUER    = '/^\s*(?:,|\??\.(?![.\d])|::)/';
   static $MULTI_DENT        = '/^(?:\n[^\n\S]*)+/';
   static $MULTILINER        = '/\n/';
-  static $NUMBER            = '/^0b[01]+|^0o[0-7]+|?\d+)?-]^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i';
+  static $NUMBER            = '/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^ \d*\.?\d+(?:e[+-]?\d+)?/i';
   static $OPERATOR          = '#^(?:[-=]>|[-+*/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})#';
   static $REGEX             = '%^(/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/)([imgy]{0,4})(?!\w)%';
   static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/';
@@ -150,6 +150,8 @@ class Lexer
     self::$JS_FORBIDDEN     = array_merge(self::$JS_KEYWORDS, self::$JS_RESERVED, self::$STRICT_PROSCRIBED);
     self::$INDEXABLE        = array_merge(self::$CALLABLE, self::$INDEXABLE);
     self::$NOT_SPACED_REGEX = array_merge(self::$NOT_REGEX, self::$NOT_SPACED_REGEX);
+
+    Rewriter::init();
 
     self::$INVERSES         = Rewriter::$INVERSES;
   }
@@ -915,6 +917,11 @@ class Lexer
     if (in_array($value, array('(', '{', '[')))
     {
       $this->ends[] = self::$INVERSES[$value];
+
+      if ( ! isset(self::$INVERSES[$value]))
+      {
+        var_dump(self::$INVERSES);
+      }
     }
     else if (in_array($value, array(')', '}', ']')))
     {
@@ -1198,7 +1205,7 @@ class Lexer
       return 0;
     }
 
-    if (preg_match('/^(?:\\.|[^\\])*\\[0-7]/', $string, $octal_esc))
+    if (preg_match('/^(?:\\\\.|[^\\\\])*\\\\[0-7]/', $string, $octal_esc))
     {
       $this->error("octal escape sequences $string are not allowed");
     }

@@ -35,7 +35,7 @@ class Rewriter
 
   static $IMPLICIT_BLOCK = array('->', '=>', '{', '[', ',');
 
-  static $IMPLICIT_END = array('POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR', 'INDENT');
+  static $IMPLICIT_END = array('POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR');
 
   static $SINGLE_LINERS = array('ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN');
   static $SINGLE_CLOSERS = array('TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN');
@@ -72,11 +72,13 @@ class Rewriter
   {
     $stack = array();
     $start = NULL;
+    $starts_line = NULL;
+    $same_line = TRUE;
     $start_indent = 0;
 
     $self = $this;
 
-    $condition = function( & $token, $i) use ( & $self)
+    $condition = function( & $token, $i) use ( & $self, & $same_line, & $starts_line)
     {
       $list = array();
 
@@ -95,20 +97,23 @@ class Rewriter
 
       $tag = $token[0];
 
-      return 
-        (in_array($tag, t('TERMINATOR', 'OUTDENT')) &&
-          ! ($two[0] === t(':') || $one[0] === t('@') && $three[0] === t(':')) ) ||
-        ($tag === t(',') && ! is_null($one[0]) && 
+      $same_line = in_array($tag, Rewriter::$LINEBREAKS) ? FALSE : $same_line;
+
+      return
+        ((in_array($tag, t('TERMINATOR', 'OUTDENT')) || (in_array($tag, Rewriter::$IMPLICIT_END) && $same_line)) &&
+          (( ! $starts_line && $self->tag($i - 1) !== ',') ||
+          ! ($two[0] === t(':') || $one[0] === t('@') && $three[0] === t(':')) )) ||
+        ($tag === t(',') && ! is_null($one[0]) &&
           ! in_array($one[0], t('IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT')));
     };
 
     $action = function( & $token, $i) use ( & $self)
     {
-      $tok = array(t('}'), '}', $token[2], 'generated' => TRUE);
+      $tok = $self->generate(t('}'), '}', $token[2]);
       array_splice($self->tokens, $i, 0, array($tok));
     };
 
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $start, & $start_indent, & $condition, & $action)
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $preg_tag, & $self, & $stack, & $start, & $start_indent, & $condition, & $action, & $starts_line, & $same_line)
     {
       if (in_array(($tag = $token[0]), t(Rewriter::$EXPRESSION_START)))
       {
@@ -129,6 +134,8 @@ class Rewriter
         return 1;
       }
 
+      $same_line = TRUE;
+
       $stack[] = array(t('{'));
       $idx = $ago === t('@') ? $i - 2 : $i - 1;
 
@@ -137,10 +144,14 @@ class Rewriter
         $idx -= 2;
       }
 
+      $prev_tag = $self->tag($idx - 1);
+
+      $starts_line = ! $preg_tag || in_array($prev_tag, t(Rewriter::$LINEBREAKS));
+
       $value = wrap('{');
       $value->generated = TRUE;
 
-      $tok = array(t('{'), $value, $token[2], 'generated' => TRUE);
+      $tok = $self->generate(t('{'), $value, $token[2]);
 
       array_splice($tokens, $idx, 0, array($tok));
 
@@ -154,7 +165,19 @@ class Rewriter
   {
     $self = $this;
 
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self)
+    $starter = $indent = $outdent = NULL;
+
+    $condition = function($token, $i) use ( & $starter)
+    {
+      return $token[1] !== ';' && in_array($token[0], Rewriter::$SINGLE_CLOSERS) && ! ($token[0] === t('ELSE') && ! in_array($starter, t('IF', 'THEN')));
+    };
+
+    $action = function($token, $i) use ( & $self, & $outdent)
+    {
+      array_splice($self->tokens, $self->tag($i - 1) === t(',') ? $i - 1 : $i, 0, $outdent);
+    };
+
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $condition, & $self)
     {
       $tag = $token[0];
 
@@ -180,27 +203,14 @@ class Rewriter
         ! ($tag === t('ELSE') && $self->tag($i + 1) === t('IF')))
       {
         $starter = $tag;
-        list($indent, $outdent) = $self->indentation($token);
+        list($indent, $outdent) = $self->indentation($token, TRUE);
 
         if ($starter === t('THEN'))
         {
           $indent['fromThen'] = TRUE;
         }
 
-        $indent['generated'] = $outdent['generated'] = TRUE;
-
         array_splice($tokens, $i + 1, 0, array($indent));
-
-        $condition = function($token, $i) use ($starter)
-        {
-          return $token[1] !== ';' && in_array($token[0], t(Rewriter::$SINGLE_CLOSERS)) &&
-            ! ($token[0] === t('ELSE') && ! in_array($starter, t('IF', 'THEN')));
-        };
-
-        $action = function( & $token, $i) use ( & $self, $outdent)
-        {
-          array_splice($self->tokens, ($self->tag($i - 1) === t(',') ? $i - 1 : $i), 0, array($outdent));
-        };
 
         $self->detect_end($i + 2, $condition, $action);
 
@@ -218,27 +228,50 @@ class Rewriter
 
   function add_implicit_parentheses()
   {
-    $no_call = FALSE;
+    $no_call = $seen_single = $seen_control = FALSE;
     $self = $this;
 
-    $action = function( & $token, $i) use ( & $self)
-    {
-      $idx = ($token[0] === t('OUTDENT')) ? $i + 1 : $i;
-      $tok = array(t('CALL_END'), ')');
-
-      if (isset($token[2]))
-      {
-        $tok[2] = $token[2];
-      }
-
-      array_splice($self->tokens, $idx, 0, array($tok));
-    };
-
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $no_call, & $self )
+    $condition = function( & $token, $i) use ( & $self, & $seen_single, & $seen_control)
     {
       $tag = $token[0];
 
-      if (in_array($tag, t('CLASS', 'IF')))
+      if ( ! $seen_single && $token['fromThen'])
+      {
+        return TRUE;
+      }
+
+      if (in_array($tag, t('IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS')))
+      {
+        $seen_single = TRUE;
+      }
+
+      if (in_array($tag, t('IF', 'ELSE', 'SWITCH', 'TRY', '=')))
+      {
+        $seen_control = TRUE;
+      }
+
+      if (in_array($tag, t('.', '?.', '::')) && $self->tag($i - 1) === t('OUTDENT'))
+      {
+        return TRUE;
+      }
+
+      return ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') && (in_array($tag, t(Rewriter::$IMPLICIT_END)) ||
+        ($tag === t('INDENT') && ! $seen_control)) &&
+        ($tag !== t('INDENT') ||
+          ( ! in_array($self->tag($i - 2), t('CLASS', 'EXTENDS')) || ! in_array($self->tag($i - 1), Rewriter::$IMPLICIT_BLOCK) &&
+            ! (($post = isset($self->tokens[$i + 1]) ? $self->tokens[$i + 1] : NULL) && (isset($post['generated']) && $post['generated']) && $post[0] === t('{'))));
+    };
+
+    $action = function( & $token, $i) use ( & $self)
+    {
+      array_splice($self->tokens, $i, 0, $self->generate(t('CALL_END'), ')', isset($token[2]) ? $token[2] : NULL));
+    };
+
+    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $condition, & $action, & $no_call, & $self )
+    {
+      $tag = $token[0];
+
+      if (in_array($tag, t('CLASS', 'IF', 'FOR', 'WHILE')))
       {
         $no_call = TRUE;
       }
@@ -285,43 +318,9 @@ class Rewriter
         return 1;
       }
 
-      array_splice($tokens, $i, 0, array(array(t('CALL_START'), '(', $token[2])));
+      array_splice($tokens, $i, 0, $self->generate(t('CALL_START'), '(', $token[2]));
 
-      $self->detect_end($i + 1, function($token, $i) use ( & $seen_control, & $seen_single, & $self)
-      {
-        $tag = $token[0];
-
-        if ( ! $seen_single && (isset($token['fromThen']) && $token['fromThen']))
-        {
-          return TRUE;
-        }
-
-        if (in_array($tag, t('IF', 'ELSE', '->', '=>')))
-        {
-          $seen_single = TRUE;
-        }
-
-        if (in_array($tag, t('IF', 'ELSE', 'SWITCH', 'TRY')))
-        {
-          $seen_control = TRUE;
-        }
-
-        if (in_array($tag, t('.', '?.', '::')) && $self->tag($i - 1) === t('OUTDENT'))
-        {
-          return TRUE;
-        }
-
-        return 
-          ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') && 
-          (in_array($tag, t(Rewriter::$IMPLICIT_END))) &&
-          ($tag !== t('INDENT') || 
-            ( $self->tag($i - 2) !== t('CLASS') && 
-              ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) && 
-              ! ( (isset($self->tokens[$i + 1]) && ($post = $self->tokens[$i + 1])) && 
-                  (isset($post['generated']) && $post['generated']) && $post[0] === t('{') )
-          ));
-      },
-      $action);
+      $self->detect_end($i + 1, $condition, $action);
 
       if ($prev[0] === t('?'))
       {
@@ -417,52 +416,23 @@ class Rewriter
     return $i - 1;
   }
 
-  function ensure_balance($pairs)
+  function generate($tag, $value, $line)
   {
-    $levels = array();
-    $open_line = array();
-
-    foreach ($this->tokens as $token)
-    {
-      $tag = $token[0];
-
-      foreach ($pairs as $pair)
-      {
-        list($open, $close) = $pair;
-
-        if ( ! isset($levels[$open]))
-        {
-          $levels[$open] = 0;
-        }
-
-        if ($tag === t($open))
-        {
-          if ($levels[$open]++ === 0)
-          {
-            $open_line[$open] = $token[2];
-          }
-        }
-        else if ($tag === t($close) && --$levels[$open] < 0)
-        {
-          throw new Error('too many '.$token[1].' on line '.($token[2] + 1));
-        }
-      }
-    }
-
-    foreach ($levels as $open => $level)
-    {
-      if ($level > 0)
-      {
-        throw new Error('unclosed '.$open.' on line '.($open_line[$open] + 1));
-      }
-    }
-
-    return $this;
+    $tok = array($tag, $value, $line, 'generated' => TRUE);
+    return $tok;
   }
 
-  function indentation($token)
+  function indentation($token, $implicit = FALSE)
   {
-    return array( array(t('INDENT'), 2, $token[2]), array(t('OUTDENT'), 2, $token[2]) );
+    $indent = array(t('INDENT'), 2, $token[2]);
+    $outdent = array(t('OUTDENT'), 2, $token[2]);
+
+    if ($implicit)
+    {
+      $indent['generated'] = $outdent['generated'] = TRUE;
+    }
+
+    return array($indent, $outdent);
   }
 
   function remove_leading_newlines()
@@ -512,78 +482,8 @@ class Rewriter
     $this->tag_postfix_conditionals();
     $this->add_implicit_braces();
     $this->add_implicit_parentheses();
-    $this->ensure_balance(self::$BALANCED_PAIRS);
-    $this->rewrite_closing_parens();
 
     return $this->tokens;
-  }
-
-  function rewrite_closing_parens()
-  {
-    $stack = array();
-    $debt = array();
-
-    // Need to change to an associative array of numeric constants, rather
-    // than the string names.
-    $inverses = array();
-
-    foreach (self::$INVERSES as $k => $v)
-    {
-      $inverses[t($k)] = $v;
-    }
-
-    foreach ($inverses as $k => $v)
-    {
-      $debt[$k] = 0;
-    }
-
-    $self = $this;
-
-    $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $self, & $stack, & $debt, $inverses)
-    {
-      if (in_array(($tag = $token[0]), t(Rewriter::$EXPRESSION_START)))
-      {
-        $stack[] = $token;
-        return 1;
-      }
-
-      if ( ! (in_array($tag, t(Rewriter::$EXPRESSION_END))))
-      {
-        return 1;
-      }
-
-      if ($debt[ ($inv = t($inverses[$tag])) ] > 0)
-      {
-        $debt[$inv]--;
-        array_splice($tokens, $i, 1);
-        return 0;
-      }
-
-      $match = array_pop($stack);
-      $mtag = $match[0];
-      $oppos = $inverses[$mtag];
-
-      if ($tag === t($oppos))
-      {
-        return 1;
-      }
-
-      $debt[$mtag]++;
-
-      $val = array(t($oppos), $mtag === t('INDENT') ? $match[1] : $oppos);
-
-      if ($self->tag($i + 2) === $mtag)
-      {
-        array_splice($tokens, $i + 3, 0, array($val));
-        $stack[] = $match;
-      }
-      else
-      {
-        array_splice($tokens, $i, 0, array($val));
-      }
-
-      return 1;
-    });
   }
 
   function scan_tokens($block)
@@ -605,14 +505,24 @@ class Rewriter
 
   function tag_postfix_conditionals()
   {
-    $condition = function($token, $i) 
+    $original = NULL;
+
+    $condition = function($token, $i)
     {
       return in_array($token[0], t('TERMINATOR', 'INDENT'));
     };
 
+    $action = function($token, $i) use ( & $original)
+    {
+      if ($token[0] !== t('INDENT') || ((isset($token['generated']) && $token['generated']) && ! (isset($token['fromThen']) && $token['fromThen'])))
+      {
+        $original[0] = 'POST_'.$original[0];
+      }
+    };
+
     $self = $this;
 
-    $this->scan_tokens(function( & $token, $i) use ( & $condition, & $self)
+    $this->scan_tokens(function( & $token, $i) use ( & $original, & $condition, & $self)
     {
       if ( ! ($token[0] === t('IF')))
       {
@@ -621,13 +531,7 @@ class Rewriter
 
       $original = & $token;
 
-      $self->detect_end($i + 1, $condition, function($token, $i) use ( & $original)
-      {
-        if ($token[0] !== t('INDENT'))
-        {
-          $original[0] = t('POST_IF'); // 'POST_'.$original[0];
-        }
-      });
+      $self->detect_end($i + 1, $condition, $action);
 
       return 1;
     });
