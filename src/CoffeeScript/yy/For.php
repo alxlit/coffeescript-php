@@ -114,7 +114,7 @@ class yy_For extends yy_While
 
     if ($this->range)
     {
-      $for_part = $source->compile(array_merge($options, array('index' => $ivar, $name, $this->step)));
+      $for_part = $source->compile($options + array('index' => $ivar, $name, $this->step));
     }
     else
     {
@@ -188,7 +188,7 @@ class yy_For extends yy_While
       }
     }
 
-    $body = $body->compile(array_merge($options, array('indent' => $idt1)), LEVEL_TOP);
+    $body = $body->compile($options + array('indent' => $idt1), LEVEL_TOP);
 
     if ($body)
     {

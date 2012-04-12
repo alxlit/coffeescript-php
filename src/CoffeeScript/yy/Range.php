@@ -193,7 +193,7 @@ class yy_Range extends yy_Base
 
   function compile_variables($options)
   {
-    $options = array_merge($options, array('top' => TRUE));
+    $options += array('top' => TRUE);
 
     list($this->from_c, $this->from_var) = $this->from->cache($options, LEVEL_LIST);
     list($this->to_c, $this->to_var) = $this->to->cache($options, LEVEL_LIST);

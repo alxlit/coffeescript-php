@@ -86,6 +86,10 @@ class yy_Value extends yy_Base
 
     foreach ($props as $prop)
     {
+      if ( ! is_object($prop))
+      {
+        var_dump($prop);
+      }
       $code .= $prop->compile($options);
     }
 

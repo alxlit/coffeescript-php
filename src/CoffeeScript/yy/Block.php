@@ -66,7 +66,7 @@ class yy_Block extends yy_Base
 
     if ($top)
     {
-      if ($this->spaced())
+      if (isset($this->spaced) && $this->spaced)
       {
         return "\n".implode("\n\n", $codes)."\n";
       }
@@ -146,7 +146,7 @@ class yy_Block extends yy_Base
       }
     }
 
-    $options = array_merge($options, array('level' => LEVEL_TOP));
+    $options += array('level' => LEVEL_TOP);
 
     if ($i)
     {
@@ -178,7 +178,7 @@ class yy_Block extends yy_Base
 
         if ($declars)
         {
-          $code .= implode(', ', $scope->declared_variables);
+          $code .= implode(', ', $scope->declared_variables());
         }
 
         if ($assigns)
@@ -190,6 +190,8 @@ class yy_Block extends yy_Base
 
           $code .= implode(",\n{$this->tab}".TAB, $scope->assigned_variables());
         }
+
+        $code .= ";\n";
       }
     }
 
