@@ -10,8 +10,8 @@ CoffeeScript version **1.1.1** has been fully ported over (see
 matches the reference 100%, except for the occasional extra newline. Tons of
 `E_STRICT` problems.
 
-Work towards porting version 1.3.1. and making it `E_STRICT` is taking place
-on the master branch. It's not working yet.
+Work towards porting version 1.3.1 and making it `E_STRICT` is taking place
+on the master branch.
 
 ## Requirements
 
