@@ -189,13 +189,13 @@ class Rewriter
 
       if ($tag === t('ELSE') && $self->tag($i - 1) !== t('OUTDENT'))
       {
-        array_splice($tokens, $i, 0, array($self->indentation($token)));
+        array_splice($tokens, $i, 0, $self->indentation($token));
         return 2;
       }
 
       if ($tag === t('CATCH') && in_array($self->tag($i + 2), t('OUTDENT', 'TERMINATOR', 'FINALLY')))
       {
-        array_splice($tokens, $i + 2, 0, array($self->indentation($token)));
+        array_splice($tokens, $i + 2, 0, $self->indentation($token));
         return 4;
       }
 
@@ -255,10 +255,10 @@ class Rewriter
         return TRUE;
       }
 
-      return ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') && (in_array($tag, t(Rewriter::$IMPLICIT_END)) ||
-        ($tag === t('INDENT') && ! $seen_control)) &&
+      return ! (isset($token['generated']) && $token['generated']) && $self->tag($i - 1) !== t(',') &&
+        (in_array($tag, t(Rewriter::$IMPLICIT_END)) || ($tag === t('INDENT') && ! $seen_control)) &&
         ($tag !== t('INDENT') ||
-          ( ! in_array($self->tag($i - 2), t('CLASS', 'EXTENDS')) || ! in_array($self->tag($i - 1), Rewriter::$IMPLICIT_BLOCK) &&
+          ( ! in_array($self->tag($i - 2), t('CLASS', 'EXTENDS')) && ! in_array($self->tag($i - 1), t(Rewriter::$IMPLICIT_BLOCK)) &&
             ! (($post = isset($self->tokens[$i + 1]) ? $self->tokens[$i + 1] : NULL) && (isset($post['generated']) && $post['generated']) && $post[0] === t('{'))));
     };
 
@@ -337,7 +337,7 @@ class Rewriter
 
     $condition = function($token, $i) use ( & $self)
     {
-      return in_array($token[0], t(')', 'CALL_END')) || $token[0] === t('OUTDENT') && 
+      return in_array($token[0], t(')', 'CALL_END')) || $token[0] === t('OUTDENT') &&
         $self->tag($i - 1) === t(')');
     };
 
