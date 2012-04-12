@@ -174,7 +174,7 @@ class Rewriter
 
     $action = function($token, $i) use ( & $self, & $outdent)
     {
-      array_splice($self->tokens, $self->tag($i - 1) === t(',') ? $i - 1 : $i, 0, $outdent);
+      array_splice($self->tokens, $self->tag($i - 1) === t(',') ? $i - 1 : $i, 0, array($outdent));
     };
 
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $action, & $condition, & $self)
@@ -189,13 +189,13 @@ class Rewriter
 
       if ($tag === t('ELSE') && $self->tag($i - 1) !== t('OUTDENT'))
       {
-        array_splice($tokens, $i, 0, $self->indentation($token));
+        array_splice($tokens, $i, 0, array($self->indentation($token)));
         return 2;
       }
 
       if ($tag === t('CATCH') && in_array($self->tag($i + 2), t('OUTDENT', 'TERMINATOR', 'FINALLY')))
       {
-        array_splice($tokens, $i + 2, 0, $self->indentation($token));
+        array_splice($tokens, $i + 2, 0, array($self->indentation($token)));
         return 4;
       }
 
@@ -235,7 +235,7 @@ class Rewriter
     {
       $tag = $token[0];
 
-      if ( ! $seen_single && $token['fromThen'])
+      if ( ! $seen_single && (isset($token['fromThen']) && $token['fromThen']))
       {
         return TRUE;
       }
@@ -264,7 +264,7 @@ class Rewriter
 
     $action = function( & $token, $i) use ( & $self)
     {
-      array_splice($self->tokens, $i, 0, $self->generate(t('CALL_END'), ')', isset($token[2]) ? $token[2] : NULL));
+      array_splice($self->tokens, $i, 0, array($self->generate(t('CALL_END'), ')', isset($token[2]) ? $token[2] : NULL)));
     };
 
     $this->scan_tokens(function( & $token, $i, & $tokens) use ( & $condition, & $action, & $no_call, & $self )
@@ -318,7 +318,7 @@ class Rewriter
         return 1;
       }
 
-      array_splice($tokens, $i, 0, $self->generate(t('CALL_START'), '(', $token[2]));
+      array_splice($tokens, $i, 0, array($self->generate(t('CALL_START'), '(', $token[2])));
 
       $self->detect_end($i + 1, $condition, $action);
 
@@ -418,8 +418,7 @@ class Rewriter
 
   function generate($tag, $value, $line)
   {
-    $tok = array($tag, $value, $line, 'generated' => TRUE);
-    return $tok;
+    return array($tag, $value, $line, 'generated' => TRUE);
   }
 
   function indentation($token, $implicit = FALSE)

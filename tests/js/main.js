@@ -1,5 +1,6 @@
 
 function init(PHP) {
+  window.PHP = PHP;
   var JS = {}, d;
 
   // Tokenize
@@ -58,7 +59,7 @@ function formatTokens(tokens) {
     var token = [];
 
     for (var j = 0; j < props.length; j++) {
-      var key = props[j], value = tokens[i][key];
+      var key = props[j], value = tokens[i] && tokens[i][key];
 
       if (typeof value == 'string') {
         value = value.replace(/\n/g, '\\n');
@@ -74,7 +75,7 @@ function formatTokens(tokens) {
           var tmp = '', _props = ['generated', 'reserved'];
 
           for (var k = 0; k < _props.length; k++) {
-            if (value[ _props[k] ]) {
+            if (value && value[ _props[k] ]) {
               tmp += ' ' + _props[k];
             }
           }
