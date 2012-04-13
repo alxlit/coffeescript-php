@@ -15,7 +15,9 @@ class yy_Assign extends yy_Base
 
     $this->subpattern = isset($options['subpattern']) ? $options['subpattern'] : NULL;
 
-    $forbidden = in_array(($name = $this->variable->unwrap_all()->value), Lexer::$STRICT_PROSCRIBED);
+    $tmp = $this->variable->unwrap_all();
+
+    $forbidden = in_array($name = isset($tmp->value) ? $tmp->value : NULL, Lexer::$STRICT_PROSCRIBED);
 
     if ($forbidden && $this->context !== 'object')
     {
@@ -85,7 +87,7 @@ class yy_Assign extends yy_Base
         throw new SyntaxError('"'.$this->variable->compile($options).'" cannot be assigned.');
       }
 
-      if ( ! $var_base->has_properties())
+      if ( ! (is_callable(array($var_base, 'has_properties')) && $var_base->has_properties()))
       {
         if ($this->param)
         {
