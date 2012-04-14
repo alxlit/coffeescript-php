@@ -1,6 +1,5 @@
 
 function init(PHP) {
-  window.PHP = PHP;
   var JS = {}, d;
 
   // Tokenize
@@ -18,8 +17,16 @@ function init(PHP) {
   // Code diff
   d = JsDiff.diffLines(JS.js, PHP.js);
 
+  var failed = d.length > 1 || d[0].removed;
+
   $('#code .result').innerHTML = formatDiffLines(d);
-  $('#code .' + (d.length > 1 || d[0].removed ? 'fail' : 'pass')).style.display = 'block';
+
+  var result = $('#code .' + (d.length > 1 || d[0].removed ? 'fail' : 'pass'));
+  result.style.display = 'block';
+
+  if (PHP.error) {
+    result.innerHTML += '<br /><span style="font-weight: normal;">' + PHP.error + '</span>';
+  }
 }
 
 function $(elem) {

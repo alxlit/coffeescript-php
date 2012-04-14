@@ -9,6 +9,7 @@
  */
 
 ini_set('display_errors', '1');
+//set_time_limit(5);
 error_reporting(E_ALL);
 
 // Test case to run
@@ -57,7 +58,7 @@ if ($case)
   <title>Tests <?= $case ? "($case)" : '' ?></title>
 
   <? if ($case): ?>
-    <script src="js/lib/coffeescript_1.3.0.js"></script>
+    <script src="js/lib/coffeescript_1.3.1.js"></script>
     <script src="js/lib/diff.js"></script>
     <script src="js/main.js"></script>
     <script>window.addEventListener('load', function() { init(<?= json_encode($PHP) ?>); }, false);</script>
