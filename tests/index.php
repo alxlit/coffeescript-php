@@ -9,7 +9,6 @@
  */
 
 ini_set('display_errors', '1');
-//set_time_limit(5);
 error_reporting(E_ALL);
 
 // Test case to run
@@ -25,21 +24,23 @@ if ($case)
     'tokens'  => array()
   );
 
+  require '../src/CoffeeScript/Init.php';
+  CoffeeScript\Init::load();
+
+  $options = array(
+    'filename' => $case,
+    'header'   => FALSE,
+    'rewrite'  => $PHP['rewrite'],
+    'tokens'   => & $PHP['tokens'],
+  );
+
   try
   {
-    require '../src/CoffeeScript/Init.php';
-
-    CoffeeScript\Init::load();
-
-    $PHP['js'] = CoffeeScript\Compiler::compile($PHP['coffee'], array(
-      'file'    => $case,
-      'rewrite' => $PHP['rewrite'],
-      'tokens'  =>  & $PHP['tokens'],
-    ));
+    $PHP['js'] = CoffeeScript\Compiler::compile($PHP['coffee'], $options);
   }
   catch (Exception $e)
   {
-    $PHP['error'] = get_class($e).': '.ucfirst($e->getMessage());
+    $PHP['error'] = $e->getMessage();
   }
 
   if ($PHP['tokens'])
