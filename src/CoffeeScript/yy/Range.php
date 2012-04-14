@@ -60,10 +60,12 @@ class yy_Range extends yy_Base
 
     $has_args = function($node)
     {
-      return isset($node->contains) && $node->contains(function($n)
+      return $node->contains(function($n)
       {
         return $n instanceof yy_Literal && $n->value === 'arguments' && ! $n->as_key();
       });
+
+      return FALSE;
     };
 
     $args = '';

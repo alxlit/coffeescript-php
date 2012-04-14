@@ -26,7 +26,7 @@ class yy_Value extends yy_Base
 
   function add($prop)
   {
-    $this->properties = array_merge($this->properties, (array) $prop);
+    $this->properties = array_merge($this->properties, is_object($prop) ? array($prop) : (array) $prop);
 
     return $this;
   }
@@ -86,10 +86,6 @@ class yy_Value extends yy_Base
 
     foreach ($props as $prop)
     {
-      if ( ! is_object($prop))
-      {
-        var_dump($prop);
-      }
       $code .= $prop->compile($options);
     }
 

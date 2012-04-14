@@ -79,12 +79,14 @@ class yy_Base
   {
     if ($this->jumps())
     {
+      var_dump($this);
       throw new SyntaxError('cannot use a pure statement in an expression.');
     }
 
     $options['sharedScope'] = TRUE;
 
     $closure = yy_Closure::wrap($this);
+
     return $closure->compile_node($options);
   }
 
@@ -137,6 +139,7 @@ class yy_Base
 
   function each_child($func)
   {
+    return FALSE;
     if ( ! ($this->children))
     {
       return $this;

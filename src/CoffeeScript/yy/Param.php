@@ -12,7 +12,10 @@ class yy_Param extends yy_Base
     $this->value = $value;
     $this->splat = $splat;
 
-    if (in_array($name = $this->name->unwrap_all()->value, Lexer::$STRICT_PROSCRIBED))
+    $name = $this->name->unwrap_all();
+    $name = isset($name->value) ? $name->value : NULL;
+
+    if (in_array($name, Lexer::$STRICT_PROSCRIBED))
     {
       throw new SyntaxError("parameter name \"$name\" is not allowed");
     }

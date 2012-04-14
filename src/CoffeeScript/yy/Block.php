@@ -152,7 +152,7 @@ class yy_Block extends yy_Base
     {
       $rest = array_splice($this->expressions, $i, count($this->expressions));
 
-      list($spaced, $this->spaced) = array($this->spaced, FALSE);
+      list($spaced, $this->spaced) = array(isset($this->spaced) && $this->spaced, FALSE);
       list($code, $this->spaced) = array($this->compile_node($options), $spaced);
 
       $this->expressions = $rest;

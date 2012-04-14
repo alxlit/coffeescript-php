@@ -64,7 +64,7 @@ class yy_Code extends yy_Base
       {
         $val = $ref = $param->as_reference($options);
 
-        if ($param->value)
+        if (isset($param->value) && $param->value)
         {
           $val = yy('Op', '?', $ref, $param->value);
         }

@@ -654,7 +654,7 @@ class Lexer
         continue;
       }
 
-      if ( ! ($letter === '#' && $str{$i + 1} === '{' && 
+      if ( ! ($letter === '#' && (substr($str, $i + 1, 1) === '{') &&
         ($expr = $this->balanced_string(substr($str, $i + 1), '}'))) )
       {
         continue;
@@ -837,12 +837,12 @@ class Lexer
       $value = $this->chunk{0};
     }
 
-    $tag = $value;
+    $tag = t($value);
     $prev = & last($this->tokens);
 
     if ($value === '=' && $prev)
     {
-      if (isset($prev['reserved']) && $prev['reserved'] && in_array($prev[1], t(self::$JS_FORBIDDEN)))
+      if ( ! (isset($prev[1]->reserved) && $prev[1]->reserved) && in_array(''.$prev[1], self::$JS_FORBIDDEN))
       {
         $this->error('reserved word "'.$this->value().'" can\'t be assigned');
       }
@@ -852,66 +852,57 @@ class Lexer
         $prev[0] = t('COMPOUND_ASSIGN');
         $prev[1] .= '=';
 
-        return 1; // strlen($value);
+        return 1;
       }
     }
 
-    $map = array(
-      'TERMINATOR'      => array(';'),
-      'MATH'            => self::$MATH,
-      'COMPARE'         => self::$COMPARE,
-      'COMPOUND_ASSIGN' => self::$COMPOUND_ASSIGN,
-      'UNARY'           => self::$UNARY,
-      'SHIFT'           => self::$SHIFT
-    );
-
-    $mapped = FALSE;
-
-    foreach ($map as $k => $v)
+    if ($value === ';')
     {
-      if (in_array($value, $v))
-      {
-        if ($value === ';')
-        {
-          $this->seen_for = FALSE;
-        }
-
-        $tag = $k;
-        $mapped = TRUE;
-
-        break;
-      }
+      $this->seen_for = FALSE;
+      $tag = t('TERMINATOR');
     }
-
-    if ( ! $mapped)
+    else if (in_array($value, self::$MATH))
     {
-      if (in_array($value, self::$LOGIC) || $value === '?' && ($prev && isset($prev['spaced']) && $prev['spaced']))
+      $tag = t('MATH');
+    }
+    else if (in_array($value, self::$COMPARE))
+    {
+      $tag = t('COMPARE');
+    }
+    else if (in_array($value, self::$COMPOUND_ASSIGN))
+    {
+      $tag = t('COMPOUND_ASSIGN');
+    }
+    else if (in_array($value, self::$UNARY))
+    {
+      $tag = t('UNARY');
+    }
+    else if (in_array($value, self::$SHIFT))
+    {
+      $tag = t('SHIFT');
+    }
+    else if (in_array($value, self::$LOGIC) || $value === '?' && (isset($prev['spaced']) && $prev['spaced']))
+    {
+      $tag = t('LOGIC');
+    }
+    else if ($prev && ! (isset($prev['spaced']) && $prev['spaced']))
+    {
+      if ($value === '(' && in_array($prev[0], t(self::$CALLABLE)))
       {
-        $tag = 'LOGIC';
-      }
-      else if ($prev && ! (isset($prev['spaced']) && $prev['spaced']))
-      {
-        if ($value === '(' && in_array($prev[0], t(self::$CALLABLE)))
+        if ($prev[0] === t('?'))
         {
-          if ($prev[0] === t('?'))
-          {
-            $prev[0] = t('FUNC_EXIST');
-          }
-
-          $tag = 'CALL_START';
+          $prev[0] = t('FUNC_EXIST');
         }
-        else if ($value === '[' && in_array($prev[0], t(self::$INDEXABLE)))
-        {
-          $tag = 'INDEX_START';
 
-          if ($prev[0] === t('?'))
-          {
-            $prev[0] = t('INDEX_SOAK');
-          }
-          else if ($prev[0] === t('::'))
-          {
-            $prev[0] = t('INDEX_PROTO');
-          }
+        $tag = t('CALL_START');
+      }
+      else if ($value === '[' && in_array($prev[0], t(self::$INDEXABLE)))
+      {
+        $tag = t('INDEX_START');
+
+        if ($prev[0] === t('?'))
+        {
+          $prev[0] = t('INDEX_SOAK');
         }
       }
     }

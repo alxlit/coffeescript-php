@@ -4,6 +4,12 @@ namespace CoffeeScript;
 
 Init::init();
 
+/**
+ * @package   CoffeeScript
+ * @author    Alex Little
+ * @license   MIT
+ * @homepage  http://github.com/alxlit/coffeescript-php
+ */
 class Compiler {
 
   /**
