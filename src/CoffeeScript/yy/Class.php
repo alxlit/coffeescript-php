@@ -73,19 +73,19 @@ class yy_Class extends yy_Base
           {
             $func->static = TRUE;
 
-            if ($func->bound)
+            if (isset($func->bound) && $func->bound)
             {
               $func->context = $name;
             }
-            else
-            {
-              $assign->variable = yy('Value', yy('Literal', $name), array(yy('Access', $base, 'proto')));
+          }
+          else
+          {
+            $assign->variable = yy('Value', yy('Literal', $name), array( yy('Access', yy('Literal', 'prototype')), yy('Access', $base) ));
 
-              if ($func instanceof yy_Code && isset($func->bound) && $func->bound)
-              {
-                $this->bound_funcs[] = $base;
-                $func->bound = FALSE;
-              }
+            if ($func instanceof yy_Code && isset($func->bound) && $func->bound)
+            {
+              $this->bound_funcs[] = $base;
+              $func->bound = FALSE;
             }
           }
         }
@@ -118,7 +118,7 @@ class yy_Class extends yy_Base
 
     if ($decl)
     {
-      array_unshift($this->body->expressions, yy('Assign', yy('Value', yy('Literal', $name), array(yy('Access', yy('Literal', $name)))), yy('Literal', "'{$name}'")));
+      array_unshift($this->body->expressions, yy('Assign', yy('Value', yy('Literal', $name), array(yy('Access', yy('Literal', 'name')))), yy('Literal', "'{$name}'")));
     }
 
     $this->body->expressions[] = $lname;
@@ -133,8 +133,17 @@ class yy_Class extends yy_Base
       $this->super_class = yy('Literal', $options['scope']->free_variable('super', FALSE));
       array_unshift($this->body->expressions, yy('Extends', $lname, $this->super_class));
       $call->args[] = $this->parent;
-      $params = isset($call->variables->params) ? $call->variables->params : $call->variables->base->params;
-      $params->push(yy('Param', $this->super_class));
+
+      if (isset($call->variable->params))
+      {
+        $params = & $call->variable->params;
+      }
+      else
+      {
+        $params = & $call->variable->base->params;
+      }
+
+      $params[] = yy('Param', $this->super_class);
     }
 
     $klass = yy('Parens', $call, TRUE);
@@ -195,6 +204,7 @@ class yy_Class extends yy_Base
     }
 
     $this->ctor->ctor = $this->ctor->name = $name;
+
     $this->ctor->klass = NULL;
     $this->ctor->no_return = TRUE;
   }
@@ -204,7 +214,7 @@ class yy_Class extends yy_Base
     $index = 0;
     $expressions = $this->body->expressions;
 
-    while ((isset($expressions[$index]) && $node = $expressions[$index]) && $node instanceof yy_Comment || $node instanceof yy_Value && $node->is_string())
+    while (isset($expressions[$index]) && ($node = $expressions[$index]) && ( ($node instanceof yy_Comment) || ($node instanceof yy_Value) && $node->is_string() ))
     {
       $index++;
     }

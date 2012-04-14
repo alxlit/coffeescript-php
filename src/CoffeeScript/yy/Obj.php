@@ -43,7 +43,8 @@ class yy_Obj extends yy_Base
 
       if ($prop)
       {
-        $prop_name = ''.$prop->unwrap_all()->value;
+        $prop_name = $prop->unwrap_all();
+        $prop_name = isset($prop_name->value) ? $prop_name->value.'' : NULL;
 
         if (in_array($prop_name, $prop_names))
         {

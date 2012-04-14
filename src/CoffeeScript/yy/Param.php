@@ -100,11 +100,11 @@ class yy_Param extends yy_Base
       }
       else if ($obj->is_array() || $obj->is_object())
       {
-        $names = array_merge($names, $this->names($obj->base));
+        $names = array_merge($names, (array) $this->names($obj->base));
       }
       else if (isset($obj->this) && $obj->this)
       {
-        $names = array_merge($names, $at_param($obj));
+        $names = array_merge($names, (array) $at_param($obj));
       }
       else
       {

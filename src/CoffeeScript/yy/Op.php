@@ -19,8 +19,6 @@ class yy_Op extends yy_Base
 
   public $operator = NULL;
 
-  // I *think* this is correct, since there is no separation in JavaScript between
-  // object functions/data, i.e. invert = function() {} will evaluate to true first.
   public $invert = TRUE;
 
   function constructor($op, $first, $second = NULL, $flip = NULL)
@@ -99,12 +97,15 @@ class yy_Op extends yy_Base
       $this->first->front = $this->front;
     }
 
-    if ($this->operator === 'delete' && $options['scope']->check($this->first->unwrap_all()->value))
+    $tmp = $this->first->unwrap_all();
+    $tmp = isset($tmp->value) ? $tmp->value : NULL;
+
+    if ($this->operator === 'delete' && $options['scope']->check($tmp))
     {
       throw new SyntaxError('delete operand may not be argument or var');
     }
 
-    if (in_array($this->operator, array('--', '++')) && in_array($this->first->unwrap_all()->value, Lexer::$STRICT_PROSCRIBED))
+    if (in_array($this->operator, array('--', '++')) && in_array($tmp, Lexer::$STRICT_PROSCRIBED))
     {
       throw new SyntaxError('prefix increment/decrement may not have eval or arguments operand');
     }
@@ -142,7 +143,7 @@ class yy_Op extends yy_Base
     $parts = array($op = $this->operator);
     $plus_minus = in_array($op, array('+', '-'), TRUE);
 
-    if (in_array($op, array('new', 'typeof', 'delete'), TRUE) || 
+    if (in_array($op, array('new', 'typeof', 'delete'), TRUE) ||
         $plus_minus &&
         $this->first instanceof yy_Op && $this->first->operator === $op)
     {
@@ -171,7 +172,7 @@ class yy_Op extends yy_Base
 
   function is_complex()
   {
-    return ! ($this->is_unary() && ! in_array($this->operator, array('+', '-'))) || $this->first->is_complex();
+    return ! ($this->is_unary() && in_array($this->operator, array('+', '-'))) || $this->first->is_complex();
   }
 
   function invert()

@@ -32,7 +32,7 @@ class yy_If extends yy_Base
     return $this;
   }
 
-  function body_node() 
+  function body_node()
   {
     return $this->body ? $this->body->unwrap() : NULL;
   }
@@ -66,7 +66,7 @@ class yy_If extends yy_Base
     $cond = $this->condition->compile($options, LEVEL_PAREN);
     $options['indent'] .= TAB;
     $body = $this->ensure_block($this->body);
-    $if_part = "if ({$cond}) {\n".$body->compile($options)."\n{$this->tab}";
+    $if_part = "if ({$cond}) {\n".$body->compile($options)."\n{$this->tab}}";
 
     if ( ! $child)
     {
@@ -104,7 +104,7 @@ class yy_If extends yy_Base
   {
     return $node instanceof yy_Block ? $node : yy('Block', array($node));
   }
-  
+
   function is_chain()
   {
     return $this->is_chain;

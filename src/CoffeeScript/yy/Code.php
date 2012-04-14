@@ -133,7 +133,7 @@ class yy_Code extends yy_Base
       {
         $this->bound = $this->context = $options['scope']->parent->method->context;
       }
-      else if ( ! $this->static)
+      else if ( ! (isset($this->static) && $this->static))
       {
         $options['scope']->parent->assign('_this', 'this');
       }

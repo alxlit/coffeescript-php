@@ -68,8 +68,7 @@ class yy_Value extends yy_Base
 
     $base->add($name);
 
-    return array($base, yy('Value', isset($bref) ? $bref : $base->base,
-      array(isset($nref) ? $nref : $name)));
+    return array($base, yy('Value', isset($bref) ? $bref : $base->base, array(isset($nref) ? $nref : $name)));
   }
 
   function compile_node($options)

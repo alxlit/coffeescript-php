@@ -79,7 +79,6 @@ class yy_Base
   {
     if ($this->jumps())
     {
-      var_dump($this);
       throw new SyntaxError('cannot use a pure statement in an expression.');
     }
 
@@ -139,7 +138,6 @@ class yy_Base
 
   function each_child($func)
   {
-    return FALSE;
     if ( ! ($this->children))
     {
       return $this;

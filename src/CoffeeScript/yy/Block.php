@@ -54,9 +54,9 @@ class yy_Block extends yy_Base
           {
             $code = "{$code}\n";
           }
-
-          $codes[] = $code;
         }
+
+        $codes[] = $code;
       }
       else
       {
@@ -116,7 +116,7 @@ class yy_Block extends yy_Base
 
       if ($prelude_exps)
       {
-        $prelude = $this->compile_node($options + array('indent' => ''))."\n";
+        $prelude = $this->compile_node(array_merge($options, array('indent' => '')))."\n";
       }
 
       $this->expressions = $rest;
@@ -146,7 +146,7 @@ class yy_Block extends yy_Base
       }
     }
 
-    $options += array('level' => LEVEL_TOP);
+    $options = array_merge($options, array('level' => LEVEL_TOP));
 
     if ($i)
     {

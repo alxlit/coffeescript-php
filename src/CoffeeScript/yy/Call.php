@@ -131,7 +131,7 @@ class yy_Call extends yy_Base
         continue;
       }
 
-      $obj = $tmp = NULL;
+      $obj = NULL;
 
       foreach ($node->base->properties as $prop)
       {
@@ -139,10 +139,10 @@ class yy_Call extends yy_Base
         {
           if ( ! $obj)
           {
-            $nodes[] = ($obj = $tmp = yy('Obj', array(), TRUE));
+            $nodes[] = ($obj = yy('Obj', array(), TRUE));
           }
 
-          $tmp->properties[] = $prop;
+          $obj->properties[] = $prop;
         }
         else
         {
@@ -177,14 +177,14 @@ class yy_Call extends yy_Base
 
     if ( ! $method)
     {
-      throw SyntaxError('cannot call super outside of a function.');
+      throw new SyntaxError('cannot call super outside of a function.');
     }
 
-    $name = $method->name;
+    $name = isset($method->name) ? $method->name : NULL;
 
     if ( ! $name)
     {
-      throw SyntaxError('cannot call super on an anonymous function.');
+      throw new SyntaxError('cannot call super on an anonymous function.');
     }
 
     if (isset($method->klass) && $method->klass)

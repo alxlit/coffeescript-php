@@ -48,7 +48,7 @@ class yy_Assign extends yy_Base
       throw new Error('the variable "'.$this->left->base->value.'" can\'t be assigned with '.$this->context.' because it has not been defined.');
     }
 
-    if (in_array('?', $this->context))
+    if (strpos($this->context, '?') > -1)
     {
       $options['isExistentialEquals'] = TRUE;
     }
@@ -100,7 +100,7 @@ class yy_Assign extends yy_Base
       }
     }
 
-    if ($this->value instanceof yy_Code && preg_match(METHOD_DEF, $name, $match))
+    if ($this->value instanceof yy_Code && preg_match(METHOD_DEF, ''.$name, $match))
     {
       if (isset($match[1]) && $match[1])
       {
@@ -181,7 +181,10 @@ class yy_Assign extends yy_Base
         $value->properties[] = yy('Index', $idx);
       }
 
-      if (in_array($obj->unwrap()->value, Lexer::$COFFEE_RESERVED))
+      $tmp = $obj->unwrap();
+      $tmp = isset($tmp->value) ? $tmp->value : NULL;
+
+      if (in_array($tmp, Lexer::$COFFEE_RESERVED))
       {
         throw new SyntaxError('assignment to a reserved word: '.$obj->compile($options).' = '.$value->compile($options));
       }
@@ -247,7 +250,8 @@ class yy_Assign extends yy_Base
       }
       else
       {
-        $name = $obj->unwrap()->value;
+        $name = $obj->unwrap();
+        $name = isset($name->value) ? $name->value : NULL;
 
         if ($obj instanceof yy_Splat)
         {
@@ -333,7 +337,7 @@ class yy_Assign extends yy_Base
 
   function is_statement($options)
   {
-    return isset($options['level']) && $options['level'] === LEVEL_TOP && $this->context && in_array('?', $this->context);
+    return isset($options['level']) && $options['level'] === LEVEL_TOP && $this->context && strpos($this->context, '?') > -1;
   }
 
   function unfold_soak($options)

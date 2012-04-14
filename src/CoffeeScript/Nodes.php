@@ -26,7 +26,7 @@ class Nodes {
   static function multident($code, $tab)
   {
     $code = preg_replace('/\n/', "\n{$tab}", $code);
-    return preg_replace('/\s+$/', '');
+    return preg_replace('/\s+$/', '', $code);
   }
 
   static function unfold_soak($options, $parent, $name)

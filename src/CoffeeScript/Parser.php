@@ -2763,7 +2763,7 @@ static public $yy_action = array(
     function yy_r64(){ $this->_retvalue = $this->yystack[$this->yyidx + -1]->minor->add($this->yystack[$this->yyidx + 0]->minor);     }
 #line 2764 "/var/www/coffeescript-php/grammar.php"
 #line 119 "/var/www/coffeescript-php/grammar.y"
-    function yy_r65(){ $this->_retvalue = yy('Value', $this->yystack[$this->yyidx + -1]->minor, (array) $this->yystack[$this->yyidx + 0]->minor);     }
+    function yy_r65(){ $this->_retvalue = yy('Value', $this->yystack[$this->yyidx + -1]->minor, is_object($this->yystack[$this->yyidx + 0]->minor) ? array($this->yystack[$this->yyidx + 0]->minor) : (array) $this->yystack[$this->yyidx + 0]->minor);     }
 #line 2767 "/var/www/coffeescript-php/grammar.php"
 #line 132 "/var/www/coffeescript-php/grammar.y"
     function yy_r75(){ $this->_retvalue = yy('Access', $this->yystack[$this->yyidx + 0]->minor);     }

@@ -80,7 +80,7 @@ class yy_Range extends yy_Base
 
   function compile_node($options)
   {
-    if ( ! $this->from_var)
+    if ( ! (isset($this->from_var) && $this->from_var))
     {
       $this->compile_variables($options);
     }
@@ -102,14 +102,14 @@ class yy_Range extends yy_Base
       $var_part .= ", {$this->to_c}";
     }
 
-    if ($this->step !== $this->step_var)
+    if (isset($this->step) && $this->step !== $this->step_var)
     {
       $var_part .= ", {$this->step}";
     }
 
     list($lt, $gt) = array("{$idx} <{$this->equals}", "{$idx} >{$this->equals}");
 
-    if (self::check($this->step_num))
+    if (isset($this->step_num) && self::check($this->step_num))
     {
       $cond_part = intval($this->step_num) > 0 ? "{$lt} {$this->to_var}" : "{$gt} {$this->to_var}";
     }
@@ -124,7 +124,7 @@ class yy_Range extends yy_Base
       $cond_part = "{$cond} ? {$lt} {$this->to_var} : {$gt} {$this->to_var}";
     }
 
-    if ($this->step_var)
+    if (isset($this->step_var) && $this->step_var)
     {
       $step_part = "{$idx} += {$this->step_var}";
     }
@@ -195,7 +195,7 @@ class yy_Range extends yy_Base
 
   function compile_variables($options)
   {
-    $options += array('top' => TRUE);
+    $options = array_merge($options, array('top' => TRUE));
 
     list($this->from_c, $this->from_var) = $this->from->cache($options, LEVEL_LIST);
     list($this->to_c, $this->to_var) = $this->to->cache($options, LEVEL_LIST);
@@ -207,7 +207,7 @@ class yy_Range extends yy_Base
 
     list($this->from_num, $this->to_num) = array(preg_match(SIMPLENUM, $this->from_var), preg_match(SIMPLENUM, $this->to_var));
 
-    if ($this->step_var)
+    if (isset($this->step_var) && $this->step_var)
     {
       $this->step_num = preg_match(SIMPLENUM, $this->step_var);
     }

@@ -46,7 +46,7 @@ class yy_Try extends yy_Base
 
     return
       "{$this->tab}try {\n"
-    . $this->try_part."\n"
+    . $try_part."\n"
     . "{$this->tab}}{$catch_part}{$ensure_part}";
   }
 

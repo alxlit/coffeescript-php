@@ -18,23 +18,23 @@ class yy_Return extends yy_Base
 
   function compile($options, $level = NULL)
   {
-    $expr = (isset($this->expression) && $this->expression) ? 
-      $this->expression->make_return() : NULL;
+    $expr = (isset($this->expression) && $this->expression) ? $this->expression->make_return() : NULL;
 
     if ($expr && ! ($expr instanceof yy_Return))
     {
-      return $expr->compile($options, $level);
+      $ret = $expr->compile($options, $level);
     }
     else
     {
-      return parent::compile($options, $level);
+      $ret = parent::compile($options, $level);
     }
+
+    return $ret;
   }
 
   function compile_node($options)
   {
-    return $this->tab.'return'.(isset($this->expression) && $this->expression ? 
-      ' '.$this->expression->compile($options, LEVEL_PAREN) : '').';';
+    return $this->tab.'return'.(isset($this->expression) && $this->expression ? ' '.$this->expression->compile($options, LEVEL_PAREN) : '').';';
   }
 
   function is_statement()

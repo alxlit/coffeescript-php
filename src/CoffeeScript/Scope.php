@@ -34,6 +34,8 @@ class Scope
 
   function add($name, $type, $immediate = FALSE)
   {
+    $name = ''.$name;
+
     if ($this->shared && ! $immediate)
     {
       return $this->parent->add($name, $type, $immediate);
@@ -75,6 +77,8 @@ class Scope
 
   function check($name, $immediate = FALSE)
   {
+    $name = ''.$name;
+
     $found = !! $this->type($name);
 
     if ($found || $immediate)
