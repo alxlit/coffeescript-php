@@ -114,7 +114,7 @@ class Lexer
   static $NUMBER            = '/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i';
   static $OPERATOR          = '#^(?:[-=]>|[-+*/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})#';
   static $REGEX             = '%^(/(?![\s=])[^[/\n\\\\]*(?:(?:\\\\[\s\S]|\[[^\]\n\\\\]*(?:\\\\[\s\S][^\]\n\\\\]*)*\])[^[/\n\\\\]*)*/)([imgy]{0,4})(?!\w)%';
-  static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/';
+  static $SIMPLESTR         = '/^\'[^\\\\\']*(?:\\\\.[^\\\\\']*)*\'/i';
   static $TRAILING_SPACES   = '/\s+$/';
   static $WHITESPACE        = '/^[^\n\S]+/';
 
@@ -340,7 +340,9 @@ class Lexer
     $stack = array($end);
     $prev = NULL;
 
-    for ($i = 1; $i < strlen($str); $i++)
+    $len = strlen($str);
+
+    for ($i = 1; $i < $len; $i++)
     {
       if ($continue_count)
       {
@@ -357,7 +359,7 @@ class Lexer
       case $end:
         array_pop($stack);
 
-        if ( ! count($stack))
+        if (count($stack) === 0)
         {
           return substr($str, 0, $i + 1);
         }
@@ -366,11 +368,11 @@ class Lexer
         continue 2;
       }
 
-      if ($end === '}' && ($letter === '"' || $letter === '\''))
+      if ($end === '}' && ($letter === '"' || $letter === "'"))
       {
         $stack[] = $end = $letter;
       }
-      else if ($end === '}' && $letter === '/' && preg_match(self::$HEREGEX, substr($str, $i), $match) || preg_match(self::$REGEX, substr($str, $i), $match))
+      else if ($end === '}' && $letter === '/' && (preg_match(self::$HEREGEX, substr($str, $i), $match) || preg_match(self::$REGEX, substr($str, $i), $match)))
       {
         $continue_count += strlen($match[0]) - 1;
       }
