@@ -116,7 +116,7 @@ splat(A) ::= expression(B) YY_RANGE_EXCLUSIVE . { A = yy('Splat', B); }
 
 simpleAssignable(A) ::= identifier(B)             . { A = yy('Value', B); }
 simpleAssignable(A) ::= value(B) accessor(C)      . { A = B->add(C); }
-simpleAssignable(A) ::= invocation(B) accessor(C) . { A = yy('Value', B, (array) C); }
+simpleAssignable(A) ::= invocation(B) accessor(C) . { A = yy('Value', B, is_object(C) ? array(C) : (array) C); }
 simpleAssignable(A) ::= thisProperty(B)           . { A = B; }
 
 assignable(A) ::= simpleAssignable(B) . { A = B; }
