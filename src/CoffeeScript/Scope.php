@@ -52,7 +52,7 @@ class Scope
 
   function assign($name, $value)
   {
-    $this->add($name, array($value, 'assigned' => TRUE), TRUE);
+    $this->add($name, array('value' => $value, 'assigned' => TRUE), TRUE);
     $this->has_assignments = TRUE;
   }
 
@@ -66,7 +66,7 @@ class Scope
 
       if (is_array($type) && isset($type['assigned']) && $type['assigned'])
       {
-        $tmp[] = "{$v['name']} = {$v['type']['value']}";
+        $tmp[] = "{$v['name']} = {$type['value']}";
       }
     }
 
