@@ -103,6 +103,11 @@ class yy_Class extends yy_Base
 
     $name = $decl ? $decl : '_Class';
 
+    if (isset($name->reserved) && $name->reserved)
+    {
+      $name = '_'.$name;
+    }
+
     $lname = yy('Literal', $name);
 
     $this->hoist_directive_prologue();
@@ -165,19 +170,19 @@ class yy_Class extends yy_Base
 
     if (($tail = last($this->variable->properties)))
     {
-      $decl = $tail instanceof yy_Access ? $tail->name->value : FALSE;
+      $decl = $tail instanceof yy_Access ? $tail->name->value : NULL;
     }
     else
     {
       $decl = $this->variable->base->value;
     }
 
-    if (in_array($decl, Lexer::$STRICT_PROSCRIBED))
+    if (in_array($decl, Lexer::$STRICT_PROSCRIBED, TRUE))
     {
       throw new SyntaxError("variable name may not be $decl");
     }
 
-    $decl = $decl ? (preg_match(IDENTIFIER, $decl) ? $decl : FALSE) : FALSE;
+    $decl = $decl ? (preg_match(IDENTIFIER, $decl) ? $decl : NULL) : NULL;
 
     return $decl;
   }
