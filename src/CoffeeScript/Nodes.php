@@ -17,7 +17,7 @@ define('IDENTIFIER_STR',  '[$A-Za-z_\x7f-\x{ffff}][$\w\x7f-\x{ffff}]*');
 define('IDENTIFIER',      '/^'.IDENTIFIER_STR.'$/u');
 define('IS_STRING',       '/^[\'"]/');
 define('SIMPLENUM',       '/^[+-]?\d+$/');
-define('METHOD_DEF',      '/^(?:('.IDENTIFIER_STR.')\.prototype(?:\.(#{IDENTIFIER_STR})|\[("(?:[^\\\\"\r\n]|\\\\.)*"|\'(?:[^\\\\\'\r\n]|\\\\.)*\')\]|\[(0x[\da-fA-F]+|\d*\.?\d+ (?:[eE][+-]?\d+)?)\]))|('.IDENTIFIER_STR.')$/u');
+define('METHOD_DEF',      '/^(?:('.IDENTIFIER_STR.')\.prototype(?:\.('.IDENTIFIER_STR.')|\[("(?:[^\\\\"\r\n]|\\\\.)*"|\'(?:[^\\\\\'\r\n]|\\\\.)*\')\]|\[(0x[\da-fA-F]+|\d*\.?\d+(?:[eE][+-]?\d+)?)\]))|('.IDENTIFIER_STR.')$/u');
 
 class Nodes {
 

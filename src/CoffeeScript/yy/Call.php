@@ -175,14 +175,14 @@ class yy_Call extends yy_Base
   {
     $method = $options['scope']->method;
 
-    if ( ! $method)
+    if ($method === NULL)
     {
       throw new SyntaxError('cannot call super outside of a function.');
     }
 
     $name = isset($method->name) ? $method->name : NULL;
 
-    if ( ! $name)
+    if ($name === NULL)
     {
       throw new SyntaxError('cannot call super on an anonymous function.');
     }
