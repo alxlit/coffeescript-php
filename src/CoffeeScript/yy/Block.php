@@ -185,7 +185,7 @@ class yy_Block extends yy_Base
         {
           if ($declars)
           {
-            $code .= ", \n{$this->tab}".TAB;
+            $code .= ",\n{$this->tab}".TAB;
           }
 
           $code .= implode(",\n{$this->tab}".TAB, $scope->assigned_variables());

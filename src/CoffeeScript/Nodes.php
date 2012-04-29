@@ -21,8 +21,6 @@ define('METHOD_DEF',      '/^(?:('.IDENTIFIER_STR.')\.prototype(?:\.('.IDENTIFIE
 
 class Nodes {
 
-  static $utilities;
-
   static function multident($code, $tab)
   {
     $code = preg_replace('/\n/', "\n{$tab}", $code);
@@ -42,19 +40,23 @@ class Nodes {
     return $ifn;
   }
 
-  static function utilities()
+  static function utility($name)
   {
-    $utilities = array(
-      'hasProp' => '{}.hasOwnProperty',
-      'slice'   => '[].slice'
-    );
+    Scope::$root->assign($ref = "__$name", call_user_func(array(__CLASS__, "utility_$name")));
 
-    $utilities['bind'] = 'function(fn, me){ return function(){ return fn.apply(me, arguments); }; }';
+    return $ref;
+  }
 
-    $utilities['extends'] =
-    'function(child, parent) { '
+  static function utility_bind()
+  {
+    return 'function(fn, me){ return function(){ return fn.apply(me, arguments); }; }';
+  }
+
+  static function utility_extends()
+  {
+    return 'function(child, parent) { '
     . 'for (var key in parent) { '
-    . 'if ('.$utilities['hasProp'].'.call(parent, key)) '
+    . 'if ('.self::utility('hasProp').'.call(parent, key)) '
     .   'child[key] = parent[key]; '
     . '} '
     . 'function ctor() { '
@@ -63,22 +65,21 @@ class Nodes {
     . 'ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; '
     . 'return child; '
     . '}';
-
-    $utilities['indexOf'] = '[].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }';
-
-    return $utilities;
   }
 
-  static function utility($name)
+  static function utility_hasProp()
   {
-    if ( ! isset(self::$utilities))
-    {
-      self::$utilities = self::utilities();
-    }
+    return '{}.hasOwnProperty';
+  }
 
-    Scope::$root->assign($ref = "__$name", self::$utilities[$name]);
+  static function utility_indexOf()
+  {
+    return '[].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }';
+  }
 
-    return $ref;
+  static function utility_slice()
+  {
+    return '[].slice';
   }
 
   /**
