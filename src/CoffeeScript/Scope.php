@@ -127,7 +127,7 @@ class Scope
     return FALSE;
   }
 
-  function free_variable($name, $reserve=TRUE)
+  function free_variable($name, $reserve = TRUE)
   {
     $index = 0;
 
@@ -136,7 +136,10 @@ class Scope
       $index++;
     }
 
-    $this->add($temp, 'var', $reserve);
+    if ($reserve)
+    {
+      $this->add($temp, 'var', TRUE);
+    }
 
     return $temp;
   }
