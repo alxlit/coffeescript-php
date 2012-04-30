@@ -161,11 +161,6 @@ class yy_Code extends yy_Base
       return $this->tab.$code;
     }
 
-    if ($this->bound)
-    {
-      return utility('bind')."({$code}, {$this->context})";
-    }
-
     return ($this->front || $options['level'] >= LEVEL_ACCESS) ? "({$code})" : $code;
   }
 

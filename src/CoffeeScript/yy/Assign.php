@@ -102,16 +102,17 @@ class yy_Assign extends yy_Base
 
     if ($this->value instanceof yy_Code && preg_match(METHOD_DEF, ''.$name, $match))
     {
-      if (isset($match[1]))
+      if (isset($match[1]) && $match[1] !== '')
       {
         $this->value->klass = $match[1];
       }
 
       foreach (range(2, 5) as $i)
       {
-        if (isset($match[$i]))
+        if (isset($match[$i]) && $match[$i] !== '')
         {
           $this->value->name = $match[$i];
+          break;
         }
       }
     }
