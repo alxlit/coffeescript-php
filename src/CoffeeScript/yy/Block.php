@@ -39,7 +39,7 @@ class yy_Block extends yy_Base
 
       if ($node instanceof yy_Block)
       {
-        $codes[] = $node->compile_block($options);
+        $codes[] = $node->compile_node($options);
       }
       else if ($top)
       {
