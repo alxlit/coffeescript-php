@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-define('VERSION', '1.3.1');
+define('COFFEESCRIPT_VERSION', '1.3.1');
 
 class Init {
 
