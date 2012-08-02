@@ -44,7 +44,7 @@ class yy_While extends yy_Base
 
       if ($this->guard)
       {
-        if ($body->expressions)
+        if (count($body->expressions) > 1)
         {
           array_unshift($body->expressions, yy('If', yy('Parens', $this->guard)->invert(), yy('Literal', 'continue')));
         }
