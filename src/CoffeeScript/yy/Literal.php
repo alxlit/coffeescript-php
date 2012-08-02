@@ -82,9 +82,9 @@ class yy_Literal extends yy_Base
     return FALSE;
   }
 
-  function make_return()
+  function make_return($res = NULL)
   {
-    return $this->is_statement() ? $this : parent::make_return();
+    return $this->is_statement() ? $this : parent::make_return($res);
   }
 
   function to_string($idt = '', $name = __CLASS__)

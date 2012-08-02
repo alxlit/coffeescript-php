@@ -241,9 +241,9 @@ class yy_Block extends yy_Base
       {
         $this->expressions[$len] = $expr->make_return($res);
 
-        if ($expr instanceof yy_Return && ! $expr->expression)
+        if ($expr instanceof yy_Return && ! (isset($expr->expression) && $expr->expression))
         {
-          return array_splice($this->expressions, $len, 1);
+          array_splice($this->expressions, $len, 1);
         }
 
         break;

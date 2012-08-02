@@ -104,14 +104,14 @@ class yy_Switch extends yy_Base
       $pair[1]->make_return($res);
     }
 
-    if ($res)
+    if ($res && ! $this->otherwise)
     {
-      $this->otherwise = isset($this->otherwise) && $this->otherwise ? $this->otherwise : yy('Block', array(yy('Literal', 'void 0')));
+      $this->otherwise = yy('Block', array(yy('Literal', 'void 0')));
     }
 
-    if (isset($this->otherwise) && $this->otherwise)
+    if ($this->otherwise)
     {
-      $this->otherwise->make_return();
+      $this->otherwise->make_return($res);
     }
 
     return $this;
