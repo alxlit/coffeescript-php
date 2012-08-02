@@ -43,9 +43,10 @@ class yy_Assign extends yy_Base
   {
     list($left, $right) = $this->variable->cache_reference($options);
 
-    if ( ! count($left->properties) && $left->base instanceof yy_Literal && $left->base->value !== 'this' && ! $options['scope']->check($left->base->value))
+    if ( ! count($left->properties) && $left->base instanceof yy_Literal &&
+      $left->base->value !== 'this' && ! $options['scope']->check($left->base->value))
     {
-      throw new Error('the variable "'.$this->left->base->value.'" can\'t be assigned with '.$this->context.' because it has not been defined.');
+      throw new Error('the variable "'.$left->base->value.'" can\'t be assigned with '.$this->context.' because it has not been defined.');
     }
 
     if (strpos($this->context, '?') > -1)
