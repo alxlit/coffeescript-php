@@ -996,12 +996,12 @@ class Lexer
 
     if (preg_match('/^0o([0-7]+)/', $number, $octal_literal))
     {
-      $number = '0x'.base_convert(intval($octal_literal[1], 8), 8, 16);
+      $number = '0x'.base_convert($octal_literal[1], 8, 16);
     }
 
     if (preg_match('/^0b([01]+)/', $number, $binary_literal))
     {
-      $number = '0x'.base_convert(intval($binary_literal[1], 2), 2, 16);
+      $number = '0x'.base_convert($binary_literal[1], 2, 16);
     }
 
     $this->token('NUMBER', $number);
