@@ -206,7 +206,14 @@ class Lexer
       return $tags;
     }
 
-    $name = 'CoffeeScript\Parser::YY_'.(isset($map[$name]) ? $map[$name] : $name);
+    $prefix = 'CoffeeScript\Parser::YY_';
+
+    // In cases where there's no matching constant (see below) $name may
+    // already be prefixed.
+    if (strpos($name, $prefix) !== 0)
+    {
+      $name = $prefix.(isset($map[$name]) ? $map[$name] : $name);
+    }
 
     // Don't return the original name if there's no matching constant, in some
     // cases intermediate token types are created and the value returned by this

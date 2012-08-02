@@ -1,16 +1,13 @@
 
 # See also errors in function_invocation.coffee, ranges.coffee
 
-foo = 'bar' if something.kinda_stupidly.long \
-  and blah.blah.baz is 'something'
-
 a = {}
 b = {}
 c = {}
 
-###
 [a, [b]] = [c]
 
+###
 a={}; b={}; c={}; d={}; e={}; f={}; g={}; h={}; i={}
 [u, [v, w..., x], y..., z] = [a, [b, c, d, e], f, g, h, i]
 
