@@ -6,6 +6,8 @@ class yy_In extends yy_Base
 {
   public $children = array('object', 'array');
 
+  public $negated = NULL;
+
   function constructor($object = NULL, $array = NULL)
   {
     $this->array = $array;
@@ -40,9 +42,9 @@ class yy_In extends yy_Base
 
   function compile_or_test($options)
   {
-    if ( ! $this->array->base->objects)
+    if (count($this->array->base->objects) === 0)
     {
-      return '!!'.$this->negated;
+      return $this->negated ? 'true' : 'false';
     }
 
     list($sub, $ref) = $this->object->cache($options, LEVEL_OP);
