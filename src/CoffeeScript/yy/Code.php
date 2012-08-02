@@ -40,19 +40,22 @@ class yy_Code extends yy_Base
     {
       if ($param->splat)
       {
-        if (isset($param->name->value) && $param->name->value)
+        foreach ($this->params as $p)
         {
-          $options['scope']->add($param->name->value, 'var', TRUE);
+          if (isset($p->name->value) && $p->name->value)
+          {
+            $options['scope']->add($p->name->value, 'var', TRUE);
+          }
         }
 
-        $params = array();
+        $tmp = array();
 
         foreach ($this->params as $p)
         {
-          $params[] = $p->as_reference($options);
+          $tmp[] = $p->as_reference($options);
         }
 
-        $splats = yy('Assign', yy('Value', yy('Arr', $params)), yy('Value', yy('Literal', 'arguments')));
+        $splats = yy('Assign', yy('Value', yy('Arr', $tmp)), yy('Value', yy('Literal', 'arguments')));
 
         break;
       }
