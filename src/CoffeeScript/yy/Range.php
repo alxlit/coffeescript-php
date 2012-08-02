@@ -205,10 +205,15 @@ class yy_Range extends yy_Base
       list($this->step, $this->step_var) = $step->cache($options, LEVEL_LIST);
     }
 
-    preg_match(SIMPLENUM, $this->from_var, $m1);
-    preg_match(SIMPLENUM, $this->to_var, $m2);
+    if (preg_match(SIMPLENUM, $this->from_var, $m))
+    {
+      $this->from_num = $m[0];
+    }
 
-    list($this->from_num, $this->to_num) = array($m1[0], $m2[0]);
+    if (preg_match(SIMPLENUM, $this->to_var, $m))
+    {
+      $this->to_num = $m[0];
+    }
 
     if (isset($this->step_var) && $this->step_var)
     {
