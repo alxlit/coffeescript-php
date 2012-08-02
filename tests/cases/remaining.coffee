@@ -1,14 +1,11 @@
 
 # See also errors in function_invocation.coffee, ranges.coffee
 
-for b in [1..9]
-  c = Math.sqrt a*a + b*b
-
-###
 i = 10
 results = while i -= 1 when i % 2 is 0
   i * 2
 
+###
 i = 10
 results = while i > 0
   i--
