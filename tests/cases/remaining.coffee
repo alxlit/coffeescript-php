@@ -1,19 +1,10 @@
 
 # See also errors in function_invocation.coffee, ranges.coffee
 
-a = {}
-b = {}
-c = {}
-
-[a, [b]] = [c]
-
-###
-a={}; b={}; c={}; d={}; e={}; f={}; g={}; h={}; i={}
-[u, [v, w..., x], y..., z] = [a, [b, c, d, e], f, g, h, i]
-
 class Parent
   method: (args...) -> @args = args
 
+###
 oops = (x, args...) ->
 
 for a in [1..9] then \

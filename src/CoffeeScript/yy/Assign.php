@@ -279,7 +279,7 @@ class yy_Assign extends yy_Base
       }
 
       $tmp = yy('Assign', $obj, $val, NULL, array('param' => $this->param, 'subpattern' => TRUE));
-      $assigns[] = $tmp->compile($options, LEVEL_TOP);
+      $assigns[] = $tmp->compile($options, LEVEL_LIST);
     }
 
     if ( ! ($top || $this->subpattern))
