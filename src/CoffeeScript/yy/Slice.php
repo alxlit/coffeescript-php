@@ -38,7 +38,7 @@ class yy_Slice extends yy_Base
       else
       {
         $compiled = $to->compile($options, LEVEL_ACCESS);
-        $to_str .= "({$compiled} + 1) || 9e9";
+        $to_str .= "{$compiled} + 1 || 9e9";
       }
     }
 
