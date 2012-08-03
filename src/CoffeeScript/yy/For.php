@@ -156,7 +156,7 @@ class yy_For extends yy_While
 
     if ($this->guard)
     {
-      if ($body->expressions)
+      if (count($body->expressions) > 1)
       {
         array_unshift($body->expressions, yy('If', yy('Parens', $this->guard)->invert(), yy('Literal', 'continue')));
       }
