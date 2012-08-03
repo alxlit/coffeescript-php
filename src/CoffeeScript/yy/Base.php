@@ -283,9 +283,9 @@ class yy_Base
   {
     $node = $this;
 
-    while ($node !== ($node = $node->unwrap()))
+    while ($node !== ($tmp = $node->unwrap()))
     {
-      continue;
+      $node = $tmp;
     }
 
     return $node;
