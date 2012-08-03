@@ -78,7 +78,7 @@ class yy_Code extends yy_Base
       {
         $ref = $param;
 
-        if ($param->value)
+        if (isset($param->value) && $param->value)
         {
           $lit = yy('Literal', $ref->name->value.' == null');
           $val = yy('Assign', yy('Value', $param->name), $param->value, '=');
