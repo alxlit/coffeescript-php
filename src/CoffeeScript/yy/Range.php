@@ -62,7 +62,7 @@ class yy_Range extends yy_Base
     {
       return $node->contains(function($n)
       {
-        return $n instanceof yy_Literal && $n->value === 'arguments' && ! $n->as_key();
+        return ($n instanceof yy_Literal) && $n->value === 'arguments' && ! $n->as_key;
       });
 
       return FALSE;
