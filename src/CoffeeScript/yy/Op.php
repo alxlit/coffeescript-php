@@ -273,7 +273,7 @@ class yy_Op extends yy_Base
     return ! (isset($this->second) && $this->second);
   }
 
-  function unfold_soak($options)
+  function unfold_soak($options = NULL)
   {
     if (in_array($this->operator, array('++', '--', 'delete'), TRUE))
     {

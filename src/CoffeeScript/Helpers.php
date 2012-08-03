@@ -6,6 +6,25 @@ Init::init();
 
 class Helpers {
 
+  /**
+   * In some cases it seems to be unavoidable that method parameters conflict
+   * with their parent class's. This workaround is used to silence E_STRICT
+   * errors.
+   *
+   * @param $args      `func_get_args()`
+   * @param $required  The number of required arguments.
+   * @param $optional  An array of defaults for optional arguments.
+   */
+  static function args(array $args, $required, array $optional = NULL)
+  {
+    if (count($args) < $required)
+    {
+      throw new Error("Function requires at least $required arguments.");
+    }
+
+    return array_merge($args, (array) $optional);
+  }
+
   static function compact(array $array)
   {
     $compacted = array();

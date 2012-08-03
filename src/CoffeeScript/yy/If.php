@@ -152,7 +152,7 @@ class yy_If extends yy_Base
     return $this;
   }
 
-  function unfold_soak()
+  function unfold_soak($options = NULL)
   {
     return $this->soak ? $this : FALSE;
   }

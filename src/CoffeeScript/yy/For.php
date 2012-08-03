@@ -6,8 +6,10 @@ class yy_For extends yy_While
 {
   public $children = array('body', 'source', 'guard', 'step');
 
-  function constructor($body, $source)
+  function constructor()
   {
+    list($body, $source) = args(func_get_args(), 2);
+
     $this->source = $source['source'];
     $this->guard = isset($source['guard']) ? $source['guard'] : NULL;
     $this->step = isset($source['step']) ? $source['step'] : NULL;

@@ -27,8 +27,10 @@ class yy_Assign extends yy_Base
     return $this;
   }
 
-  function assigns($name)
+  function assigns()
   {
+    list($name) = args(func_get_args(), 1);
+
     if ($this->context === 'object')
     {
       return $this->value->assigns($name);
@@ -337,12 +339,12 @@ class yy_Assign extends yy_Base
     return $options['level'] > LEVEL_TOP ? "({$code})" : $code;
   }
 
-  function is_statement($options)
+  function is_statement($options = NULL)
   {
     return isset($options['level']) && $options['level'] === LEVEL_TOP && $this->context && strpos($this->context, '?') > -1;
   }
 
-  function unfold_soak($options)
+  function unfold_soak($options = NULL)
   {
     return unfold_soak($options, $this, 'variable');
   }

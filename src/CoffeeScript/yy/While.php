@@ -8,8 +8,10 @@ class yy_While extends yy_Base
 
   public $returns = FALSE;
 
-  function constructor($condition = NULL, $options = NULL)
+  function constructor()
   {
+    list($condition, $options) = args(func_get_args(), 0, array(NULL, NULL));
+
     $this->condition = (isset($options['invert']) && $options['invert']) ? 
       $condition->invert() : $condition;
 
@@ -67,7 +69,7 @@ class yy_While extends yy_Base
     return $code;
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return TRUE;
   }

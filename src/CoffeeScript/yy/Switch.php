@@ -67,7 +67,7 @@ class yy_Switch extends yy_Base
     return $code.$this->tab.'}';
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return TRUE;
   }

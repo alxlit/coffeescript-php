@@ -57,7 +57,7 @@ class yy_Literal extends yy_Base
     return FALSE;
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return in_array(''.$this->value, array('break', 'continue', 'debugger'), TRUE);
   }

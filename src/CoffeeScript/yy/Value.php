@@ -149,7 +149,7 @@ class yy_Value extends yy_Base
     return ($this->base instanceof yy_Literal) && preg_match(IS_STRING, ''.$this->base->value);
   }
 
-  function is_statement($options)
+  function is_statement($options = NULL)
   {
     return ! count($this->properties) && $this->base->is_statement($options);
   }
@@ -159,7 +159,7 @@ class yy_Value extends yy_Base
     return ! count($this->properties) && $this->base->jumps($options);
   }
 
-  function unfold_soak($options)
+  function unfold_soak($options = NULL)
   {
     if (isset($this->unfolded_soak))
     {

@@ -79,6 +79,7 @@ class Init {
 // Function shortcuts. These are all used internally.
 //
 
+function args(array $args, $required, array $optional = NULL) { return Helpers::args($args, $required, $optional); }
 function compact(array $array) { return Helpers::compact($array); }
 function del( & $obj, $key) { return Helpers::del($obj, $key); }
 function extend($obj, $properties) { return Helpers::extend($obj, $properties); }

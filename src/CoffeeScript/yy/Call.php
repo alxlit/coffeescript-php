@@ -206,7 +206,7 @@ class yy_Call extends yy_Base
     }
   }
 
-  function unfold_soak($options)
+  function unfold_soak($options = NULL)
   {
     if ($this->soak)
     {

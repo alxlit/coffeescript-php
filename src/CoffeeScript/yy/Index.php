@@ -13,7 +13,7 @@ class yy_Index extends yy_Base
     return $this;
   }
 
-  function compile($options)
+  function compile($options, $level = NULL)
   {
     return '['.$this->index->compile($options, LEVEL_PAREN).']';
   }

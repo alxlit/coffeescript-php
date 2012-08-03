@@ -4,7 +4,7 @@ namespace CoffeeScript;
 
 Init::init();
 
-class yy_Base
+abstract class yy_Base
 {
   public $as_key = FALSE;
   public $children = array();
@@ -22,8 +22,6 @@ class yy_Base
   public $to = NULL;
 
   function __construct() {}
-
-  function constructor() { return $this; }
 
   function __toString()
   {
@@ -165,11 +163,6 @@ class yy_Base
     return yy('Op', '!', $this);
   }
 
-  function assigns()
-  {
-    return FALSE;
-  }
-
   function is_assignable()
   {
     return FALSE;
@@ -190,7 +183,7 @@ class yy_Base
     return FALSE;
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return FALSE;
   }
@@ -269,7 +262,7 @@ class yy_Base
     });
   }
 
-  function unfold_soak($options)
+  function unfold_soak($options = NULL)
   {
     return FALSE;
   }

@@ -8,8 +8,6 @@ class yy_Slice extends yy_Base
 
   function constructor($range)
   {
-    parent::constructor();
-
     $this->range = $range;
 
     return $this;

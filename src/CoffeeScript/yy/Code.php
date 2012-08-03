@@ -179,7 +179,7 @@ class yy_Code extends yy_Base
     return $names;
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return !! $this->ctor;
   }

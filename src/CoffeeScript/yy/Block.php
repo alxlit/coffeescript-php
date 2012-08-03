@@ -203,7 +203,7 @@ class yy_Block extends yy_Base
     return ! count($this->expressions);
   }
 
-  function is_statement($options)
+  function is_statement($options = NULL)
   {
     foreach ($this->expressions as $i => $expr)
     {

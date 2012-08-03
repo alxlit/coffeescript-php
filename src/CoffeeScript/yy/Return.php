@@ -37,7 +37,7 @@ class yy_Return extends yy_Base
     return $this->tab.'return'.(isset($this->expression) && $this->expression ? ' '.$this->expression->compile($options, LEVEL_PAREN) : '').';';
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return TRUE;
   }
@@ -47,7 +47,7 @@ class yy_Return extends yy_Base
     return $this;
   }
 
-  function make_return()
+  function make_return($res = NULL)
   {
     return $this;
   }

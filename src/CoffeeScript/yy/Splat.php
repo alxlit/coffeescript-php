@@ -74,7 +74,7 @@ class yy_Splat extends yy_Base
     return $this->name->assigns($name);
   }
 
-  function compile($options)
+  function compile($options, $level = NULL)
   {
     if (isset($this->index) && $this->index)
     {

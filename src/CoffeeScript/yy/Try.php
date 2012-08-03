@@ -50,7 +50,7 @@ class yy_Try extends yy_Base
     . "{$this->tab}}{$catch_part}{$ensure_part}";
   }
 
-  function is_statement()
+  function is_statement($options = NULL)
   {
     return TRUE;
   }
@@ -60,7 +60,7 @@ class yy_Try extends yy_Base
     return $this->attempt->jumps($options) || (isset($this->recovery) && $this->recovery->jumps($options));
   }
 
-  function make_return($res)
+  function make_return($res = NULL)
   {
     if ($this->attempt)
     {
