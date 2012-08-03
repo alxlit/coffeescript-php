@@ -215,9 +215,9 @@ class yy_Range extends yy_Base
       $this->to_num = $m[0];
     }
 
-    if (isset($this->step_var) && $this->step_var)
+    if (isset($this->step_var) && $this->step_var && preg_match(SIMPLENUM, $this->step_var, $m))
     {
-      $this->step_num = preg_match(SIMPLENUM, $this->step_var);
+      $this->step_num = $m[0];
     }
   }
 }
