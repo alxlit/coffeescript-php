@@ -52,7 +52,7 @@ try
 {
   $coffee = file_get_contents($file);
 
-  // See available options below.
+  // See available options above.
   $js = CoffeeScript\Compiler::compile($coffee, array('filename' => $file));
 }
 catch (Exception $e)
