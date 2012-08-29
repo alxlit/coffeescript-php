@@ -41,3 +41,22 @@ del {
   display: none;
   font-weight: bold;
 }
+
+.progress {
+	display: inline-block;
+	background: #999999;
+	padding: 1px 4px 2px 4px;
+	border-radius: 4px;
+	font: 10px/10px sans-serif;
+	color: white;
+	margin-left: 10px;
+}
+.progress-pass {
+	background: #468847;
+}
+.progress-fail {
+	background: #b94a48;
+}
+.progress-tokenfail {
+	background: #f89406;
+}

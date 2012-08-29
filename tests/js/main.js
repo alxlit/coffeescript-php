@@ -9,7 +9,8 @@ function init(PHP) {
   d = JsDiff.diffLines(formatTokens(JS.tokens), formatTokens(PHP.tokens));
 
   $('#tokens .result').innerHTML = formatDiffLines(d);
-  $('#tokens .' + (d.length > 1 || d[0].removed ? 'fail' : 'pass')).style.display = 'block';
+  var tokenFailed = d.length > 1 || d[0].removed;
+  $('#tokens .' + (tokenFailed ? 'fail' : 'pass')).style.display = 'block';
 
   // Compile
   JS.js = CoffeeScript.require['./parser'].parse(JS.tokens).compile();
@@ -17,15 +18,18 @@ function init(PHP) {
   // Code diff
   d = JsDiff.diffLines(JS.js, PHP.js);
 
-  var failed = d.length > 1 || d[0].removed;
+  var codeFailed = d.length > 1 || d[0].removed;
 
   $('#code .result').innerHTML = formatDiffLines(d);
 
-  var result = $('#code .' + (d.length > 1 || d[0].removed ? 'fail' : 'pass'));
+  var result = $('#code .' + (codeFailed ? 'fail' : 'pass'));
   result.style.display = 'block';
 
   if (PHP.error) {
     result.innerHTML += '<br /><span style="font-weight: normal;">' + PHP.error + '</span>';
+  }
+  if (parent.testComplete) {
+	  parent.testComplete(codeFailed, tokenFailed);
   }
 }
 

@@ -121,11 +121,6 @@ class yy_Class extends yy_Base
       array_unshift($this->body->expressions, $this->ctor);
     }
 
-    if ($decl)
-    {
-      array_unshift($this->body->expressions, yy('Assign', yy('Value', yy('Literal', $name), array(yy('Access', yy('Literal', 'name')))), yy('Literal', "'{$name}'")));
-    }
-
     $this->body->expressions[] = $lname;
     $this->body->expressions = array_merge($this->directives, $this->body->expressions);
 
