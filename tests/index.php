@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Quick and dirty test driver for CoffeeScript PHP.
@@ -56,22 +56,22 @@ if ($case)
 <head>
   <link type="text/css" href="css/style.css" rel="stylesheet" />
 
-  <title>Tests <?= $case ? "($case)" : '' ?></title>
+  <title>Tests <?php echo $case ? "($case)" : '' ?></title>
 
-  <? if ($case): ?>
-    <script src="js/lib/coffeescript_1.3.1.js"></script>
+  <?php if ($case): ?>
+    <script src="js/lib/coffeescript_1.3.3.js"></script>
     <script src="js/lib/diff.js"></script>
     <script src="js/main.js"></script>
-    <script>window.addEventListener('load', function() { init(<?= json_encode($PHP) ?>); }, false);</script>
-  <? endif; ?>
+    <script>window.addEventListener('load', function() { init(<?php echo json_encode($PHP) ?>); }, false);</script>
+  <?php endif; ?>
 </head>
 <body>
   <div id="page">
 
-    <? if ($case): ?>
+    <?php if ($case): ?>
 
       <a href="index.php">Back</a>
-      <h1><a href="<?= $case ?>"><?= basename($case) ?></a></h1>
+      <h1><a href="<?php echo $case ?>"><?php echo basename($case) ?></a></h1>
 
       <h2>Code</h2>
 
@@ -79,18 +79,18 @@ if ($case)
       <ins>green</ins> were generated in our code but are not present in the reference.</p>
 
       <div id="code">
-        <? if (isset($error)): ?>
-          <p class="error"><?= $error ?></p>
-        <? else: ?>
+        <?php if (isset($error)): ?>
+          <p class="error"><?php echo $error ?></p>
+        <?php else: ?>
           <p class="fail">Failed.</p>
           <p class="pass">Passed!</p>
 
           <pre>  <strong>JS</strong>   <strong>PHP</strong></pre>
           <pre class="result"></pre></code>
-        <? endif; ?>
+        <?php endif; ?>
       </div>
 
-      <h2>Lexical Tokens (rewriting <?= $PHP['rewrite'] ? 'on' : 'off' ?>)</h2>
+      <h2>Lexical Tokens (rewriting <?php echo $PHP['rewrite'] ? 'on' : 'off' ?>)</h2>
 
       <div id="tokens">
         <p>Tokens in <del>red</del> are in the reference stack, but are missing in ours. Tokens in
@@ -103,16 +103,52 @@ if ($case)
         <pre class="result"></pre>
       </div>
 
-    <? else: ?>
+    <?php else: ?>
 
       <h1>Tests</h1>
       <p>Pick a test case to run. Make sure that you're using a capable browser.</p>
 
-      <? foreach ((array) glob('cases/*.coffee') as $case): ?>
-        <a href="?case=<?= $case ?>"><?= basename($case) ?></a><br />
-      <? endforeach; ?>
+      <?php foreach ((array) glob('cases/*.coffee') as $case): ?>
+        <a class="testcase" href="?case=<?php echo $case ?>"><?php echo basename($case) ?></a><br />
+      <?php endforeach; ?>
+		<iframe id="testrunner" style="display: none"></iframe>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+		<script>
+			(function () {
+				var testcases = $('.testcase');
+				var iframe = document.getElementById('testrunner');
+				var testIndex = -1;
+				var $progress;
+				function runNextTest () {
+					testIndex++;
+					var link = testcases[testIndex];
+					if (typeof link === "undefined") { // no more testcases?
+						return;
+					}
+					$progress = $('<span class="progress">...</span>');
+					$(link).after($progress);
+					iframe.src = link.href;
+				}
+				window.testComplete = function (codeFailed, tokenFailed) {
+					if (codeFailed) {
+						$progress.text('fail');
+						$progress.addClass('progress-fail');
+					} else if (tokenFailed) {
+						$progress.text('fail');
+						$progress.addClass('progress-tokenfail');
+					} else {
+						$progress.text('pass');
+						$progress.addClass('progress-pass');
+					}
+					runNextTest();
+				}
+				runNextTest(); // Start first test.
+			})();
 
-    <?endif; ?>
+		</script>
+
+
+    <?php endif; ?>
 
   </div>
 </body>

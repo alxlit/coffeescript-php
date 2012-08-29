@@ -62,7 +62,7 @@ class Nodes {
     . 'function ctor() { '
     .   'this.constructor = child; '
     . '} '
-    . 'ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; '
+    . 'ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; '
     . 'return child; '
     . '}';
   }
