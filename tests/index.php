@@ -109,8 +109,44 @@ if ($case)
       <p>Pick a test case to run. Make sure that you're using a capable browser.</p>
 
       <?php foreach ((array) glob('cases/*.coffee') as $case): ?>
-        <a href="?case=<?php echo $case ?>"><?php echo basename($case) ?></a><br />
+        <a class="testcase" href="?case=<?php echo $case ?>"><?php echo basename($case) ?></a><br />
       <?php endforeach; ?>
+		<iframe id="testrunner" style="display: none"></iframe>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+		<script>
+			(function () {
+				var testcases = $('.testcase');
+				var iframe = document.getElementById('testrunner');
+				var testIndex = -1;
+				var $progress;
+				function runNextTest () {
+					testIndex++;
+					var link = testcases[testIndex];
+					if (typeof link === "undefined") { // no more testcases?
+						return;
+					}
+					$progress = $('<span class="progress">...</span>');
+					$(link).after($progress);
+					iframe.src = link.href;
+				}
+				window.testComplete = function (codeFailed, tokenFailed) {
+					if (codeFailed) {
+						$progress.text('fail');
+						$progress.addClass('progress-fail');
+					} else if (tokenFailed) {
+						$progress.text('fail');
+						$progress.addClass('progress-tokenfail');
+					} else {
+						$progress.text('pass');
+						$progress.addClass('progress-pass');
+					}
+					runNextTest();
+				}
+				runNextTest(); // Start first test.
+			})();
+
+		</script>
+
 
     <?php endif; ?>
 
