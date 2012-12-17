@@ -1063,7 +1063,7 @@ class Lexer
     {
       if ($wanted !== 'OUTDENT')
       {
-        $this->error("unmateched $tag");
+        $this->error("unmatched $tag");
       }
 
       $this->indent -= $size = last($this->indents);
