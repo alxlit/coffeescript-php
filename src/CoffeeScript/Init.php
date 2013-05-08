@@ -10,7 +10,7 @@ class Init {
    * Dummy function that doesn't actually do anything, it's just used to make
    * sure that this file gets loaded.
    */
-  static function init() {}
+  static function initiate() {}
 
   /**
    * This function may be used in lieu of an autoloader.

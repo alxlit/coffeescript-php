@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-Init::init();
+Init::initiate();
 
 class Rewriter
 {

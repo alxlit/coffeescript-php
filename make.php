@@ -78,7 +78,7 @@ function make()
           "<?php\n"
         . "namespace CoffeeScript;\n"
         . "use \ArrayAccess as ArrayAccess;\n"
-        . "Init::init();\n"
+        . "Init::initiate();\n"
     ));
 
     // Write.

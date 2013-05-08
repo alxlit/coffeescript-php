@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-Init::init();
+Init::initiate();
 
 abstract class yy_Base
 {

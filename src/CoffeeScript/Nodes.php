@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-Init::init();
+Init::initiate();
 
 define('LEVEL_TOP',     1);
 define('LEVEL_PAREN',   2);
