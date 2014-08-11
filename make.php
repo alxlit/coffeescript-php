@@ -111,5 +111,3 @@ function make()
 }
 
 init();
-
-?>
