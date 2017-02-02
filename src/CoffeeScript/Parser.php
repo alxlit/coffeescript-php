@@ -1,7 +1,10 @@
 <?php
 namespace CoffeeScript;
 use \ArrayAccess as ArrayAccess;
-Init::init();
+
+if (! class_exists('CoffeeScript\Init')) {
+    throw new \RuntimeException('The class Init not found');
+};
 
 /* Driver template for the PHP_ParserGenerator parser generator. (PHP port of LEMON)
 */

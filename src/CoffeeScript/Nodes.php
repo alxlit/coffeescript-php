@@ -2,7 +2,9 @@
 
 namespace CoffeeScript;
 
-Init::init();
+if (! class_exists('CoffeeScript\Init')) {
+    throw new \RuntimeException('The class Init not found');
+}
 
 define('LEVEL_TOP',     1);
 define('LEVEL_PAREN',   2);
