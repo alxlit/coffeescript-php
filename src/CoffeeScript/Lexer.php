@@ -2,7 +2,7 @@
 
 namespace CoffeeScript;
 
-Init::init();
+Init::initiate();
 
 /**
  * CoffeeScript lexer. For the most part it's directly from the original
